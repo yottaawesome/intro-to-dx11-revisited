@@ -1,0 +1,265 @@
+module;
+
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#endif
+
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <Windowsx.h>
+#include <DirectXMath.h>
+#include <DirectXPackedVector.h>
+#include <d3d11.h>
+#include <crtdbg.h>
+
+export module shared:win32;
+
+export template<auto X>
+struct ConstValue
+{
+	constexpr operator decltype(X)() noexcept
+	{
+		return X;
+	}
+	static constexpr auto operator()() noexcept -> decltype(X)
+	{
+		return X;
+	}
+};
+
+export namespace Win32
+{
+	constexpr auto IdiApplication = ConstValue<IDI_APPLICATION>{};
+	constexpr auto IdcArrow = ConstValue<IDC_ARROW>{};
+	constexpr auto NullBrush = NULL_BRUSH;
+	constexpr auto CrtAllocMemDf = _CRTDBG_ALLOC_MEM_DF;
+	constexpr auto CrtLeakCheckDf = _CRTDBG_LEAK_CHECK_DF;
+	enum PM : unsigned long
+	{
+		Remove = PM_REMOVE,
+	};
+
+	enum WindowStyles : unsigned long
+	{
+		OverlappedWindow = WS_OVERLAPPEDWINDOW,
+	};
+
+	enum CS
+	{
+		HRedraw = CS_HREDRAW,
+		VRedraw = CS_VREDRAW,
+	};
+
+	enum CW
+	{
+		UseDefault = CW_USEDEFAULT,
+	};
+
+	enum SW
+	{
+		Show = SW_SHOW,
+	};
+
+	using
+		::HINSTANCE,
+		::LPWSTR,
+		::WNDCLASS,
+		::HWND,
+		::HANDLE,
+		::LONG,
+		::WPARAM,
+		::UINT,
+		::BYTE,
+		::DWORD,
+		::HRESULT,
+		::HWND,
+		::LPCWSTR,
+		::LPARAM,
+		::MINMAXINFO,
+		::HICON,
+		::RECT,
+		::LARGE_INTEGER,
+		::LRESULT,
+		::HBRUSH,
+		::HICON,
+		::MSG,
+		::_CrtSetDbgFlag,
+		::OutputDebugStringA,
+		::PeekMessageW,
+		::TranslateMessage,
+		::DispatchMessageW,
+		::DefWindowProcW,
+		::PostQuitMessage,
+		::LoadIconW,
+		::GetStockObject,
+		::GetModuleHandleW,
+		::LoadCursorW,
+		::AdjustWindowRect,
+		::CreateWindowExW,
+		::RegisterClassW,
+		::ShowWindow,
+		::UpdateWindow,
+		::MessageBoxA,
+		::MessageBoxW,
+		::SetWindowTextW,
+		::QueryPerformanceFrequency,
+		::QueryPerformanceCounter
+		;
+
+	constexpr auto Failed(HRESULT hr) noexcept -> bool
+	{
+		return FAILED(hr);
+	}
+	constexpr auto Succeeded(HRESULT hr) noexcept -> bool
+	{
+		return SUCCEEDED(hr);
+	}
+	enum Size
+	{
+		Minimized = SIZE_MINIMIZED,
+		Maximized = SIZE_MAXIMIZED,
+		Restored = SIZE_RESTORED
+	};
+	enum WA
+	{
+		Inactive = WA_INACTIVE,
+		Active = WA_ACTIVE,
+		ClickActive = WA_CLICKACTIVE
+	};
+	enum WindowMessages
+	{
+		Activate = WM_ACTIVATE,
+		Size = WM_SIZE,
+		EnterSizeMove = WM_ENTERSIZEMOVE,
+		ExitSizeMove = WM_EXITSIZEMOVE,
+		Destroy = WM_DESTROY,
+		MenuChar = WM_MENUCHAR,
+		GetMinMaxInfo = WM_GETMINMAXINFO,
+		LButtonDown = WM_LBUTTONDOWN,
+		MButtonDown = WM_MBUTTONDOWN,
+		RButtonDown = WM_RBUTTONDOWN,
+		LButtonUp = WM_LBUTTONUP,
+		MButtonUp = WM_MBUTTONUP,
+		RButtonUp = WM_RBUTTONUP,
+		MouseMove = WM_MOUSEMOVE,
+		KeyUp = WM_KEYUP,
+		Quit = WM_QUIT
+	};
+	enum MNC//MenuChar
+	{
+		Close = MNC_CLOSE,
+	};
+	constexpr auto GetXLParam(auto lParam) noexcept -> auto
+	{
+		return GET_X_LPARAM(lParam);
+	}
+	constexpr auto GetYLParam(auto lParam) noexcept -> auto
+	{
+		return GET_Y_LPARAM(lParam);
+	}
+	constexpr auto MakeLResult(auto a, auto b) noexcept -> auto
+	{
+		return MAKELRESULT(a, b);
+	}
+	constexpr auto LoWord(auto dw) noexcept -> auto
+	{
+		return LOWORD(dw);
+	}
+	constexpr auto HiWord(auto dw) noexcept -> auto
+	{
+		return HIWORD(dw);
+	}
+}
+
+export namespace DirectX
+{
+	using
+		::DirectX::XMFLOAT4,
+		::DirectX::XMMATRIX,
+		::DirectX::CXMMATRIX,
+		::DirectX::FXMVECTOR,
+		::DirectX::CXMVECTOR,
+		::DirectX::XMVECTORF32,
+		::DirectX::XMStoreFloat4x4,
+		::DirectX::XMStoreFloat3,
+		::DirectX::XMLoadFloat4,
+		::DirectX::XMPlaneNormalize,
+		::DirectX::XMVectorGetX,
+		::DirectX::XMVector3Greater,
+		::DirectX::XMVector3Normalize,
+		::DirectX::XMVector3Dot,
+		::DirectX::XMVector3Cross,
+		::DirectX::XMVector3LengthSq,
+		::DirectX::XMVector3Less,
+		::DirectX::XMVectorZero,
+		::DirectX::XMVectorSet,
+		::DirectX::XMMatrixDeterminant,
+		::DirectX::XMMatrixTranspose,
+		::DirectX::XMMatrixInverse,
+		::DirectX::XMStoreFloat4
+		;
+
+	namespace PackedVector
+	{
+		using
+			::DirectX::PackedVector::XMCOLOR,
+			::DirectX::PackedVector::XMHALF4,
+			::DirectX::PackedVector::XMCOLOR,
+			::DirectX::PackedVector::XMStoreColor
+			;
+	}
+}
+
+export namespace D3D
+{
+	using
+		::D3D_FEATURE_LEVEL,
+		::D3D_DRIVER_TYPE,
+		::D3D11_USAGE,
+		::D3D11_BIND_FLAG,
+		::D3D11_CPU_ACCESS_FLAG,
+		::D3D11_RESOURCE_MISC_FLAG
+		;
+}
+
+export namespace DXGI
+{
+	enum Usage : unsigned int
+	{
+		RenderTargetOutput = DXGI_USAGE_RENDER_TARGET_OUTPUT,
+	};
+
+	using
+		::IDXGISwapChain,
+		::IDXGIDevice,
+		::IDXGIFactory,
+		::IDXGIAdapter,
+		::DXGI_FORMAT,
+		::DXGI_SAMPLE_DESC,
+		::DXGI_SWAP_CHAIN_DESC
+		;
+}
+
+export namespace D3D11
+{
+	constexpr auto SdkVersion = D3D11_SDK_VERSION;
+	
+	using 
+		::ID3D11ShaderResourceView,
+		::ID3D11Device,
+		::ID3D11DeviceContext,
+		::D3D11_SUBRESOURCE_DATA,
+		::D3D11_TEXTURE1D_DESC,
+		::ID3D11Texture1D,
+		::ID3D11Texture2D,
+		::D3D11_VIEWPORT,
+		::D3D11_CLEAR_FLAG,
+		::ID3D11RenderTargetView,
+		::ID3D11DepthStencilView,
+		::ID3D11ShaderResourceView,
+		::D3D11_BIND_FLAG,
+		::D3D11_SHADER_RESOURCE_VIEW_DESC,
+		::D3D11_CREATE_DEVICE_FLAG,
+		::D3D11CreateDevice
+		;
+}
