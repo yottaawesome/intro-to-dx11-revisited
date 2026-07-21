@@ -4,9 +4,9 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/01/">
-    <Project Path="XMVECTOR/XMVECTOR.vcxproj" Id="fca12c10-bde0-480a-ad86-a4ce89fd8d93" />
+    <Project Path="01/XMVECTOR/XMVECTOR.vcxproj" Id="fca12c10-bde0-480a-ad86-a4ce89fd8d93" />
   </Folder>
   <Folder Name="/02/">
-    <Project Path="XMMATRIX/XMMATRIX.vcxproj" Id="e5bfe8b8-5afc-4530-89d3-444ca581fc24" />
+    <Project Path="02/XMMATRIX/XMMATRIX.vcxproj" Id="e5bfe8b8-5afc-4530-89d3-444ca581fc24" />
   </Folder>
 </Solution>
