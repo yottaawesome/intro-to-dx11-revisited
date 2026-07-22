@@ -11,6 +11,7 @@ module;
 #include <DirectXPackedVector.h>
 #include <d3d11.h>
 #include <crtdbg.h>
+#include <d3dcompiler.h>
 
 export module shared:win32;
 
@@ -60,6 +61,13 @@ export namespace Win32
 		Show = SW_SHOW,
 	};
 
+	enum MK
+	{
+		LButton = MK_LBUTTON,
+		RButton = MK_RBUTTON,
+		MButton = MK_MBUTTON
+	};
+
 	using
 		::HINSTANCE,
 		::LPWSTR,
@@ -82,6 +90,7 @@ export namespace Win32
 		::LRESULT,
 		::HBRUSH,
 		::HICON,
+		::POINT,
 		::MSG,
 		::_CrtSetDbgFlag,
 		::OutputDebugStringA,
@@ -94,6 +103,8 @@ export namespace Win32
 		::GetStockObject,
 		::GetModuleHandleW,
 		::LoadCursorW,
+		::ReleaseCapture,
+		::SetCapture,
 		::AdjustWindowRect,
 		::CreateWindowExW,
 		::RegisterClassW,
@@ -180,6 +191,15 @@ export namespace DirectX
 		::DirectX::FXMVECTOR,
 		::DirectX::CXMVECTOR,
 		::DirectX::XMVECTORF32,
+		::DirectX::XMFLOAT3,
+		::DirectX::XMFLOAT4X4,
+		::DirectX::XMMatrixIdentity,
+		::DirectX::XMMatrixMultiply,
+		::DirectX::XMMatrixLookAtLH,
+		::DirectX::XMMatrixLookToLH,
+		::DirectX::XMLoadFloat4x4,
+		::DirectX::XMConvertToRadians,
+		::DirectX::XMMatrixPerspectiveFovLH,
 		::DirectX::XMStoreFloat4x4,
 		::DirectX::XMStoreFloat3,
 		::DirectX::XMLoadFloat4,
@@ -215,10 +235,8 @@ export namespace D3D
 	using
 		::D3D_FEATURE_LEVEL,
 		::D3D_DRIVER_TYPE,
-		::D3D11_USAGE,
-		::D3D11_BIND_FLAG,
-		::D3D11_CPU_ACCESS_FLAG,
-		::D3D11_RESOURCE_MISC_FLAG
+		::ID3DBlob,
+		::D3DReadFileToBlob
 		;
 }
 
@@ -243,7 +261,6 @@ export namespace DXGI
 export namespace D3D11
 {
 	constexpr auto SdkVersion = D3D11_SDK_VERSION;
-	
 	using 
 		::ID3D11ShaderResourceView,
 		::ID3D11Device,
@@ -258,8 +275,18 @@ export namespace D3D11
 		::ID3D11DepthStencilView,
 		::ID3D11ShaderResourceView,
 		::D3D11_BIND_FLAG,
+		::D3D11_SUBRESOURCE_DATA,
 		::D3D11_SHADER_RESOURCE_VIEW_DESC,
 		::D3D11_CREATE_DEVICE_FLAG,
+		::ID3D11Buffer,
+		::ID3D11VertexShader,
+		::ID3D11PixelShader,
+		::D3D11_USAGE,
+		::D3D11_CPU_ACCESS_FLAG,
+		::D3D11_RESOURCE_MISC_FLAG,
+		::ID3D11InputLayout,
+		::D3D11_INPUT_ELEMENT_DESC,
+		::D3D11_BUFFER_DESC,
 		::D3D11CreateDevice
 		;
 }
