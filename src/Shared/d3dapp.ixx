@@ -3,6 +3,7 @@ import std;
 import :win32;
 import :gametimer;
 import :d3dutil;
+import :comptr;
 
 export class D3DApp
 {
@@ -18,21 +19,17 @@ public:
 
 	virtual ~D3DApp()
 	{
-		if (mRenderTargetView)
-			mRenderTargetView->Release();
-		if (mDepthStencilView)
-			mDepthStencilView->Release();
-		if (mSwapChain) 
-			mSwapChain->Release();
-		if (mDepthStencilBuffer)
-			mDepthStencilBuffer->Release();
+		mRenderTargetView.reset();
+		mDepthStencilView.reset();
+		mSwapChain.reset();
+		mDepthStencilBuffer.reset();
 		// Restore all default settings.
 		if (md3dImmediateContext)
+		{
 			md3dImmediateContext->ClearState();
-		if (md3dImmediateContext)
-			md3dImmediateContext->Release();
-		if (md3dDevice)
-			md3dDevice->Release();
+			md3dImmediateContext.reset();
+		}
+		md3dDevice.reset();
 	}
 
 	auto AppInst()const -> Win32::HINSTANCE
@@ -102,32 +99,19 @@ public:
 
 		// Release the old views, as they hold references to the buffers we
 		// will be destroying.  Also release the old depth/stencil buffer.
-		if (mRenderTargetView)
-		{
-			mRenderTargetView->Release();
-			mRenderTargetView = nullptr;
-		}
-		if (mDepthStencilView)
-		{
-			mDepthStencilView->Release();
-			mDepthStencilView = nullptr;
-		}
-		if (mDepthStencilBuffer)
-		{
-			mDepthStencilBuffer->Release();
-			mDepthStencilBuffer = nullptr;
-		}
+		mRenderTargetView.reset();
+		mDepthStencilView.reset();
+		mDepthStencilBuffer.reset();
 
 
 		// Resize the swap chain and recreate the render target view.
 
 		HR(mSwapChain->ResizeBuffers(1, mClientWidth, mClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
-		auto backBuffer = static_cast<D3D11::ID3D11Texture2D*>(nullptr);
-		HR(mSwapChain->GetBuffer(0, __uuidof(D3D11::ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer)));
-		HR(md3dDevice->CreateRenderTargetView(backBuffer, 0, &mRenderTargetView));
+		auto backBuffer = ComPtr<D3D11::ID3D11Texture2D>{};
+		HR(mSwapChain->GetBuffer(0, backBuffer.Uuid(), backBuffer.ReleaseAndGetAddressOfVoid()));
+		HR(md3dDevice->CreateRenderTargetView(backBuffer.get(), 0, &mRenderTargetView));
 		
-		if (backBuffer)
-			(backBuffer->Release(), backBuffer = nullptr);
+		backBuffer.reset();
 
 		// Create the depth/stencil buffer and view.
 
@@ -158,12 +142,12 @@ public:
 		depthStencilDesc.MiscFlags = 0;
 
 		HR(md3dDevice->CreateTexture2D(&depthStencilDesc, 0, &mDepthStencilBuffer));
-		HR(md3dDevice->CreateDepthStencilView(mDepthStencilBuffer, 0, &mDepthStencilView));
+		HR(md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.get(), 0, &mDepthStencilView));
 
 
 		// Bind the render target view and depth/stencil view to the pipeline.
 
-		md3dImmediateContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
+		md3dImmediateContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView.get());
 
 
 		// Set the viewport transform.
@@ -461,20 +445,16 @@ protected:
 		// (by calling CreateDXGIFactory), we get an error: "IDXGIFactory::CreateSwapChain: 
 		// This function is being called with a device from a different IDXGIFactory."
 
-		DXGI::IDXGIDevice* dxgiDevice = 0;
-		HR(md3dDevice->QueryInterface(__uuidof(DXGI::IDXGIDevice), (void**)&dxgiDevice));
+		ComPtr<DXGI::IDXGIDevice> dxgiDevice;
+		HR(md3dDevice->QueryInterface(dxgiDevice.Uuid(), (void**)&dxgiDevice));
 
-		DXGI::IDXGIAdapter* dxgiAdapter = 0;
-		HR(dxgiDevice->GetParent(__uuidof(DXGI::IDXGIAdapter), (void**)&dxgiAdapter));
+		ComPtr<DXGI::IDXGIAdapter> dxgiAdapter;
+		HR(dxgiDevice->GetParent(dxgiAdapter.Uuid(), (void**)&dxgiAdapter));
 
-		DXGI::IDXGIFactory* dxgiFactory = 0;
-		HR(dxgiAdapter->GetParent(__uuidof(DXGI::IDXGIFactory), (void**)&dxgiFactory));
+		ComPtr<DXGI::IDXGIFactory> dxgiFactory;
+		HR(dxgiAdapter->GetParent(dxgiFactory.Uuid(), (void**)&dxgiFactory));
 
-		HR(dxgiFactory->CreateSwapChain(md3dDevice, &sd, &mSwapChain));
-
-		dxgiDevice->Release();
-		dxgiAdapter->Release();
-		dxgiFactory->Release();
+		HR(dxgiFactory->CreateSwapChain(md3dDevice.get(), &sd, &mSwapChain));
 
 		// The remaining steps that need to be carried out for d3d creation
 		// also need to be executed every time the window is resized.  So
@@ -525,12 +505,12 @@ protected:
 
 	GameTimer mTimer;
 
-	D3D11::ID3D11Device* md3dDevice=nullptr;
-	D3D11::ID3D11DeviceContext* md3dImmediateContext=nullptr;
-	DXGI::IDXGISwapChain* mSwapChain=nullptr;
-	D3D11::ID3D11Texture2D* mDepthStencilBuffer=nullptr;
-	D3D11::ID3D11RenderTargetView* mRenderTargetView=nullptr;
-	D3D11::ID3D11DepthStencilView* mDepthStencilView=nullptr;
+	ComPtr<D3D11::ID3D11Device> md3dDevice;
+	ComPtr<D3D11::ID3D11DeviceContext> md3dImmediateContext;
+	ComPtr<DXGI::IDXGISwapChain> mSwapChain;
+	ComPtr<D3D11::ID3D11Texture2D> mDepthStencilBuffer;
+	ComPtr<D3D11::ID3D11RenderTargetView> mRenderTargetView;
+	ComPtr<D3D11::ID3D11DepthStencilView> mDepthStencilView;
 	D3D11::D3D11_VIEWPORT mScreenViewport{};
 
 	// Derived class should set these in derived constructor to customize starting values.

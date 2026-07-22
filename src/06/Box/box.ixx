@@ -34,18 +34,12 @@ public:
 
 	~BoxApp()
 	{
-		if(mBoxVB)
-			mBoxVB->Release();
-		if (mBoxIB)
-			mBoxIB->Release();
-		if (mColorVS)
-			mColorVS->Release();
-		if (mColorPS)
-			mColorPS->Release();
-		if (mPerObjectCB)
-			mPerObjectCB->Release();
-		if (mInputLayout)
-			mInputLayout->Release();
+		mBoxVB.reset();
+		mBoxIB.reset();
+		mColorVS.reset();
+		mColorPS.reset();
+		mPerObjectCB.reset();
+		mInputLayout.reset();
 	}
 
 	void OnResize()
@@ -73,16 +67,16 @@ public:
 	}
 	void DrawScene()
 	{
-		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&Colors::LightSteelBlue));
-		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView, D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
+		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView.get(), reinterpret_cast<const float*>(&Colors::LightSteelBlue));
+		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
 
-		md3dImmediateContext->IASetInputLayout(mInputLayout);
+		md3dImmediateContext->IASetInputLayout(mInputLayout.get());
 		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		UINT stride = sizeof(Vertex);
 		UINT offset = 0;
-		md3dImmediateContext->IASetVertexBuffers(0, 1, &mBoxVB, &stride, &offset);
-		md3dImmediateContext->IASetIndexBuffer(mBoxIB, DXGI_FORMAT_R32_UINT, 0);
+		md3dImmediateContext->IASetVertexBuffers(0, 1, mBoxVB.GetAddressOf(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mBoxIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
 		// Set constants
 		DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&mWorld);
@@ -92,11 +86,11 @@ public:
 
 		PerObjectConstants perObject;
 		DirectX::XMStoreFloat4x4(&perObject.WorldViewProj, worldViewProj);
-		md3dImmediateContext->UpdateSubresource(mPerObjectCB, 0, 0, &perObject, 0, 0);
+		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, 0, &perObject, 0, 0);
 
-		md3dImmediateContext->VSSetShader(mColorVS, 0, 0);
-		md3dImmediateContext->VSSetConstantBuffers(0, 1, &mPerObjectCB);
-		md3dImmediateContext->PSSetShader(mColorPS, 0, 0);
+		md3dImmediateContext->VSSetShader(mColorVS.get(), 0, 0);
+		md3dImmediateContext->VSSetConstantBuffers(0, 1, mPerObjectCB.GetAddressOf());
+		md3dImmediateContext->PSSetShader(mColorPS.get(), 0, 0);
 
 		// 36 indices for the box.
 		md3dImmediateContext->DrawIndexed(36, 0, 0);
@@ -227,7 +221,7 @@ private:
 
 	void BuildShaders()
 	{
-		D3D::ID3DBlob* vertexShaderBytecode = 0;
+		ComPtr<D3D::ID3DBlob> vertexShaderBytecode;
 		Win32::HRESULT hr = D3D::D3DReadFileToBlob(L"FX/color_VS.cso", &vertexShaderBytecode);
 		if (Win32::Failed(hr))
 			throw std::runtime_error{ "Failed to read vertex shader file." };
@@ -235,30 +229,20 @@ private:
 		hr = md3dDevice->CreateVertexShader(vertexShaderBytecode->GetBufferPointer(),
 			vertexShaderBytecode->GetBufferSize(), 0, &mColorVS);
 		if (Win32::Failed(hr))
-		{
-			vertexShaderBytecode->Release();
-			vertexShaderBytecode = nullptr;
 			throw std::runtime_error{ "Failed to create vertex shader." };
-		}
 
-		if (!BuildVertexLayout(vertexShaderBytecode))
-		{
-			vertexShaderBytecode->Release();
-			vertexShaderBytecode = nullptr;
+		if (!BuildVertexLayout(vertexShaderBytecode.get()))
 			throw std::runtime_error{ "Failed to create input layout." };
-		}
-		vertexShaderBytecode->Release();
-		vertexShaderBytecode = nullptr;
+		vertexShaderBytecode.reset();
 
-		D3D::ID3DBlob* pixelShaderBytecode = 0;
+		ComPtr<D3D::ID3DBlob> pixelShaderBytecode;
 		hr = D3DReadFileToBlob(L"FX/color_PS.cso", &pixelShaderBytecode);
 		if (Win32::Failed(hr))
 			throw std::runtime_error{ "Failed to read pixel shader file." };
 
 		hr = md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(),
 			pixelShaderBytecode->GetBufferSize(), 0, &mColorPS);
-		pixelShaderBytecode->Release();
-		pixelShaderBytecode = nullptr;
+		pixelShaderBytecode.reset();
 		if (Win32::Failed(hr))
 			throw std::runtime_error{ "Failed to create pixel shader." };
 
@@ -288,14 +272,14 @@ private:
 	}
 
 private:
-	D3D11::ID3D11Buffer* mBoxVB;
-	D3D11::ID3D11Buffer* mBoxIB;
+	ComPtr<D3D11::ID3D11Buffer> mBoxVB;
+	ComPtr<D3D11::ID3D11Buffer> mBoxIB;
 
-	D3D11::ID3D11VertexShader* mColorVS;
-	D3D11::ID3D11PixelShader* mColorPS;
-	D3D11::ID3D11Buffer* mPerObjectCB;
+	ComPtr<D3D11::ID3D11VertexShader> mColorVS;
+	ComPtr<D3D11::ID3D11PixelShader> mColorPS;
+	ComPtr<D3D11::ID3D11Buffer> mPerObjectCB;
 
-	D3D11::ID3D11InputLayout* mInputLayout;
+	ComPtr<D3D11::ID3D11InputLayout> mInputLayout;
 
 	DirectX::XMFLOAT4X4 mWorld;
 	DirectX::XMFLOAT4X4 mView;

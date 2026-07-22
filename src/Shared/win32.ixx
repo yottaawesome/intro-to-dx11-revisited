@@ -86,6 +86,7 @@ export namespace Win32
 		::LPCWSTR,
 		::LPARAM,
 		::MINMAXINFO,
+		::GUID,
 		::HICON,
 		::RECT,
 		::LARGE_INTEGER,

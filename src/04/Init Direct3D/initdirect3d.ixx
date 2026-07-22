@@ -25,8 +25,8 @@ public:
 		//assert(md3dImmediateContext);
 		//assert(mSwapChain);
 
-		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView, reinterpret_cast<const float*>(&Colors::Blue));
-		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView,D3D11::D3D11_CLEAR_FLAG::D3D11_CLEAR_DEPTH | D3D11::D3D11_CLEAR_FLAG::D3D11_CLEAR_STENCIL, 1.0f, 0);
+		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView.get(), reinterpret_cast<const float*>(&Colors::Blue));
+		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView.get(),D3D11::D3D11_CLEAR_FLAG::D3D11_CLEAR_DEPTH | D3D11::D3D11_CLEAR_FLAG::D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 		HR(mSwapChain->Present(0, 0));
 	}

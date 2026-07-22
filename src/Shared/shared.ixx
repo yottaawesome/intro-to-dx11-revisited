@@ -5,3 +5,4 @@ export import :mathhelper;
 export import :d3dutil;
 export import :d3dapp;
 export import :build;
+export import :comptr;

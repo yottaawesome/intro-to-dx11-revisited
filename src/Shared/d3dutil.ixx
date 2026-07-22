@@ -2,6 +2,7 @@ export module shared:d3dutil;
 import std;
 import :win32;
 import :mathhelper;
+import :comptr;
 
 export
 {
@@ -33,7 +34,7 @@ export
 	class d3dHelper
 	{
 	public:
-		static auto CreateRandomTexture1DSRV(D3D11::ID3D11Device* device) -> D3D11::ID3D11ShaderResourceView*
+		static auto CreateRandomTexture1DSRV(D3D11::ID3D11Device* device) -> ComPtr<D3D11::ID3D11ShaderResourceView>
 		{
 			// 
 			// Create the random data.
@@ -70,8 +71,8 @@ export
 			};
 			
 
-			auto randomTex = static_cast<D3D11::ID3D11Texture1D*>(nullptr);
-			HR(device->CreateTexture1D(&texDesc, &initData, &randomTex));
+			auto randomTex = ComPtr<D3D11::ID3D11Texture1D>{};
+			HR(device->CreateTexture1D(&texDesc, &initData, randomTex.ReleaseAndGetAddressOf()));
 
 			//
 			// Create the resource view.
@@ -85,10 +86,8 @@ export
 				}
 			};
 
-			auto randomTexSRV = static_cast<D3D11::ID3D11ShaderResourceView*>(nullptr);
-			HR(device->CreateShaderResourceView(randomTex, &viewDesc, &randomTexSRV));
-
-			randomTex->Release();
+			auto randomTexSRV = ComPtr<D3D11::ID3D11ShaderResourceView>{};
+			HR(device->CreateShaderResourceView(randomTex.get(), &viewDesc, randomTexSRV.ReleaseAndGetAddressOf()));
 
 			return randomTexSRV;
 		}
