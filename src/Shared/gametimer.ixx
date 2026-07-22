@@ -7,8 +7,8 @@ export class GameTimer
 public:
 	GameTimer()
 	{
-		std::uint64_t countsPerSec;
-		Win32::QueryPerformanceFrequency((Win32::LARGE_INTEGER*)&countsPerSec);
+		auto countsPerSec = std::uint64_t{};
+		Win32::QueryPerformanceFrequency(reinterpret_cast<Win32::LARGE_INTEGER*>(&countsPerSec));
 		mSecondsPerCount = 1.0 / (double)countsPerSec;
 	}
 
@@ -25,7 +25,7 @@ public:
 
 		if (mStopped)
 		{
-			return (float)(((mStopTime - mPausedTime) - mBaseTime) * mSecondsPerCount);
+			return static_cast<float>(((mStopTime - mPausedTime) - mBaseTime) * mSecondsPerCount);
 		}
 
 		// The distance mCurrTime - mBaseTime includes paused time,
@@ -40,19 +40,19 @@ public:
 
 		else
 		{
-			return (float)(((mCurrTime - mPausedTime) - mBaseTime) * mSecondsPerCount);
+			return static_cast<float>(((mCurrTime - mPausedTime) - mBaseTime) * mSecondsPerCount);
 		}
 	}
 
 	auto DeltaTime()const->float // in seconds
 	{
-		return (float)mDeltaTime;
+		return static_cast<float>(mDeltaTime);
 	}
 
 	void Reset() // Call before message loop.
 	{
-		std::uint64_t currTime;
-		Win32::QueryPerformanceCounter((Win32::LARGE_INTEGER*)&currTime);
+		auto currTime = std::uint64_t{};
+		Win32::QueryPerformanceCounter(reinterpret_cast<Win32::LARGE_INTEGER*>(&currTime));
 
 		mBaseTime = currTime;
 		mPrevTime = currTime;
@@ -62,9 +62,8 @@ public:
 
 	void Start() // Call when unpaused.
 	{
-		std::uint64_t startTime;
-		Win32::QueryPerformanceCounter((Win32::LARGE_INTEGER*)&startTime);
-
+		auto startTime = std::uint64_t{};
+		Win32::QueryPerformanceCounter(reinterpret_cast<Win32::LARGE_INTEGER*>(&startTime));
 
 		// Accumulate the time elapsed between stop and start pairs.
 		//
@@ -84,14 +83,13 @@ public:
 
 	void Stop()  // Call when paused.
 	{
-		if (!mStopped)
-		{
-			std::uint64_t currTime;
-			Win32::QueryPerformanceCounter((Win32::LARGE_INTEGER*)&currTime);
+		if (mStopped)
+			return;
+		auto currTime = std::uint64_t{};
+		Win32::QueryPerformanceCounter(reinterpret_cast<Win32::LARGE_INTEGER*>(&currTime));
 
-			mStopTime = currTime;
-			mStopped = true;
-		}
+		mStopTime = currTime;
+		mStopped = true;
 	}
 
 	void Tick()  // Call every frame.
@@ -102,8 +100,8 @@ public:
 			return;
 		}
 
-		std::uint64_t currTime;
-		Win32::QueryPerformanceCounter((Win32::LARGE_INTEGER*)&currTime);
+		auto currTime = std::uint64_t{};
+		Win32::QueryPerformanceCounter(reinterpret_cast<Win32::LARGE_INTEGER*>(&currTime));
 		mCurrTime = currTime;
 
 		// Time difference between this frame and the previous.

@@ -57,7 +57,7 @@ public:
 		// Inverse-transpose is just applied to normals.  So zero out 
 		// translation row so that it doesn't get into our inverse-transpose
 		// calculation--we don't want the inverse-transpose of the translation.
-		DirectX::XMMATRIX A = M;
+		auto A = DirectX::XMMATRIX{ M };
 		A.r[3] = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 
 		DirectX::XMVECTOR det = DirectX::XMMatrixDeterminant(A);
@@ -66,8 +66,8 @@ public:
 
 	static auto RandUnitVec3() -> DirectX::XMVECTOR
 	{
-		DirectX::XMVECTOR One = DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
-		DirectX::XMVECTOR Zero = DirectX::XMVectorZero();
+		auto One = DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
+		auto Zero = DirectX::XMVectorZero();
 
 		// Keep trying until we get a point on/in the hemisphere.
 		while (true)
@@ -87,8 +87,8 @@ public:
 	}
 	static auto RandHemisphereUnitVec3(DirectX::XMVECTOR n) -> DirectX::XMVECTOR
 	{
-		DirectX::XMVECTOR One = DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
-		DirectX::XMVECTOR Zero = DirectX::XMVectorZero();
+		auto One = DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
+		auto Zero = DirectX::XMVectorZero();
 
 		// Keep trying until we get a point on/in the hemisphere.
 		while (true)
@@ -111,6 +111,6 @@ public:
 		}
 	}
 
-	static inline constexpr float Infinity = std::numeric_limits<float>::infinity();
-	static inline constexpr float Pi = 3.1415926535f;
+	static inline constexpr auto Infinity = std::numeric_limits<float>::infinity();
+	static inline constexpr auto Pi = 3.1415926535f;
 };

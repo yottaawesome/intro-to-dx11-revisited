@@ -18,7 +18,7 @@ export
 	class d3dHelper
 	{
 	public:
-		static D3D11::ID3D11ShaderResourceView* CreateRandomTexture1DSRV(D3D11::ID3D11Device* device)
+		static auto CreateRandomTexture1DSRV(D3D11::ID3D11Device* device) -> D3D11::ID3D11ShaderResourceView*
 		{
 			// 
 			// Create the random data.
@@ -33,37 +33,44 @@ export
 				randomValues[i].w = MathHelper::RandF(-1.0f, 1.0f);
 			}
 
-			D3D11::D3D11_SUBRESOURCE_DATA initData;
-			initData.pSysMem = randomValues;
-			initData.SysMemPitch = 1024 * sizeof(DirectX::XMFLOAT4);
-			initData.SysMemSlicePitch = 0;
+			auto initData = D3D11::D3D11_SUBRESOURCE_DATA{
+				.pSysMem = randomValues,
+				.SysMemPitch = 1024 * sizeof(DirectX::XMFLOAT4),
+				.SysMemSlicePitch = 0
+			};
+			
 
 			//
 			// Create the texture.
 			//
-			D3D11::D3D11_TEXTURE1D_DESC texDesc;
-			texDesc.Width = 1024;
-			texDesc.MipLevels = 1;
-			texDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-			texDesc.Usage = D3D11_USAGE_IMMUTABLE;
-			texDesc.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_SHADER_RESOURCE;
-			texDesc.CPUAccessFlags = 0;
-			texDesc.MiscFlags = 0;
-			texDesc.ArraySize = 1;
+			auto texDesc = D3D11::D3D11_TEXTURE1D_DESC{
+				.Width = 1024,
+				.MipLevels = 1,
+				.ArraySize = 1,
+				.Format = DXGI_FORMAT_R32G32B32A32_FLOAT,
+				.Usage = D3D11_USAGE_IMMUTABLE,
+				.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_SHADER_RESOURCE,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0,
+			};
+			
 
-			D3D11::ID3D11Texture1D* randomTex = 0;
+			auto randomTex = static_cast<D3D11::ID3D11Texture1D*>(nullptr);
 			HR(device->CreateTexture1D(&texDesc, &initData, &randomTex));
 
 			//
 			// Create the resource view.
 			//
-			D3D11::D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
-			viewDesc.Format = texDesc.Format;
-			viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE1D;
-			viewDesc.Texture1D.MipLevels = texDesc.MipLevels;
-			viewDesc.Texture1D.MostDetailedMip = 0;
+			auto viewDesc = D3D11::D3D11_SHADER_RESOURCE_VIEW_DESC{
+				.Format = texDesc.Format,
+				.ViewDimension = D3D11::D3D11_SRV_DIMENSION::D3D11_SRV_DIMENSION_TEXTURE1D,
+				.Texture1D = {
+					.MostDetailedMip = 0,
+					.MipLevels = texDesc.MipLevels,
+				}
+			};
 
-			D3D11::ID3D11ShaderResourceView* randomTexSRV = 0;
+			auto randomTexSRV = static_cast<D3D11::ID3D11ShaderResourceView*>(nullptr);
 			HR(device->CreateShaderResourceView(randomTex, &viewDesc, &randomTexSRV));
 
 			randomTex->Release();
@@ -75,21 +82,19 @@ export
 	class TextHelper
 	{
 	public:
-
 		template<typename T>
-		static std::wstring ToString(const T& s)
+		static auto ToString(const T& s) -> std::wstring
 		{
-			std::wostringstream oss;
+			auto oss = std::wostringstream{};
 			oss << s;
-
 			return oss.str();
 		}
 
 		template<typename T>
-		static T FromString(const std::wstring& s)
+		static auto FromString(const std::wstring& s) -> T
 		{
-			T x;
-			std::wistringstream iss(s);
+			auto x = T{};
+			auto iss = std::wistringstream{s};
 			iss >> x;
 
 			return x;
@@ -99,7 +104,7 @@ export
 	// Order: left, right, bottom, top, near, far.
 	void ExtractFrustumPlanes(DirectX::XMFLOAT4 planes[6], DirectX::CXMMATRIX T)
 	{
-		DirectX::XMFLOAT4X4 M;
+		auto M = DirectX::XMFLOAT4X4{};
 		DirectX::XMStoreFloat4x4(&M, T);
 
 		//
@@ -155,7 +160,7 @@ export
 		// Normalize the plane equations.
 		for (int i = 0; i < 6; ++i)
 		{
-			DirectX::XMVECTOR v = DirectX::XMPlaneNormalize(DirectX::XMLoadFloat4(&planes[i]));
+			auto v = DirectX::XMVECTOR{DirectX::XMPlaneNormalize(DirectX::XMLoadFloat4(&planes[i]))};
 			DirectX::XMStoreFloat4(&planes[i], v);
 		}
 	}
@@ -170,16 +175,16 @@ export
 
 	namespace Colors
 	{
-		constexpr DirectX::XMVECTORF32 White = { 1.0f, 1.0f, 1.0f, 1.0f };
-		constexpr DirectX::XMVECTORF32 Black = { 0.0f, 0.0f, 0.0f, 1.0f };
-		constexpr DirectX::XMVECTORF32 Red = { 1.0f, 0.0f, 0.0f, 1.0f };
-		constexpr DirectX::XMVECTORF32 Green = { 0.0f, 1.0f, 0.0f, 1.0f };
-		constexpr DirectX::XMVECTORF32 Blue = { 0.0f, 0.0f, 1.0f, 1.0f };
-		constexpr DirectX::XMVECTORF32 Yellow = { 1.0f, 1.0f, 0.0f, 1.0f };
-		constexpr DirectX::XMVECTORF32 Cyan = { 0.0f, 1.0f, 1.0f, 1.0f };
-		constexpr DirectX::XMVECTORF32 Magenta = { 1.0f, 0.0f, 1.0f, 1.0f };
-		constexpr DirectX::XMVECTORF32 Silver = { 0.75f, 0.75f, 0.75f, 1.0f };
-		constexpr DirectX::XMVECTORF32 LightSteelBlue = { 0.69f, 0.77f, 0.87f, 1.0f };
+		constexpr auto White = DirectX::XMVECTORF32{ 1.0f, 1.0f, 1.0f, 1.0f };
+		constexpr auto Black = DirectX::XMVECTORF32{ 0.0f, 0.0f, 0.0f, 1.0f };
+		constexpr auto Red = DirectX::XMVECTORF32{ 1.0f, 0.0f, 0.0f, 1.0f };
+		constexpr auto Green = DirectX::XMVECTORF32{ 0.0f, 1.0f, 0.0f, 1.0f };
+		constexpr auto Blue = DirectX::XMVECTORF32{ 0.0f, 0.0f, 1.0f, 1.0f };
+		constexpr auto Yellow = DirectX::XMVECTORF32{ 1.0f, 1.0f, 0.0f, 1.0f };
+		constexpr auto Cyan = DirectX::XMVECTORF32{ 0.0f, 1.0f, 1.0f, 1.0f };
+		constexpr auto Magenta = DirectX::XMVECTORF32{ 1.0f, 0.0f, 1.0f, 1.0f };
+		constexpr auto Silver = DirectX::XMVECTORF32{ 0.75f, 0.75f, 0.75f, 1.0f };
+		constexpr auto LightSteelBlue = DirectX::XMVECTORF32{ 0.69f, 0.77f, 0.87f, 1.0f };
 	}
 
 	///<summary>
@@ -191,9 +196,9 @@ export
 		///<summary>
 		/// Converts XMVECTOR to XMCOLOR, where XMVECTOR represents a color.
 		///</summary>
-		static DirectX::PackedVector::XMCOLOR ToXmColor(DirectX::FXMVECTOR v)
+		static auto ToXmColor(DirectX::FXMVECTOR v) -> DirectX::PackedVector::XMCOLOR
 		{
-			DirectX::PackedVector::XMCOLOR dest;
+			auto dest = DirectX::PackedVector::XMCOLOR{};
 			DirectX::PackedVector::XMStoreColor(&dest, v);
 			return dest;
 		}
@@ -201,14 +206,14 @@ export
 		///<summary>
 		/// Converts XMVECTOR to XMFLOAT4, where XMVECTOR represents a color.
 		///</summary>
-		static DirectX::XMFLOAT4 ToXmFloat4(DirectX::FXMVECTOR v)
+		static auto ToXmFloat4(DirectX::FXMVECTOR v) -> DirectX::XMFLOAT4
 		{
-			DirectX::XMFLOAT4 dest;
+			auto dest = DirectX::XMFLOAT4{};
 			DirectX::XMStoreFloat4(&dest, v);
 			return dest;
 		}
 
-		static Win32::UINT ArgbToAbgr(Win32::UINT argb)
+		static auto ArgbToAbgr(Win32::UINT argb) -> Win32::UINT
 		{
 			Win32::BYTE A = (argb >> 24) & 0xff;
 			Win32::BYTE R = (argb >> 16) & 0xff;

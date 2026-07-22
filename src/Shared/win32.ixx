@@ -193,6 +193,8 @@ export namespace DirectX
 		::DirectX::XMVECTORF32,
 		::DirectX::XMFLOAT3,
 		::DirectX::XMFLOAT4X4,
+		::DirectX::XMVECTOR,
+		::DirectX::XMVectorSet,
 		::DirectX::XMMatrixIdentity,
 		::DirectX::XMMatrixMultiply,
 		::DirectX::XMMatrixLookAtLH,
@@ -264,6 +266,7 @@ export namespace D3D11
 	using 
 		::ID3D11ShaderResourceView,
 		::ID3D11Device,
+		::D3D11_SRV_DIMENSION,
 		::ID3D11DeviceContext,
 		::D3D11_SUBRESOURCE_DATA,
 		::D3D11_TEXTURE1D_DESC,
