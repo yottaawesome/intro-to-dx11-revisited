@@ -12,6 +12,7 @@ module;
 #include <d3d11.h>
 #include <crtdbg.h>
 #include <d3dcompiler.h>
+#include <DirectXColors.h>
 
 export module shared:win32;
 
@@ -231,6 +232,22 @@ export namespace DirectX
 			::DirectX::PackedVector::XMHALF4,
 			::DirectX::PackedVector::XMCOLOR,
 			::DirectX::PackedVector::XMStoreColor
+			;
+	}
+
+	namespace Colors
+	{
+		using
+			::DirectX::Colors::White,
+			::DirectX::Colors::Black,
+			::DirectX::Colors::Red,
+			::DirectX::Colors::Green,
+			::DirectX::Colors::Blue,
+			::DirectX::Colors::Yellow,
+			::DirectX::Colors::Cyan,
+			::DirectX::Colors::Magenta,
+			::DirectX::Colors::Silver,
+			::DirectX::Colors::LightSteelBlue
 			;
 	}
 }

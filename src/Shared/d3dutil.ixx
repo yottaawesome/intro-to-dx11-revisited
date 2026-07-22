@@ -179,28 +179,6 @@ export
 		}
 	}
 
-
-	// #define XMGLOBALCONST extern CONST __declspec(selectany)
-	//   1. extern so there is only one copy of the variable, and not a separate
-	//      private copy in each .obj.
-	//   2. __declspec(selectany) so that the compiler does not complain about
-	//      multiple definitions in a .cpp file (it can pick anyone and discard 
-	//      the rest because they are constant--all the same).
-
-	namespace Colors
-	{
-		constexpr auto White = DirectX::XMVECTORF32{ 1.0f, 1.0f, 1.0f, 1.0f };
-		constexpr auto Black = DirectX::XMVECTORF32{ 0.0f, 0.0f, 0.0f, 1.0f };
-		constexpr auto Red = DirectX::XMVECTORF32{ 1.0f, 0.0f, 0.0f, 1.0f };
-		constexpr auto Green = DirectX::XMVECTORF32{ 0.0f, 1.0f, 0.0f, 1.0f };
-		constexpr auto Blue = DirectX::XMVECTORF32{ 0.0f, 0.0f, 1.0f, 1.0f };
-		constexpr auto Yellow = DirectX::XMVECTORF32{ 1.0f, 1.0f, 0.0f, 1.0f };
-		constexpr auto Cyan = DirectX::XMVECTORF32{ 0.0f, 1.0f, 1.0f, 1.0f };
-		constexpr auto Magenta = DirectX::XMVECTORF32{ 1.0f, 0.0f, 1.0f, 1.0f };
-		constexpr auto Silver = DirectX::XMVECTORF32{ 0.75f, 0.75f, 0.75f, 1.0f };
-		constexpr auto LightSteelBlue = DirectX::XMVECTORF32{ 0.69f, 0.77f, 0.87f, 1.0f };
-	}
-
 	///<summary>
 	/// Utility class for converting between types and formats.
 	///</summary>

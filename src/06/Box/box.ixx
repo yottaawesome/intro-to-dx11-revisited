@@ -67,24 +67,24 @@ public:
 	}
 	void DrawScene()
 	{
-		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView.get(), reinterpret_cast<const float*>(&Colors::LightSteelBlue));
+		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView.get(), reinterpret_cast<const float*>(&DirectX::Colors::LightSteelBlue));
 		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
 
 		md3dImmediateContext->IASetInputLayout(mInputLayout.get());
 		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
+		auto stride = std::uint32_t{ sizeof(Vertex) };
+		auto offset = 0u;
 		md3dImmediateContext->IASetVertexBuffers(0, 1, mBoxVB.GetAddressOf(), &stride, &offset);
 		md3dImmediateContext->IASetIndexBuffer(mBoxIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
 		// Set constants
-		DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&mWorld);
-		DirectX::XMMATRIX view = DirectX::XMLoadFloat4x4(&mView);
-		DirectX::XMMATRIX proj = DirectX::XMLoadFloat4x4(&mProj);
-		DirectX::XMMATRIX worldViewProj = world * view * proj;
+		auto world = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mWorld)};
+		auto view = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mView)};
+		auto proj = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mProj)};
+		auto worldViewProj = DirectX::XMMATRIX{world * view * proj};
 
-		PerObjectConstants perObject;
+		auto perObject = PerObjectConstants{};
 		DirectX::XMStoreFloat4x4(&perObject.WorldViewProj, worldViewProj);
 		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, 0, &perObject, 0, 0);
 
@@ -157,14 +157,14 @@ private:
 		// Create vertex buffer
 		Vertex vertices[] =
 		{
-			{ DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f), DirectX::XMFLOAT4(Colors::White) },
-			{ DirectX::XMFLOAT3(-1.0f, +1.0f, -1.0f), DirectX::XMFLOAT4(Colors::Black) },
-			{ DirectX::XMFLOAT3(+1.0f, +1.0f, -1.0f), DirectX::XMFLOAT4(Colors::Red) },
-			{ DirectX::XMFLOAT3(+1.0f, -1.0f, -1.0f), DirectX::XMFLOAT4(Colors::Green) },
-			{ DirectX::XMFLOAT3(-1.0f, -1.0f, +1.0f), DirectX::XMFLOAT4(Colors::Blue) },
-			{ DirectX::XMFLOAT3(-1.0f, +1.0f, +1.0f), DirectX::XMFLOAT4(Colors::Yellow) },
-			{ DirectX::XMFLOAT3(+1.0f, +1.0f, +1.0f), DirectX::XMFLOAT4(Colors::Cyan) },
-			{ DirectX::XMFLOAT3(+1.0f, -1.0f, +1.0f), DirectX::XMFLOAT4(Colors::Magenta) }
+			{ DirectX::XMFLOAT3(-1.0f, -1.0f, -1.0f), DirectX::XMFLOAT4(DirectX::Colors::White) },
+			{ DirectX::XMFLOAT3(-1.0f, +1.0f, -1.0f), DirectX::XMFLOAT4(DirectX::Colors::Black) },
+			{ DirectX::XMFLOAT3(+1.0f, +1.0f, -1.0f), DirectX::XMFLOAT4(DirectX::Colors::Red) },
+			{ DirectX::XMFLOAT3(+1.0f, -1.0f, -1.0f), DirectX::XMFLOAT4(DirectX::Colors::Green) },
+			{ DirectX::XMFLOAT3(-1.0f, -1.0f, +1.0f), DirectX::XMFLOAT4(DirectX::Colors::Blue) },
+			{ DirectX::XMFLOAT3(-1.0f, +1.0f, +1.0f), DirectX::XMFLOAT4(DirectX::Colors::Yellow) },
+			{ DirectX::XMFLOAT3(+1.0f, +1.0f, +1.0f), DirectX::XMFLOAT4(DirectX::Colors::Cyan) },
+			{ DirectX::XMFLOAT3(+1.0f, -1.0f, +1.0f), DirectX::XMFLOAT4(DirectX::Colors::Magenta) }
 		};
 
 		D3D11::D3D11_BUFFER_DESC vbd;
