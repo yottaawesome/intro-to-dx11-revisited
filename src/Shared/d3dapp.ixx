@@ -103,61 +103,45 @@ public:
 		mDepthStencilView.reset();
 		mDepthStencilBuffer.reset();
 
-
 		// Resize the swap chain and recreate the render target view.
-
 		HR(mSwapChain->ResizeBuffers(1, mClientWidth, mClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
 		auto backBuffer = ComPtr<D3D11::ID3D11Texture2D>{};
 		HR(mSwapChain->GetBuffer(0, backBuffer.Uuid(), backBuffer.ReleaseAndGetAddressOfVoid()));
 		HR(md3dDevice->CreateRenderTargetView(backBuffer.get(), 0, &mRenderTargetView));
-		
 		backBuffer.reset();
 
 		// Create the depth/stencil buffer and view.
-
 		auto depthStencilDesc = D3D11::D3D11_TEXTURE2D_DESC{
 			.Width = static_cast<std::uint32_t>(mClientWidth),
 			.Height = static_cast<std::uint32_t>(mClientHeight),
 			.MipLevels = 1,
 			.ArraySize = 1,
 			.Format = DXGI_FORMAT_D24_UNORM_S8_UINT,
+			// Use 4X MSAA? --must match swap chain MSAA values.
+			.SampleDesc = {
+				.Count = static_cast<UINT>(mEnable4xMsaa ? 4 : 1),
+				.Quality = static_cast<UINT>(mEnable4xMsaa ? m4xMsaaQuality - 1 : 0)
+			},
+			.Usage = D3D11_USAGE_DEFAULT,
+			.BindFlags = D3D11_BIND_DEPTH_STENCIL,
+			.CPUAccessFlags = 0,
+			.MiscFlags = 0,
 		};
-
-		// Use 4X MSAA? --must match swap chain MSAA values.
-		if (mEnable4xMsaa)
-		{
-			depthStencilDesc.SampleDesc.Count = 4;
-			depthStencilDesc.SampleDesc.Quality = m4xMsaaQuality - 1;
-		}
-		// No MSAA
-		else
-		{
-			depthStencilDesc.SampleDesc.Count = 1;
-			depthStencilDesc.SampleDesc.Quality = 0;
-		}
-
-		depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
-		depthStencilDesc.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_DEPTH_STENCIL;
-		depthStencilDesc.CPUAccessFlags = 0;
-		depthStencilDesc.MiscFlags = 0;
-
 		HR(md3dDevice->CreateTexture2D(&depthStencilDesc, 0, &mDepthStencilBuffer));
 		HR(md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.get(), 0, &mDepthStencilView));
 
-
 		// Bind the render target view and depth/stencil view to the pipeline.
-
 		md3dImmediateContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView.get());
 
-
 		// Set the viewport transform.
-
-		mScreenViewport.TopLeftX = 0;
-		mScreenViewport.TopLeftY = 0;
-		mScreenViewport.Width = static_cast<float>(mClientWidth);
-		mScreenViewport.Height = static_cast<float>(mClientHeight);
-		mScreenViewport.MinDepth = 0.0f;
-		mScreenViewport.MaxDepth = 1.0f;
+		mScreenViewport = {
+			.TopLeftX = 0,
+			.TopLeftY = 0,
+			.Width = static_cast<float>(mClientWidth),
+			.Height = static_cast<float>(mClientHeight),
+			.MinDepth = 0.0f,
+			.MaxDepth = 1.0f,
+		};
 
 		md3dImmediateContext->RSSetViewports(1, &mScreenViewport);
 	}
