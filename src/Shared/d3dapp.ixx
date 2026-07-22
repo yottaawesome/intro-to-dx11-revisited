@@ -404,6 +404,11 @@ protected:
 				.ScanlineOrdering = DXGI::DXGI_MODE_SCANLINE_ORDER::DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
 				.Scaling = DXGI::DXGI_MODE_SCALING::DXGI_MODE_SCALING_UNSPECIFIED
 			},
+			// Use 4X MSAA? 
+			.SampleDesc = {
+				.Count = static_cast<UINT>(mEnable4xMsaa ? 4 : 1),
+				.Quality = static_cast<UINT>(mEnable4xMsaa ? m4xMsaaQuality - 1 : 0)
+			},
 			.BufferUsage = DXGI::Usage::RenderTargetOutput,
 			.BufferCount = 1,
 			.OutputWindow = mhMainWnd,
@@ -412,18 +417,6 @@ protected:
 			.SwapEffect = DXGI::DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_DISCARD,
 			.Flags = 0
 		};
-		// Use 4X MSAA? 
-		if (mEnable4xMsaa)
-		{
-			sd.SampleDesc.Count = 4;
-			sd.SampleDesc.Quality = m4xMsaaQuality - 1;
-		}
-		// No MSAA
-		else
-		{
-			sd.SampleDesc.Count = 1;
-			sd.SampleDesc.Quality = 0;
-		}
 
 		// To correctly create the swap chain, we must use the IDXGIFactory that was
 		// used to create the device.  If we tried to use a different IDXGIFactory instance
