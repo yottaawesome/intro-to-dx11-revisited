@@ -4,6 +4,7 @@ import :win32;
 import :gametimer;
 import :d3dutil;
 import :comptr;
+import :build;
 
 export class D3DApp
 {
@@ -66,7 +67,7 @@ public:
 			{
 				mTimer.Tick();
 
-				if (!mAppPaused)
+				if (not mAppPaused)
 				{
 					CalculateFrameStats();
 					UpdateScene(mTimer.DeltaTime());
@@ -79,7 +80,7 @@ public:
 			}
 		}
 
-		return (int)msg.wParam;
+		return static_cast<int>(msg.wParam);
 	}
 
 	// Framework methods.  Derived client class overrides these methods to 
@@ -119,11 +120,11 @@ public:
 			.Format = DXGI_FORMAT_D24_UNORM_S8_UINT,
 			// Use 4X MSAA? --must match swap chain MSAA values.
 			.SampleDesc = {
-				.Count = static_cast<UINT>(mEnable4xMsaa ? 4 : 1),
-				.Quality = static_cast<UINT>(mEnable4xMsaa ? m4xMsaaQuality - 1 : 0)
+				.Count = static_cast<std::uint32_t>(mEnable4xMsaa ? 4 : 1),
+				.Quality = static_cast<std::uint32_t>(mEnable4xMsaa ? m4xMsaaQuality - 1 : 0)
 			},
-			.Usage = D3D11_USAGE_DEFAULT,
-			.BindFlags = D3D11_BIND_DEPTH_STENCIL,
+			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
+			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_DEPTH_STENCIL,
 			.CPUAccessFlags = 0,
 			.MiscFlags = 0,
 		};
@@ -359,27 +360,24 @@ protected:
 	void InitDirect3D()
 	{
 		// Create the device and device context.
-
 		auto createDeviceFlags = 0u;
-#if defined(DEBUG) || defined(_DEBUG)  
-		createDeviceFlags |= D3D11::D3D11_CREATE_DEVICE_FLAG::D3D11_CREATE_DEVICE_DEBUG;
-#endif
+		if constexpr (IsDebugBuild)
+			createDeviceFlags |= D3D11::D3D11_CREATE_DEVICE_FLAG::D3D11_CREATE_DEVICE_DEBUG;
 
 		auto featureLevel = D3D::D3D_FEATURE_LEVEL{};
 		auto hr = D3D11::D3D11CreateDevice(
-			0,                 // default adapter
+			nullptr,            // default adapter
 			md3dDriverType,
-			0,                 // no software device
+			nullptr,            // no software device
 			createDeviceFlags,
-			0, 0,              // default feature level array
+			nullptr,			// default feature level array
+			0,              
 			D3D11::SdkVersion,
 			&md3dDevice,
 			&featureLevel,
 			&md3dImmediateContext);
-
 		if (Win32::Failed(hr))
 			throw std::runtime_error{ "D3D11CreateDevice Failed." };
-
 		if (featureLevel != D3D_FEATURE_LEVEL_11_0)
 			throw std::runtime_error{ "Direct3D Feature Level 11 unsupported." };
 
@@ -406,8 +404,8 @@ protected:
 			},
 			// Use 4X MSAA? 
 			.SampleDesc = {
-				.Count = static_cast<UINT>(mEnable4xMsaa ? 4 : 1),
-				.Quality = static_cast<UINT>(mEnable4xMsaa ? m4xMsaaQuality - 1 : 0)
+				.Count = static_cast<std::uint32_t>(mEnable4xMsaa ? 4 : 1),
+				.Quality = static_cast<std::uint32_t>(mEnable4xMsaa ? m4xMsaaQuality - 1 : 0)
 			},
 			.BufferUsage = DXGI::Usage::RenderTargetOutput,
 			.BufferCount = 1,
@@ -465,14 +463,13 @@ protected:
 	}
 
 protected:
-
 	Win32::HINSTANCE mhAppInst;
-	Win32::HWND      mhMainWnd=nullptr;
-	bool      mAppPaused=false;
-	bool      mMinimized=false;
-	bool      mMaximized=false;
-	bool      mResizing=false;
-	Win32::UINT      m4xMsaaQuality=0;
+	Win32::HWND mhMainWnd=nullptr;
+	bool mAppPaused = false;
+	bool mMinimized = false;
+	bool mMaximized = false;
+	bool mResizing = false;
+	std::uint32_t m4xMsaaQuality = 0;
 
 	GameTimer mTimer;
 
