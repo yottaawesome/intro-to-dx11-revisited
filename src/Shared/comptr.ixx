@@ -126,6 +126,11 @@ public:
 		return m_ptr == other.m_ptr;
 	}
 
+	constexpr auto VoidAddress() -> void**
+	{
+		return reinterpret_cast<void**>(&m_ptr);
+	}
+
 private:
 	T* m_ptr = nullptr;
 };

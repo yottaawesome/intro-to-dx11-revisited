@@ -176,29 +176,30 @@ public:
 			// WM_ACTIVATE is sent when the window is activated or deactivated.  
 			// We pause the game when the window is deactivated and unpause it 
 			// when it becomes active.  
-		case Win32::WindowMessages::Activate:
-		{
-			if (Win32::LoWord(wParam) == Win32::WA::Inactive)
+			case Win32::WindowMessages::Activate:
 			{
-				mAppPaused = true;
-				mTimer.Stop();
+				if (Win32::LoWord(wParam) == Win32::WA::Inactive)
+				{
+					mAppPaused = true;
+					mTimer.Stop();
+				}
+				else
+				{
+					mAppPaused = false;
+					mTimer.Start();
+				}
+				return 0;
 			}
-			else
-			{
-				mAppPaused = false;
-				mTimer.Start();
-			}
-			return 0;
-		}
 
 			// WM_SIZE is sent when the user resizes the window.  
-		case Win32::WindowMessages::Size:
-		{
-			// Save the new client area dimensions.
-			mClientWidth = Win32::LoWord(lParam);
-			mClientHeight = Win32::HiWord(lParam);
-			if (md3dDevice)
+			case Win32::WindowMessages::Size:
 			{
+				// Save the new client area dimensions.
+				mClientWidth = Win32::LoWord(lParam);
+				mClientHeight = Win32::HiWord(lParam);
+				if (not md3dDevice)
+					return 0;
+
 				if (wParam == Win32::Size::Minimized)
 				{
 					mAppPaused = true;
@@ -214,7 +215,6 @@ public:
 				}
 				else if (wParam == Win32::Size::Restored)
 				{
-
 					// Restoring from minimized state?
 					if (mMinimized)
 					{
@@ -222,7 +222,6 @@ public:
 						mMinimized = false;
 						OnResize();
 					}
-
 					// Restoring from maximized state?
 					else if (mMaximized)
 					{
@@ -246,72 +245,71 @@ public:
 						OnResize();
 					}
 				}
+				return 0;
 			}
-			return 0;
-		}
 			
 			// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
-		case Win32::WindowMessages::EnterSizeMove:
-		{
-			mAppPaused = true;
-			mResizing = true;
-			mTimer.Stop();
-			return 0;
-		}
+			case Win32::WindowMessages::EnterSizeMove:
+			{
+				mAppPaused = true;
+				mResizing = true;
+				mTimer.Stop();
+				return 0;
+			}
 
 			// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
 			// Here we reset everything based on the new window dimensions.
-		case Win32::WindowMessages::ExitSizeMove:
-		{
-			mAppPaused = false;
-			mResizing = false;
-			mTimer.Start();
-			OnResize();
-			return 0;
-		}
+			case Win32::WindowMessages::ExitSizeMove:
+			{
+				mAppPaused = false;
+				mResizing = false;
+				mTimer.Start();
+				OnResize();
+				return 0;
+			}
 
 			// WM_DESTROY is sent when the window is being destroyed.
-		case Win32::WindowMessages::Destroy:
-		{
-			Win32::PostQuitMessage(0);
-			return 0;
-		}
+			case Win32::WindowMessages::Destroy:
+			{
+				Win32::PostQuitMessage(0);
+				return 0;
+			}
 
 			// The WM_MENUCHAR message is sent when a menu is active and the user presses 
 			// a key that does not correspond to any mnemonic or accelerator key. 
-		case Win32::WindowMessages::MenuChar:
-		{
-			// Don't beep when we alt-enter.
-			return Win32::MakeLResult(0, Win32::MNC::Close);
-		}
+			case Win32::WindowMessages::MenuChar:
+			{
+				// Don't beep when we alt-enter.
+				return Win32::MakeLResult(0, Win32::MNC::Close);
+			}
 
 			// Catch this message so to prevent the window from becoming too small.
-		case Win32::WindowMessages::GetMinMaxInfo:
-		{
-			((Win32::MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
-			((Win32::MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
-			return 0;
-		}
+			case Win32::WindowMessages::GetMinMaxInfo:
+			{
+				((Win32::MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
+				((Win32::MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
+				return 0;
+			}
 
-		case Win32::WindowMessages::LButtonDown:
-		case Win32::WindowMessages::MButtonDown:
-		case Win32::WindowMessages::RButtonDown:
-		{
-			OnMouseDown(wParam, Win32::GetXLParam(lParam), Win32::GetYLParam(lParam));
-			return 0;
-		}
-		case Win32::WindowMessages::LButtonUp:
-		case Win32::WindowMessages::MButtonUp:
-		case Win32::WindowMessages::RButtonUp:
-		{
-			OnMouseUp(wParam, Win32::GetXLParam(lParam), Win32::GetYLParam(lParam));
-			return 0;
-		}
-		case Win32::WindowMessages::MouseMove:
-		{
-			OnMouseMove(wParam, Win32::GetXLParam(lParam), Win32::GetYLParam(lParam));
-			return 0;
-		}
+			case Win32::WindowMessages::LButtonDown:
+			case Win32::WindowMessages::MButtonDown:
+			case Win32::WindowMessages::RButtonDown:
+			{
+				OnMouseDown(wParam, Win32::GetXLParam(lParam), Win32::GetYLParam(lParam));
+				return 0;
+			}
+			case Win32::WindowMessages::LButtonUp:
+			case Win32::WindowMessages::MButtonUp:
+			case Win32::WindowMessages::RButtonUp:
+			{
+				OnMouseUp(wParam, Win32::GetXLParam(lParam), Win32::GetYLParam(lParam));
+				return 0;
+			}
+			case Win32::WindowMessages::MouseMove:
+			{
+				OnMouseMove(wParam, Win32::GetXLParam(lParam), Win32::GetYLParam(lParam));
+				return 0;
+			}
 		}
 
 		return Win32::DefWindowProcW(hwnd, msg, wParam, lParam);
@@ -349,10 +347,10 @@ protected:
 			throw std::runtime_error{ "RegisterClass Failed." };
 
 		// Compute window rectangle dimensions based on requested client area dimensions.
-		Win32::RECT R = { 0, 0, mClientWidth, mClientHeight };
+		auto R = Win32::RECT{ 0, 0, mClientWidth, mClientHeight };
 		Win32::AdjustWindowRect(&R, Win32::WindowStyles::OverlappedWindow, false);
-		int width = R.right - R.left;
-		int height = R.bottom - R.top;
+		auto width = R.right - R.left;
+		auto height = R.bottom - R.top;
 
 		mhMainWnd = Win32::CreateWindowExW(
 			0, 
@@ -378,13 +376,13 @@ protected:
 	{
 		// Create the device and device context.
 
-		UINT createDeviceFlags = 0;
+		auto createDeviceFlags = 0u;
 #if defined(DEBUG) || defined(_DEBUG)  
 		createDeviceFlags |= D3D11::D3D11_CREATE_DEVICE_FLAG::D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-		D3D::D3D_FEATURE_LEVEL featureLevel;
-		Win32::HRESULT hr = D3D11::D3D11CreateDevice(
+		auto featureLevel = D3D::D3D_FEATURE_LEVEL{};
+		auto hr = D3D11::D3D11CreateDevice(
 			0,                 // default adapter
 			md3dDriverType,
 			0,                 // no software device
@@ -405,21 +403,31 @@ protected:
 		// All Direct3D 11 capable devices support 4X MSAA for all render 
 		// target formats, so we only need to check quality support.
 
-		HR(md3dDevice->CheckMultisampleQualityLevels(
-			DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m4xMsaaQuality));
+		HR(md3dDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m4xMsaaQuality));
 		//assert(m4xMsaaQuality > 0);
 
 		// Fill out a DXGI_SWAP_CHAIN_DESC to describe our swap chain.
 
-		DXGI::DXGI_SWAP_CHAIN_DESC sd;
-		sd.BufferDesc.Width = mClientWidth;
-		sd.BufferDesc.Height = mClientHeight;
-		sd.BufferDesc.RefreshRate.Numerator = 60;
-		sd.BufferDesc.RefreshRate.Denominator = 1;
-		sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		sd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-		sd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-
+		auto sd = DXGI::DXGI_SWAP_CHAIN_DESC{
+			.BufferDesc = {
+				.Width = static_cast<std::uint32_t>(mClientWidth),
+				.Height = static_cast<std::uint32_t>(mClientHeight),
+				.RefreshRate = {
+					.Numerator = 60,
+					.Denominator = 1
+				},
+				.Format = DXGI_FORMAT_R8G8B8A8_UNORM,
+				.ScanlineOrdering = DXGI::DXGI_MODE_SCANLINE_ORDER::DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
+				.Scaling = DXGI::DXGI_MODE_SCALING::DXGI_MODE_SCALING_UNSPECIFIED
+			},
+			.BufferUsage = DXGI::Usage::RenderTargetOutput,
+			.BufferCount = 1,
+			.OutputWindow = mhMainWnd,
+			.Windowed = true,
+			// TODO: Use DXGI_SWAP_EFFECT_FLIP_DISCARD, but this requires using IDXGIFactory2 and CreateSwapChainForHwnd().
+			.SwapEffect = DXGI::DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_DISCARD,
+			.Flags = 0
+		};
 		// Use 4X MSAA? 
 		if (mEnable4xMsaa)
 		{
@@ -433,28 +441,21 @@ protected:
 			sd.SampleDesc.Quality = 0;
 		}
 
-		sd.BufferUsage = DXGI::Usage::RenderTargetOutput;
-		sd.BufferCount = 1;
-		sd.OutputWindow = mhMainWnd;
-		sd.Windowed = true;
-		sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-		sd.Flags = 0;
-
 		// To correctly create the swap chain, we must use the IDXGIFactory that was
 		// used to create the device.  If we tried to use a different IDXGIFactory instance
 		// (by calling CreateDXGIFactory), we get an error: "IDXGIFactory::CreateSwapChain: 
 		// This function is being called with a device from a different IDXGIFactory."
 
-		ComPtr<DXGI::IDXGIDevice> dxgiDevice;
-		HR(md3dDevice->QueryInterface(dxgiDevice.Uuid(), (void**)&dxgiDevice));
+		auto dxgiDevice = ComPtr<DXGI::IDXGIDevice>{};
+		HR(md3dDevice->QueryInterface(dxgiDevice.Uuid(), dxgiDevice.VoidAddress()));
 
-		ComPtr<DXGI::IDXGIAdapter> dxgiAdapter;
-		HR(dxgiDevice->GetParent(dxgiAdapter.Uuid(), (void**)&dxgiAdapter));
+		auto dxgiAdapter = ComPtr<DXGI::IDXGIAdapter>{};
+		HR(dxgiDevice->GetParent(dxgiAdapter.Uuid(), dxgiAdapter.VoidAddress()));
 
-		ComPtr<DXGI::IDXGIFactory> dxgiFactory;
-		HR(dxgiAdapter->GetParent(dxgiFactory.Uuid(), (void**)&dxgiFactory));
+		auto dxgiFactory = ComPtr<DXGI::IDXGIFactory>{};
+		HR(dxgiAdapter->GetParent(dxgiFactory.Uuid(), dxgiFactory.VoidAddress()));
 
-		HR(dxgiFactory->CreateSwapChain(md3dDevice.get(), &sd, &mSwapChain));
+		HR(dxgiFactory->CreateSwapChain(md3dDevice.get(), &sd, mSwapChain.GetAddressOf()));
 
 		// The remaining steps that need to be carried out for d3d creation
 		// also need to be executed every time the window is resized.  So
@@ -469,24 +470,17 @@ protected:
 		// average time it takes to render one frame.  These stats 
 		// are appended to the window caption bar.
 
-		static int frameCnt = 0;
-		static float timeElapsed = 0.0f;
+		static auto frameCnt = 0;
+		static auto timeElapsed = 0.0f;
 
 		frameCnt++;
 
 		// Compute averages over one second period.
 		if ((mTimer.TotalTime() - timeElapsed) >= 1.0f)
 		{
-			float fps = (float)frameCnt; // fps = frameCnt / 1
-			float mspf = 1000.0f / fps;
-
-			std::wostringstream outs;
-			outs.precision(6);
-			outs << mMainWndCaption << L"    "
-				<< L"FPS: " << fps << L"    "
-				<< L"Frame Time: " << mspf << L" (ms)";
-			Win32::SetWindowTextW(mhMainWnd, outs.str().c_str());
-
+			auto fps = static_cast<float>(frameCnt); // fps = frameCnt / 1
+			auto mspf = 1000.0f / fps;
+			Win32::SetWindowTextW(mhMainWnd, std::format(L"{}    FPS: {}    Frame Time: {} (ms)", mMainWndCaption, fps, mspf).c_str());
 			// Reset for next average.
 			frameCnt = 0;
 			timeElapsed += 1.0f;

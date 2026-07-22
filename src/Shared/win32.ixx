@@ -13,6 +13,8 @@ module;
 #include <crtdbg.h>
 #include <d3dcompiler.h>
 #include <DirectXColors.h>
+#include <dxgi.h>
+#include <dxgi1_4.h>
 
 export module shared:win32;
 
@@ -271,11 +273,16 @@ export namespace DXGI
 
 	using
 		::IDXGISwapChain,
+		::IDXGISwapChain1,
 		::IDXGIDevice,
 		::IDXGIFactory,
+		::IDXGIFactory2,
 		::IDXGIAdapter,
 		::DXGI_FORMAT,
 		::DXGI_SAMPLE_DESC,
+		::DXGI_MODE_SCANLINE_ORDER,
+		::DXGI_SWAP_EFFECT,
+		::DXGI_MODE_SCALING,
 		::DXGI_SWAP_CHAIN_DESC
 		;
 }
