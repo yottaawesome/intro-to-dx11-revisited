@@ -22,4 +22,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="FX\color.fx" />
+  </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 import std;
 import shared;
+import hills;
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
@@ -7,7 +8,9 @@ import shared;
 auto wWinMain(Win32::HINSTANCE hInstance, Win32::HINSTANCE, Win32::LPWSTR, int) -> int
 try
 {
-    return 0;
+	if constexpr (IsDebugBuild)
+		Win32::_CrtSetDbgFlag(Win32::CrtAllocMemDf | Win32::CrtLeakCheckDf);
+    return HillsApp{hInstance}.Run();
 }
 catch (const std::exception& e)
 {

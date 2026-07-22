@@ -229,12 +229,11 @@ private:
 		if (Win32::Failed(hr))
 			throw std::runtime_error{ "Failed to create vertex shader." };
 
-		if (!BuildVertexLayout(vertexShaderBytecode.get()))
-			throw std::runtime_error{ "Failed to create input layout." };
+		BuildVertexLayout(vertexShaderBytecode.get());
 		vertexShaderBytecode.reset();
 
 		auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		hr = D3DReadFileToBlob(L"FX/color_PS.cso", &pixelShaderBytecode);
+		hr = D3D::D3DReadFileToBlob(L"FX/color_PS.cso", &pixelShaderBytecode);
 		if (Win32::Failed(hr))
 			throw std::runtime_error{ "Failed to read pixel shader file." };
 
@@ -258,7 +257,7 @@ private:
 			throw std::runtime_error{ "Failed to create constant buffer." };
 	}
 
-	auto BuildVertexLayout(D3D::ID3DBlob* vertexShaderBytecode) -> bool
+	void BuildVertexLayout(D3D::ID3DBlob* vertexShaderBytecode)
 	{
 		// Create the vertex input layout.
 		auto vertexDesc = std::array{
@@ -289,7 +288,8 @@ private:
 			vertexShaderBytecode->GetBufferSize(),
 			&mInputLayout
 		);
-		return Win32::Succeeded(hr);
+		if (Win32::Failed(hr))
+			throw std::runtime_error{ "Failed to create input layout." };
 	}
 
 private:

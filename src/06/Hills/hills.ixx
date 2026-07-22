@@ -20,20 +20,14 @@ public:
 		: D3DApp{hInstance}
 	{
 		mMainWndCaption = L"Hills Demo";
+		Init();
 	}
+
 	~HillsApp()
 	{
 		mVB.reset();
 		mIB.reset();
 		mInputLayout.reset();
-	}
-
-	void Init()override
-	{
-		D3DApp::Init();
-		BuildGeometryBuffers();
-		BuildFX();
-		BuildVertexLayout();
 	}
 
 	void OnResize()override
@@ -85,7 +79,7 @@ public:
 		md3dImmediateContext->VSSetShader(mColorVS.get(), 0, 0);
 		md3dImmediateContext->VSSetConstantBuffers(0, 1, mPerObjectCB.GetAddressOf());
 		md3dImmediateContext->PSSetShader(mColorPS.get(), 0, 0);
-
+		md3dImmediateContext->DrawIndexed(mGridIndexCount, 0, 0);
 		HR(mSwapChain->Present(0, 0));
 	}
 
@@ -130,10 +124,18 @@ public:
 
 
 private:
+	void Init()override
+	{
+		D3DApp::Init();
+		BuildGeometryBuffers();
+		BuildShaders();
+	}
+
 	auto GetHeight(float x, float z)const -> float
 	{
 		return 0.3f * (z * std::sinf(0.1f * x) + x * std::cosf(0.1f * z));
 	}
+	
 	void BuildGeometryBuffers()
 	{
 		GeometryGenerator::MeshData grid;
@@ -212,25 +214,79 @@ private:
 		HR(md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
 	}
 
-	void BuildFX()
+	void BuildShaders()
 	{
-		//TODO compile shader from file
-	}
-	void BuildVertexLayout()
-	{
-		// Create the vertex input layout.
-		D3D11::D3D11_INPUT_ELEMENT_DESC vertexDesc[] =
-		{
-			{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-			{"COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+		auto vertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
+		auto hr = D3D::D3DReadFileToBlob(L"FX/color_VS.cso", &vertexShaderBytecode);
+		if (Win32::Failed(hr))
+			throw std::runtime_error{ "Failed to read vertex shader file." };
+
+		hr = md3dDevice->CreateVertexShader(vertexShaderBytecode->GetBufferPointer(),
+			vertexShaderBytecode->GetBufferSize(), 0, &mColorVS);
+		if (Win32::Failed(hr))
+			throw std::runtime_error{ "Failed to create vertex shader." };
+
+		BuildVertexLayout(vertexShaderBytecode.get());
+		vertexShaderBytecode.reset();
+
+		auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
+		hr = D3D::D3DReadFileToBlob(L"FX/color_PS.cso", &pixelShaderBytecode);
+		if (Win32::Failed(hr))
+			throw std::runtime_error{ "Failed to read pixel shader file." };
+
+		hr = md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(),
+			pixelShaderBytecode->GetBufferSize(), 0, &mColorPS);
+		pixelShaderBytecode.reset();
+		if (Win32::Failed(hr))
+			throw std::runtime_error{ "Failed to create pixel shader." };
+
+		auto cbd = D3D11::D3D11_BUFFER_DESC{
+			.ByteWidth = sizeof(PerObjectConstants),
+			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
+			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
+			.CPUAccessFlags = 0,
+			.MiscFlags = 0,
+			.StructureByteStride = 0,
 		};
 
-		//TODO: Create the input layout
-		// Create the input layout
-		/*D3D11::D3DX11_PASS_DESC passDesc;
-		mTech->GetPassByIndex(0)->GetDesc(&passDesc);
-		HR(md3dDevice->CreateInputLayout(vertexDesc, 2, passDesc.pIAInputSignature,
-			passDesc.IAInputSignatureSize, &mInputLayout));*/
+		hr = md3dDevice->CreateBuffer(&cbd, 0, &mPerObjectCB);
+		if (Win32::Failed(hr))
+			throw std::runtime_error{ "Failed to create constant buffer." };
+	}
+
+	void BuildVertexLayout(D3D::ID3DBlob* vertexShaderBytecode)
+	{
+		// Create the vertex input layout.
+		auto vertexDesc = std::array{
+			D3D11::D3D11_INPUT_ELEMENT_DESC{
+				.SemanticName = "POSITION",
+				.SemanticIndex = 0,
+				.Format = DXGI::DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
+				.InputSlot = 0,
+				.AlignedByteOffset = 0,
+				.InputSlotClass = D3D11::D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+				.InstanceDataStepRate = 0
+			},
+			D3D11::D3D11_INPUT_ELEMENT_DESC{
+				.SemanticName = "COLOR",
+				.SemanticIndex = 0,
+				.Format = DXGI::DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT,
+				.InputSlot = 0,
+				.AlignedByteOffset = 12,
+				.InputSlotClass = D3D11::D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+				.InstanceDataStepRate = 0
+			}
+		};
+
+		auto hr = md3dDevice->CreateInputLayout(
+			vertexDesc.data(),
+			static_cast<std::uint32_t>(vertexDesc.size()),
+			vertexShaderBytecode->GetBufferPointer(),
+			vertexShaderBytecode->GetBufferSize(),
+			&mInputLayout
+		);
+		if (Win32::Failed(hr))
+			throw std::runtime_error{ "Failed to create input layout." };
 	}
 
 private:
@@ -238,10 +294,6 @@ private:
 	ComPtr<D3D11::ID3D11Buffer> mIB;
 	ComPtr<D3D11::ID3D11VertexShader> mColorVS;
 	ComPtr<D3D11::ID3D11PixelShader> mColorPS;
-
-	/*D3D11::ID3DX11Effect* mFX;
-	D3D11::ID3DX11EffectTechnique* mTech;
-	D3D11::ID3DX11EffectMatrixVariable* mfxWorldViewProj;*/
 	
 	ComPtr<D3D11::ID3D11Buffer> mPerObjectCB;
 	ComPtr<D3D11::ID3D11InputLayout> mInputLayout;
