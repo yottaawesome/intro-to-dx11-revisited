@@ -31,9 +31,15 @@ export
 			throw std::runtime_error{std::format("HRESULT 0x{:08X} failed at {}:{}:{}", hr, location.function_name(), location.file_name(), location.line())};
 	}
 
-	class d3dHelper
+	struct d3dHelper
 	{
-	public:
+		constexpr static auto Identity4x4 = DirectX::XMFLOAT4X4{
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f
+		};
+
 		static auto CreateRandomTexture1DSRV(D3D11::ID3D11Device* device) -> ComPtr<D3D11::ID3D11ShaderResourceView>
 		{
 			// 

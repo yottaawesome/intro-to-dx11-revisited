@@ -188,8 +188,16 @@ export namespace Win32
 	}
 }
 
+export
+{
+	using DirectX::operator*;
+}
+
 export namespace DirectX
 {
+	constexpr auto Pi = DirectX::XM_PI;
+	constexpr auto TwoPi = DirectX::XM_2PI;
+
 	using
 		::DirectX::XMFLOAT4,
 		::DirectX::XMMATRIX,
@@ -198,8 +206,11 @@ export namespace DirectX
 		::DirectX::CXMVECTOR,
 		::DirectX::XMVECTORF32,
 		::DirectX::XMFLOAT3,
+		::DirectX::XMFLOAT2,
 		::DirectX::XMFLOAT4X4,
 		::DirectX::XMVECTOR,
+		::DirectX::XMLoadFloat3,
+		::DirectX::XMLoadFloat4x4,
 		::DirectX::XMVectorSet,
 		::DirectX::XMMatrixIdentity,
 		::DirectX::XMMatrixMultiply,

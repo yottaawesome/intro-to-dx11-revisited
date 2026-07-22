@@ -44,7 +44,7 @@ public:
 		D3DApp::OnResize();
 
 		// The window resized, so update the aspect ratio and recompute the projection matrix.
-		DirectX::XMMATRIX P = DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+		auto P = DirectX::XMMATRIX{ DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f)};
 		DirectX::XMStoreFloat4x4(&mProj, P);
 	}
 	void UpdateScene(float dt)
@@ -55,13 +55,13 @@ public:
 		auto y = mRadius * std::cosf(mPhi);
 
 		// Build the view matrix.
-		DirectX::XMVECTOR pos = DirectX::XMVectorSet(x, y, z, 1.0f);
-		DirectX::XMVECTOR target = DirectX::XMVectorZero();
-		DirectX::XMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-		DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(pos, target, up);
+		auto pos = DirectX::XMVECTOR{ DirectX::XMVectorSet(x, y, z, 1.0f) };
+		auto target = DirectX::XMVECTOR{ DirectX::XMVectorZero() };
+		auto up = DirectX::XMVECTOR{ DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f) };
+		auto V = DirectX::XMMATRIX{ DirectX::XMMatrixLookAtLH(pos, target, up) };
 		DirectX::XMStoreFloat4x4(&mView, V);
 	}
+
 	void DrawScene()
 	{
 		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView.get(), reinterpret_cast<const float*>(&DirectX::Colors::LightSteelBlue));
@@ -99,7 +99,6 @@ public:
 	{
 		mLastMousePos.x = x;
 		mLastMousePos.y = y;
-
 		Win32::SetCapture(mhMainWnd);
 	}
 
@@ -296,20 +295,18 @@ private:
 private:
 	ComPtr<D3D11::ID3D11Buffer> mBoxVB;
 	ComPtr<D3D11::ID3D11Buffer> mBoxIB;
-
 	ComPtr<D3D11::ID3D11VertexShader> mColorVS;
 	ComPtr<D3D11::ID3D11PixelShader> mColorPS;
 	ComPtr<D3D11::ID3D11Buffer> mPerObjectCB;
-
 	ComPtr<D3D11::ID3D11InputLayout> mInputLayout;
 
 	DirectX::XMFLOAT4X4 mWorld;
 	DirectX::XMFLOAT4X4 mView;
 	DirectX::XMFLOAT4X4 mProj;
 
-	float mTheta= 1.5f * MathHelper::Pi;
-	float mPhi= 0.25f * MathHelper::Pi;
-	float mRadius= 5.0f;
+	float mTheta = 1.5f * MathHelper::Pi;
+	float mPhi = 0.25f * MathHelper::Pi;
+	float mRadius = 5.0f;
 
 	Win32::POINT mLastMousePos{};
 };
