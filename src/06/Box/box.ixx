@@ -28,7 +28,10 @@ public:
 		DirectX::XMStoreFloat4x4(&mWorld, I);
 		DirectX::XMStoreFloat4x4(&mView, I);
 		DirectX::XMStoreFloat4x4(&mProj, I);
+
+		Init();
 	}
+
 	~BoxApp()
 	{
 		if(mBoxVB)
@@ -45,17 +48,6 @@ public:
 			mInputLayout->Release();
 	}
 
-	bool Init()
-	{
-		if (!D3DApp::Init())
-			return false;
-
-		BuildGeometryBuffers();
-		if (!BuildShaders())
-			return false;
-
-		return true;
-	}
 	void OnResize()
 	{
 		D3DApp::OnResize();
@@ -158,6 +150,14 @@ public:
 	}
 
 private:
+	void Init()
+	{
+		D3DApp::Init();
+
+		BuildGeometryBuffers();
+		BuildShaders();
+	}
+
 	void BuildGeometryBuffers()
 	{
 		// Create vertex buffer
@@ -225,12 +225,12 @@ private:
 		HR(md3dDevice->CreateBuffer(&ibd, &iinitData, &mBoxIB));
 	}
 
-	bool BuildShaders()
+	void BuildShaders()
 	{
 		D3D::ID3DBlob* vertexShaderBytecode = 0;
 		Win32::HRESULT hr = D3D::D3DReadFileToBlob(L"FX/color_VS.cso", &vertexShaderBytecode);
 		if (Win32::Failed(hr))
-			return false;
+			throw std::runtime_error{ "Failed to read vertex shader file." };
 
 		hr = md3dDevice->CreateVertexShader(vertexShaderBytecode->GetBufferPointer(),
 			vertexShaderBytecode->GetBufferSize(), 0, &mColorVS);
@@ -238,14 +238,14 @@ private:
 		{
 			vertexShaderBytecode->Release();
 			vertexShaderBytecode = nullptr;
-			return false;
+			throw std::runtime_error{ "Failed to create vertex shader." };
 		}
 
 		if (!BuildVertexLayout(vertexShaderBytecode))
 		{
 			vertexShaderBytecode->Release();
 			vertexShaderBytecode = nullptr;
-			return false;
+			throw std::runtime_error{ "Failed to create input layout." };
 		}
 		vertexShaderBytecode->Release();
 		vertexShaderBytecode = nullptr;
@@ -253,14 +253,14 @@ private:
 		D3D::ID3DBlob* pixelShaderBytecode = 0;
 		hr = D3DReadFileToBlob(L"FX/color_PS.cso", &pixelShaderBytecode);
 		if (Win32::Failed(hr))
-			return false;
+			throw std::runtime_error{ "Failed to read pixel shader file." };
 
 		hr = md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(),
 			pixelShaderBytecode->GetBufferSize(), 0, &mColorPS);
 		pixelShaderBytecode->Release();
 		pixelShaderBytecode = nullptr;
 		if (Win32::Failed(hr))
-			return false;
+			throw std::runtime_error{ "Failed to create pixel shader." };
 
 		D3D11_BUFFER_DESC cbd;
 		cbd.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT;
@@ -271,9 +271,7 @@ private:
 		cbd.StructureByteStride = 0;
 		hr = md3dDevice->CreateBuffer(&cbd, 0, &mPerObjectCB);
 		if (Win32::Failed(hr))
-			return false;
-
-		return true;
+			throw std::runtime_error{ "Failed to create constant buffer." };
 	}
 
 	bool BuildVertexLayout(D3D::ID3DBlob* vertexShaderBytecode)

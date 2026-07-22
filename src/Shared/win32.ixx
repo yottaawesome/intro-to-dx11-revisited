@@ -35,6 +35,8 @@ export namespace Win32
 	constexpr auto NullBrush = NULL_BRUSH;
 	constexpr auto CrtAllocMemDf = _CRTDBG_ALLOC_MEM_DF;
 	constexpr auto CrtLeakCheckDf = _CRTDBG_LEAK_CHECK_DF;
+	constexpr auto MbOK = MB_OK;
+
 	enum PM : unsigned long
 	{
 		Remove = PM_REMOVE,
@@ -268,6 +270,7 @@ export namespace D3D11
 		::ID3D11Device,
 		::D3D11_SRV_DIMENSION,
 		::ID3D11DeviceContext,
+		::D3D11_TEXTURE2D_DESC,
 		::D3D11_SUBRESOURCE_DATA,
 		::D3D11_TEXTURE1D_DESC,
 		::ID3D11Texture1D,

@@ -7,14 +7,8 @@ export class InitDirect3DApp : public D3DApp
 public:
 	InitDirect3DApp(Win32::HINSTANCE hInstance)
 		: D3DApp(hInstance)
-	{}
-
-	bool Init()
 	{
-		if (!D3DApp::Init())
-			return false;
-
-		return true;
+		Init();
 	}
 
 	void OnResize()
@@ -24,7 +18,6 @@ public:
 
 	void UpdateScene(float dt)
 	{
-
 	}
 
 	void DrawScene()
@@ -36,5 +29,10 @@ public:
 		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView,D3D11::D3D11_CLEAR_FLAG::D3D11_CLEAR_DEPTH | D3D11::D3D11_CLEAR_FLAG::D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 		HR(mSwapChain->Present(0, 0));
+	}
+private:
+	void Init()
+	{
+		D3DApp::Init();
 	}
 };

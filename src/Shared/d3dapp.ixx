@@ -35,22 +35,24 @@ public:
 			md3dDevice->Release();
 	}
 
-	Win32::HINSTANCE AppInst()const
+	auto AppInst()const -> Win32::HINSTANCE
 	{
 		return mhAppInst;
 	}
-	Win32::HWND      MainWnd()const
+
+	auto MainWnd()const -> Win32::HWND
 	{
 		return mhMainWnd;
 	}
-	float     AspectRatio()const
+
+	auto AspectRatio()const -> float
 	{
 		return static_cast<float>(mClientWidth) / mClientHeight;
 	}
 
-	int Run()
+	auto Run() -> int
 	{
-		Win32::MSG msg = { 0 };
+		auto msg = Win32::MSG{ };
 
 		mTimer.Reset();
 
@@ -86,15 +88,10 @@ public:
 	// Framework methods.  Derived client class overrides these methods to 
 	// implement specific application requirements.
 
-	virtual bool Init()
+	virtual void Init()
 	{
-		if (!InitMainWindow())
-			return false;
-
-		if (!InitDirect3D())
-			return false;
-
-		return true;
+		InitMainWindow();
+		InitDirect3D();
 	}
 
 	virtual void OnResize()
@@ -122,12 +119,11 @@ public:
 		}
 
 
-
 		// Resize the swap chain and recreate the render target view.
 
 		HR(mSwapChain->ResizeBuffers(1, mClientWidth, mClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
-		ID3D11Texture2D* backBuffer;
-		HR(mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer)));
+		auto backBuffer = static_cast<D3D11::ID3D11Texture2D*>(nullptr);
+		HR(mSwapChain->GetBuffer(0, __uuidof(D3D11::ID3D11Texture2D), reinterpret_cast<void**>(&backBuffer)));
 		HR(md3dDevice->CreateRenderTargetView(backBuffer, 0, &mRenderTargetView));
 		
 		if (backBuffer)
@@ -135,13 +131,13 @@ public:
 
 		// Create the depth/stencil buffer and view.
 
-		D3D11_TEXTURE2D_DESC depthStencilDesc;
-
-		depthStencilDesc.Width = mClientWidth;
-		depthStencilDesc.Height = mClientHeight;
-		depthStencilDesc.MipLevels = 1;
-		depthStencilDesc.ArraySize = 1;
-		depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		auto depthStencilDesc = D3D11::D3D11_TEXTURE2D_DESC{
+			.Width = static_cast<std::uint32_t>(mClientWidth),
+			.Height = static_cast<std::uint32_t>(mClientHeight),
+			.MipLevels = 1,
+			.ArraySize = 1,
+			.Format = DXGI_FORMAT_D24_UNORM_S8_UINT,
+		};
 
 		// Use 4X MSAA? --must match swap chain MSAA values.
 		if (mEnable4xMsaa)
@@ -189,7 +185,7 @@ public:
 	virtual void OnMouseUp(Win32::WPARAM btnState, int x, int y) {}
 	virtual void OnMouseMove(Win32::WPARAM btnState, int x, int y) {}
 
-	Win32::LRESULT MsgProc(Win32::HWND hwnd, Win32::UINT msg, Win32::WPARAM wParam, Win32::LPARAM lParam)
+	auto MsgProc(Win32::HWND hwnd, Win32::UINT msg, Win32::WPARAM wParam, Win32::LPARAM lParam) -> Win32::LRESULT
 	{
 		switch (msg)
 		{
@@ -197,6 +193,7 @@ public:
 			// We pause the game when the window is deactivated and unpause it 
 			// when it becomes active.  
 		case Win32::WindowMessages::Activate:
+		{
 			if (Win32::LoWord(wParam) == Win32::WA::Inactive)
 			{
 				mAppPaused = true;
@@ -208,9 +205,11 @@ public:
 				mTimer.Start();
 			}
 			return 0;
+		}
 
 			// WM_SIZE is sent when the user resizes the window.  
 		case Win32::WindowMessages::Size:
+		{
 			// Save the new client area dimensions.
 			mClientWidth = Win32::LoWord(lParam);
 			mClientHeight = Win32::HiWord(lParam);
@@ -265,53 +264,70 @@ public:
 				}
 			}
 			return 0;
-
+		}
+			
 			// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
 		case Win32::WindowMessages::EnterSizeMove:
+		{
 			mAppPaused = true;
 			mResizing = true;
 			mTimer.Stop();
 			return 0;
+		}
 
 			// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
 			// Here we reset everything based on the new window dimensions.
 		case Win32::WindowMessages::ExitSizeMove:
+		{
 			mAppPaused = false;
 			mResizing = false;
 			mTimer.Start();
 			OnResize();
 			return 0;
+		}
 
 			// WM_DESTROY is sent when the window is being destroyed.
 		case Win32::WindowMessages::Destroy:
+		{
 			Win32::PostQuitMessage(0);
 			return 0;
+		}
 
 			// The WM_MENUCHAR message is sent when a menu is active and the user presses 
 			// a key that does not correspond to any mnemonic or accelerator key. 
 		case Win32::WindowMessages::MenuChar:
+		{
 			// Don't beep when we alt-enter.
 			return Win32::MakeLResult(0, Win32::MNC::Close);
+		}
 
 			// Catch this message so to prevent the window from becoming too small.
 		case Win32::WindowMessages::GetMinMaxInfo:
+		{
 			((Win32::MINMAXINFO*)lParam)->ptMinTrackSize.x = 200;
 			((Win32::MINMAXINFO*)lParam)->ptMinTrackSize.y = 200;
 			return 0;
+		}
 
 		case Win32::WindowMessages::LButtonDown:
 		case Win32::WindowMessages::MButtonDown:
 		case Win32::WindowMessages::RButtonDown:
+		{
 			OnMouseDown(wParam, Win32::GetXLParam(lParam), Win32::GetYLParam(lParam));
 			return 0;
+		}
 		case Win32::WindowMessages::LButtonUp:
 		case Win32::WindowMessages::MButtonUp:
 		case Win32::WindowMessages::RButtonUp:
+		{
 			OnMouseUp(wParam, Win32::GetXLParam(lParam), Win32::GetYLParam(lParam));
 			return 0;
+		}
 		case Win32::WindowMessages::MouseMove:
+		{
 			OnMouseMove(wParam, Win32::GetXLParam(lParam), Win32::GetYLParam(lParam));
 			return 0;
+		}
 		}
 
 		return Win32::DefWindowProcW(hwnd, msg, wParam, lParam);
@@ -321,7 +337,7 @@ protected:
 	// This is just used to forward Windows messages from a global window
 	// procedure to our member function window procedure because we cannot
 	// assign a member function to WNDCLASS::lpfnWndProc.
-	static inline D3DApp* gd3dApp = nullptr;
+	static inline auto gd3dApp = static_cast<D3DApp*>(nullptr);
 
 	static auto MainWndProc(Win32::HWND hwnd, Win32::UINT msg, Win32::WPARAM wParam, Win32::LPARAM lParam) -> Win32::LRESULT
 	{
@@ -330,25 +346,23 @@ protected:
 		return gd3dApp->MsgProc(hwnd, msg, wParam, lParam);
 	}
 	
-	bool InitMainWindow()
+	void InitMainWindow()
 	{
-		Win32::WNDCLASS wc;
-		wc.style = Win32::CS::HRedraw | Win32::CS::VRedraw;
-		wc.lpfnWndProc = MainWndProc;
-		wc.cbClsExtra = 0;
-		wc.cbWndExtra = 0;
-		wc.hInstance = mhAppInst;
-		wc.hIcon = Win32::LoadIconW(0, Win32::IdiApplication());
-		wc.hCursor = Win32::LoadCursorW(0, Win32::IdcArrow());
-		wc.hbrBackground = (Win32::HBRUSH)Win32::GetStockObject(Win32::NullBrush);
-		wc.lpszMenuName = 0;
-		wc.lpszClassName = L"D3DWndClassName";
-
+		auto wc = Win32::WNDCLASS{
+			.style = Win32::CS::HRedraw | Win32::CS::VRedraw,
+			.lpfnWndProc = MainWndProc,
+			.cbClsExtra = 0,
+			.cbWndExtra = 0,
+			.hInstance = mhAppInst,
+			.hIcon = Win32::LoadIconW(0, Win32::IdiApplication()),
+			.hCursor = Win32::LoadCursorW(0, Win32::IdcArrow()),
+			.hbrBackground = (Win32::HBRUSH)Win32::GetStockObject(Win32::NullBrush),
+			.lpszMenuName = 0,
+			.lpszClassName = L"D3DWndClassName"
+		};
+		
 		if (!Win32::RegisterClassW(&wc))
-		{
-			Win32::MessageBoxW(0, L"RegisterClass Failed.", 0, 0);
-			return false;
-		}
+			throw std::runtime_error{ "RegisterClass Failed." };
 
 		// Compute window rectangle dimensions based on requested client area dimensions.
 		Win32::RECT R = { 0, 0, mClientWidth, mClientHeight };
@@ -369,19 +383,14 @@ protected:
 			0, 
 			mhAppInst, 
 			0);
-		if (!mhMainWnd)
-		{
-			Win32::MessageBoxW(0, L"CreateWindow Failed.", 0, 0);
-			return false;
-		}
+		if (not mhMainWnd)
+			throw std::runtime_error{ "CreateWindow Failed." };
 
 		Win32::ShowWindow(mhMainWnd, Win32::SW::Show);
 		Win32::UpdateWindow(mhMainWnd);
-
-		return true;
 	}
 
-	bool InitDirect3D()
+	void InitDirect3D()
 	{
 		// Create the device and device context.
 
@@ -403,16 +412,10 @@ protected:
 			&md3dImmediateContext);
 
 		if (Win32::Failed(hr))
-		{
-			Win32::MessageBoxW(0, L"D3D11CreateDevice Failed.", 0, 0);
-			return false;
-		}
+			throw std::runtime_error{ "D3D11CreateDevice Failed." };
 
 		if (featureLevel != D3D_FEATURE_LEVEL_11_0)
-		{
-			Win32::MessageBoxW(0, L"Direct3D Feature Level 11 unsupported.", 0, 0);
-			return false;
-		}
+			throw std::runtime_error{ "Direct3D Feature Level 11 unsupported." };
 
 		// Check 4X MSAA quality support for our back buffer format.
 		// All Direct3D 11 capable devices support 4X MSAA for all render 
@@ -478,8 +481,6 @@ protected:
 		// just call the OnResize method here to avoid code duplication.
 
 		OnResize();
-
-		return true;
 	}
 
 	void CalculateFrameStats()

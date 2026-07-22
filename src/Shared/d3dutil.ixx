@@ -5,6 +5,21 @@ import :mathhelper;
 
 export
 {
+	void ErrorMsg(const std::exception& ex)
+	{
+		Win32::MessageBoxA(0, ex.what(), "Error", Win32::MbOK);
+
+	}
+	void ErrorMsg(std::string_view msg)
+	{
+		Win32::MessageBoxA(0, msg.data(), "Error", Win32::MbOK);
+	}
+
+	void ErrorMsg(std::wstring_view msg)
+	{
+		Win32::MessageBoxW(0, msg.data(), L"Error", Win32::MbOK);
+	}
+
 	//---------------------------------------------------------------------------------------
 	// Utility classes.
 	//---------------------------------------------------------------------------------------
@@ -23,7 +38,7 @@ export
 			// 
 			// Create the random data.
 			//
-			DirectX::XMFLOAT4 randomValues[1024];
+			auto randomValues = std::array<DirectX::XMFLOAT4, 1024>{};
 
 			for (int i = 0; i < 1024; ++i)
 			{
@@ -34,8 +49,8 @@ export
 			}
 
 			auto initData = D3D11::D3D11_SUBRESOURCE_DATA{
-				.pSysMem = randomValues,
-				.SysMemPitch = 1024 * sizeof(DirectX::XMFLOAT4),
+				.pSysMem = randomValues.data(),
+				.SysMemPitch = static_cast<std::uint32_t>(randomValues.size() * sizeof(DirectX::XMFLOAT4)),
 				.SysMemSlicePitch = 0
 			};
 			
