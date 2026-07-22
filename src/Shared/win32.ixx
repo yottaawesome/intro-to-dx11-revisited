@@ -289,6 +289,7 @@ export namespace DXGI
 
 export namespace D3D11
 {
+	
 	constexpr auto SdkVersion = D3D11_SDK_VERSION;
 	using 
 		::ID3D11ShaderResourceView,
@@ -299,6 +300,7 @@ export namespace D3D11
 		::D3D11_SUBRESOURCE_DATA,
 		::D3D11_TEXTURE1D_DESC,
 		::ID3D11Texture1D,
+		::D3D11_INPUT_CLASSIFICATION,
 		::ID3D11Texture2D,
 		::D3D11_VIEWPORT,
 		::D3D11_CLEAR_FLAG,
@@ -314,6 +316,7 @@ export namespace D3D11
 		::ID3D11PixelShader,
 		::D3D11_USAGE,
 		::D3D11_CPU_ACCESS_FLAG,
+		::D3D11_INPUT_ELEMENT_DESC,
 		::D3D11_RESOURCE_MISC_FLAG,
 		::ID3D11InputLayout,
 		::D3D11_INPUT_ELEMENT_DESC,
