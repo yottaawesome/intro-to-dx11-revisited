@@ -2,7 +2,7 @@
 
 ## Introduction 
 
-Revisiting and updating the source code of Frank D. Luna's _Introduction to 3D Game Programming with DirectX 11_. This is very much in the same spirit as my [DX12 one](https://github.com/yottaawesome/intro-to-dx12-2nd-edition-revisited/tree/main), but somewhat more extensive due to the original source code relying on deprecated and unavailable (or not easily available) technologies that prevent compilation "out of the box". As with my DX12 one, the primary aim is again to make the source code easier understand by updating it with modern C++ approaches.
+Revisiting and updating the source code of Frank D. Luna's [_Introduction to 3D Game Programming with DirectX 11_](https://www.d3dcoder.net/d3d11.htm). This is very much in the same spirit as my [DX12 one](https://github.com/yottaawesome/intro-to-dx12-2nd-edition-revisited/tree/main), but somewhat more extensive due to the original source code relying on deprecated and unavailable (or not easily available) technologies that prevent compilation "out of the box". As with my DX12 one, the primary aim (beyond making it compile) is again to make the source code easier to understand by updating it with modern C++ approaches. You'll still need the original book to understand what's going on in each sample.
 
 ## Status
 
