@@ -10,7 +10,7 @@ The effort is ongoing. The following projects are functional.
 
 * [01/XMVECTOR](./src/01/XMVECTOR)
 * [02/XMMATRIX](./src/02/XMMATRIX)
-* [04/Init Direct3D](./src/Init Direct3D)
+* [04/Init Direct3D](./src/Init%20Direct3D)
 * [06/Box](./src/06/Box)
 * [06/Hills](./src/06/Hills)
 
