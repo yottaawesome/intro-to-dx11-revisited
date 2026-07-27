@@ -22,6 +22,7 @@ The effort is ongoing. The following projects are functional.
 * Added a lightweight `ComPtr` wrapper for COM types. I did not use Microsoft's `WRL::ComPtr` class as I'm not a fan of its constructor semantics. My version also includes a `Uuid()` member, removing the need for the ugly `IID_PPV_ARGS` macro.
 * `InitMainWindow()` and `InitDirect3D()` now throw exceptions on errors, which also simplifies the code be removing the `bool` checks.
 * ShaderFX compilation has been replaced with `D3DReadFileToBlob()`, `CreateVertexShader()`, and `CreatePixelShader()`.
+* I'm working on converting the `.fx` shader files over to standard HLSL.
 * Replaced the `Colors` namespace with `DirectX::Colors`.
 * Functions have been updated to use trailing return type syntax.
 * Variable initialization has been updated to use right-hand braced and aggregate initialisation (where applicable).
