@@ -2,7 +2,17 @@
 
 ## Introduction 
 
-Revisited source code of Frank D. Luna's _Introduction to 3D Game Programming with DirectX 11_. This is very much in the same spirit as my [DX12 one](https://github.com/yottaawesome/intro-to-dx12-2nd-edition-revisited/tree/main), but somewhat more extensive due to the original source code relying on deprecated and unavailable (or not easily available) technologies that prevent compilation "out of the box". As with my DX12 one, the primary aim is again to make the source code easier understand by updating it with modern C++ approaches.
+Revisiting and updating the source code of Frank D. Luna's _Introduction to 3D Game Programming with DirectX 11_. This is very much in the same spirit as my [DX12 one](https://github.com/yottaawesome/intro-to-dx12-2nd-edition-revisited/tree/main), but somewhat more extensive due to the original source code relying on deprecated and unavailable (or not easily available) technologies that prevent compilation "out of the box". As with my DX12 one, the primary aim is again to make the source code easier understand by updating it with modern C++ approaches.
+
+## Status
+
+The effort is ongoing. The following projects are functional.
+
+* [01/XMVECTOR](./src/01/XMVECTOR)
+* [02/XMMATRIX](./src/02/XMMATRIX)
+* [04/Init Direct3D](./src/Init Direct3D)
+* [06/Box](./src/06/Box)
+* [06/Hills](./src/06/Hills)
 
 ## Running log of changes
 
