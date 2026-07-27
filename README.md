@@ -2,10 +2,11 @@
 
 ## Introduction 
 
-Revisited source code of Frank D. Luna's _Introduction to 3D Game Programming with DirectX 11_. This is very much in the same spirit as my DX12 one, but somewhat more extensive due to the original source code relying on deprecated technologies
+Revisited source code of Frank D. Luna's _Introduction to 3D Game Programming with DirectX 11_. This is very much in the same spirit as my [DX12 one](https://github.com/yottaawesome/intro-to-dx12-2nd-edition-revisited/tree/main), but somewhat more extensive due to the original source code relying on deprecated and unavailable (or not easily available) technologies that prevent compilation "out of the box". As with my DX12 one, the primary aim is again to make the source code easier understand by updating it with modern C++ approaches.
 
 ## Running log of changes
 
+* Update MSVC toolset to v145 and enable `c++latest`.
 * Removed the deprecated library dependencies dxerr, effects11, and d3dx11.
 * Converted the code to inline C++ modules, improving the code locality and removing the need for headers and their baggage.
 * Added a lightweight `ComPtr` wrapper for COM types. I did not use Microsoft's `WRL::ComPtr` class as I'm not a fan of its constructor semantics. My version also includes a `Uuid()` member, removing the need for the ugly `IID_PPV_ARGS` macro.
@@ -23,4 +24,4 @@ Revisited source code of Frank D. Luna's _Introduction to 3D Game Programming wi
 
 Most of the code is copyrighted by Frank D. Luna, and based on my experience with the DX12 one, some of the code is repurposed from existing Microsoft samples, and therefore copyrighted by Microsoft. I'll be preserving the relevant copyright notices for the source code, however, some of the source code has no notice, or the notices (particularly dates) don't match up between header and source file pairs, so it's not exact.
 
-It's unclear what license applies to Luna's code, as no notices are posted anywhere including on the official site, but given there are various longstanding copies/remixes of Luna's code on Github, I assume the author is OK so long as they retain the copyright notices. Code files I've exclusively authored are copyrighted by me and licensed under the MIT license.
+It's unclear what license applies to Luna's code, as no notices are posted anywhere including on the official site, but given there are various longstanding copies/remixes of Luna's code on Github, I assume the author is OK so long as they retain the copyright notices. The Microsoft portions are licensed under MIT. Code files I've exclusively authored are copyrighted by me and licensed under the MIT license.
