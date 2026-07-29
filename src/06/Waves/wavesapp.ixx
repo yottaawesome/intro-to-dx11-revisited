@@ -104,9 +104,7 @@ public:
 
 		//
 		// Update the wave vertex buffer with the new solution.
-		//
-
-		D3D11::D3D11_MAPPED_SUBRESOURCE mappedData;
+		auto mappedData = D3D11::D3D11_MAPPED_SUBRESOURCE{};
 		HR(md3dImmediateContext->Map(mWavesVB.get(), 0, D3D11::D3D11_MAP::D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
 
 		auto v = reinterpret_cast<Vertex*>(mappedData.pData);
@@ -128,19 +126,14 @@ public:
 		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 
-		std::uint32_t stride = sizeof(Vertex);
-		std::uint32_t offset = 0;
+		auto stride = static_cast<std::uint32_t>(sizeof(Vertex));
+		auto offset = 0u;
 
-		DirectX::XMMATRIX view = DirectX::XMLoadFloat4x4(&mView);
-		DirectX::XMMATRIX proj = DirectX::XMLoadFloat4x4(&mProj);
+		auto view = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mView)};
+		auto proj = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mProj)};
 
-		//D3DX11_TECHNIQUE_DESC techDesc;
-		//mTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-			//
-			// Draw the land.
-			//
+		//
+		// Draw the land.
 		auto landVertexBuffers = std::array{ mLandVB.get() };
 		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(landVertexBuffers.size()), landVertexBuffers.data(), &stride, &offset);
 		md3dImmediateContext->IASetIndexBuffer(mLandIB.get(), DXGI_FORMAT_R32_UINT, 0);
@@ -159,7 +152,6 @@ public:
 		//
 		// Draw the waves.
 		md3dImmediateContext->RSSetState(mWireframeRS.get());
-		auto wavesIndexBuffers = std::array{ mWavesIB.get() };
 		auto wavesVertexBuffers = std::array{ mWavesVB.get() };
 		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(wavesVertexBuffers.size()), wavesVertexBuffers.data(), &stride, &offset);
 		md3dImmediateContext->IASetIndexBuffer(mWavesIB.get(), DXGI_FORMAT_R32_UINT, 0);
@@ -195,8 +187,8 @@ public:
 		if ((btnState & Win32::MK::LButton) != 0)
 		{
 			// Make each pixel correspond to a quarter of a degree.
-			float dx = DirectX::XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
-			float dy = DirectX::XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
+			auto dx = DirectX::XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
+			auto dy = DirectX::XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
 
 			// Update angles based on input to orbit camera around box.
 			mTheta += dx;
@@ -208,8 +200,8 @@ public:
 		else if ((btnState & Win32::MK::RButton) != 0)
 		{
 			// Make each pixel correspond to 0.2 unit in the scene.
-			float dx = 0.2f * static_cast<float>(x - mLastMousePos.x);
-			float dy = 0.2f * static_cast<float>(y - mLastMousePos.y);
+			auto dx = 0.2f * static_cast<float>(x - mLastMousePos.x);
+			auto dy = 0.2f * static_cast<float>(y - mLastMousePos.y);
 
 			// Update the camera radius based on input.
 			mRadius += dx - dy;
@@ -230,9 +222,8 @@ private:
 
 	void BuildLandGeometryBuffers()
 	{
-		GeometryGenerator::MeshData grid;
-
-		GeometryGenerator geoGen;
+		auto grid = GeometryGenerator::MeshData{};
+		auto geoGen = GeometryGenerator{};
 
 		geoGen.CreateGrid(160.0f, 160.0f, 50, 50, grid);
 
@@ -244,10 +235,10 @@ private:
 		// sandy looking beaches, grassy low hills, and snow mountain peaks.
 		//
 
-		std::vector<Vertex> vertices(grid.Vertices.size());
-		for (size_t i = 0; i < grid.Vertices.size(); ++i)
+		auto vertices = std::vector<Vertex>(grid.Vertices.size());
+		for (auto i = 0ull; i < grid.Vertices.size(); ++i)
 		{
-			DirectX::XMFLOAT3 p = grid.Vertices[i].Position;
+			auto p = DirectX::XMFLOAT3{grid.Vertices[i].Position};
 
 			p.y = GetHeight(p.x, p.z);
 
@@ -314,7 +305,6 @@ private:
 	{
 		// Create the vertex buffer.  Note that we allocate space only, as
 		// we will be updating the data every time step of the simulation.
-
 		auto vbd = D3D11::D3D11_BUFFER_DESC{
 			.ByteWidth = sizeof(Vertex) * mWaves.VertexCount(),
 			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DYNAMIC,
@@ -327,7 +317,6 @@ private:
 
 		// Create the index buffer.  The index buffer is fixed, so we only 
 		// need to create and set once.
-
 		auto indices = std::vector<std::uint32_t>(3 * mWaves.TriangleCount()); // 3 indices per face
 
 		// Iterate over each quad.

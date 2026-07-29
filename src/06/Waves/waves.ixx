@@ -30,8 +30,14 @@ public:
 
 	void Init(std::uint32_t m, std::uint32_t n, float dx, float dt, float speed, float damping)
 	{
-		mNumRows = m;
-		mNumCols = n;
+		// In case Init() called again.
+		if (m != mNumRows or n != mNumCols or not mPrevSolution or not mCurrSolution)
+		{
+			mNumRows = m;
+			mNumCols = n;
+			mPrevSolution = std::unique_ptr<DirectX::XMFLOAT3[]>(new DirectX::XMFLOAT3[m * n]);
+			mCurrSolution = std::unique_ptr<DirectX::XMFLOAT3[]>(new DirectX::XMFLOAT3[m * n]);
+		}
 
 		mVertexCount = m * n;
 		mTriangleCount = (m - 1) * (n - 1) * 2;
@@ -39,29 +45,22 @@ public:
 		mTimeStep = dt;
 		mSpatialStep = dx;
 
-		float d = damping * dt + 2.0f;
-		float e = (speed * speed) * (dt * dt) / (dx * dx);
+		auto d = damping * dt + 2.0f;
+		auto e = (speed * speed) * (dt * dt) / (dx * dx);
 		mK1 = (damping * dt - 2.0f) / d;
 		mK2 = (4.0f - 8.0f * e) / d;
 		mK3 = (2.0f * e) / d;
 
-		// In case Init() called again.
-		mPrevSolution.reset();
-		mCurrSolution.reset();
-
-		mPrevSolution = std::unique_ptr<DirectX::XMFLOAT3[]>(new DirectX::XMFLOAT3[m * n]);
-		mCurrSolution = std::unique_ptr<DirectX::XMFLOAT3[]>(new DirectX::XMFLOAT3[m * n]);
-
 		// Generate grid vertices in system memory.
 
-		float halfWidth = (n - 1) * dx * 0.5f;
-		float halfDepth = (m - 1) * dx * 0.5f;
+		auto halfWidth = (n - 1) * dx * 0.5f;
+		auto halfDepth = (m - 1) * dx * 0.5f;
 		for (auto i = 0u; i < m; ++i)
 		{
-			float z = halfDepth - i * dx;
+			auto z = halfDepth - i * dx;
 			for (auto j = 0u; j < n; ++j)
 			{
-				float x = -halfWidth + j * dx;
+				auto x = -halfWidth + j * dx;
 
 				mPrevSolution[i * n + j] = DirectX::XMFLOAT3(x, 0.0f, z);
 				mCurrSolution[i * n + j] = DirectX::XMFLOAT3(x, 0.0f, z);
@@ -71,7 +70,7 @@ public:
 
 	void Update(float dt)
 	{
-		static float t = 0;
+		static auto t = 0.0f;
 		// Accumulate time.
 		t += dt;
 		// Only update the simulation at the specified time step.
@@ -79,9 +78,9 @@ public:
 			return;
 
 		// Only update interior points; we use zero boundary conditions.
-		for (auto i = Win32::DWORD{1}; i < mNumRows - 1; ++i)
+		for (auto i = 1u; i < mNumRows - 1; ++i)
 		{
-			for (auto j = Win32::DWORD{1}; j < mNumCols - 1; ++j)
+			for (auto j = 1u; j < mNumCols - 1; ++j)
 			{
 				// After this update we will be discarding the old previous
 				// buffer, so overwrite that buffer with the new update.
@@ -116,7 +115,7 @@ public:
 		//assert(i > 1 && i < mNumRows - 2);
 		//assert(j > 1 && j < mNumCols - 2);
 
-		float halfMag = 0.5f * magnitude;
+		auto halfMag = 0.5f * magnitude;
 
 		// Disturb the ijth vertex height and its neighbors.
 		mCurrSolution[i * mNumCols + j].y += magnitude;
