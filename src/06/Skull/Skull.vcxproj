@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{ebc9b106-2852-4353-a305-25e58b5f0828}</ProjectGuid>
-    <RootNamespace>InitDirect3D</RootNamespace>
+    <ProjectGuid>{172686f7-03b8-4065-9532-2a432927fe70}</ProjectGuid>
+    <RootNamespace>Skull</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -113,6 +113,10 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <BuildStlModules>true</BuildStlModules>
+      <ModuleOutputFile>$(IntDir)$(RelativeDir)</ModuleOutputFile>
+      <ModuleDependenciesFile>$(IntDir)$(RelativeDir)</ModuleDependenciesFile>
+      <ObjectFileName>$(IntDir)$(RelativeDir)</ObjectFileName>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -132,6 +136,10 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <BuildStlModules>true</BuildStlModules>
+      <ModuleOutputFile>$(IntDir)$(RelativeDir)</ModuleOutputFile>
+      <ModuleDependenciesFile>$(IntDir)$(RelativeDir)</ModuleDependenciesFile>
+      <ObjectFileName>$(IntDir)$(RelativeDir)</ObjectFileName>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -143,13 +151,24 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="initdirect3d.ixx" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="skull.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.vcxproj">
       <Project>{df990ccb-27b1-487f-aac6-728208932207}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="FX\color.fx">
+      <FileType>Document</FileType>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)\%(Filename)_VS.cso;%(RelativeDir)\%(Filename)_PS.cso</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)\%(Filename)_VS.cso;%(RelativeDir)\%(Filename)_PS.cso</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fxc /nologo /Od /Zi /E VS /T vs_5_0 /Fo "%(RelativeDir)\%(Filename)_VS.cso" "%(FullPath)" &amp;&amp; fxc /nologo /Od /Zi /E PS /T ps_5_0 /Fo "%(RelativeDir)\%(Filename)_PS.cso" "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fxc compile for debug: %(FullPath)</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fxc /nologo /O3 /E VS /T vs_5_0 /Fo "%(RelativeDir)\%(Filename)_VS.cso" "%(FullPath)" &amp;&amp; fxc /nologo /O3 /E PS /T ps_5_0 /Fo "%(RelativeDir)\%(Filename)_PS.cso" "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fxc compile for release: %(FullPath)</Message>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

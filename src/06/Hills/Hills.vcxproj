@@ -116,6 +116,7 @@
       <ModuleOutputFile>$(IntDir)$(RelativeDir)</ModuleOutputFile>
       <ModuleDependenciesFile>$(IntDir)$(RelativeDir)</ModuleDependenciesFile>
       <ObjectFileName>$(IntDir)$(RelativeDir)</ObjectFileName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -134,6 +135,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

@@ -16,6 +16,7 @@
     <Project Path="06/Box/Box.vcxproj" Id="6d643628-9e35-48dc-95c0-585619572f11" />
     <Project Path="06/Hills/Hills.vcxproj" Id="e0ab6c62-1926-4d29-a5b1-7820a5d580b9" />
     <Project Path="06/Shapes/Shapes.vcxproj" Id="330e3f30-ac0c-4400-ac87-f1f0380009fa" />
+    <Project Path="06/Skull/Skull.vcxproj" Id="172686f7-03b8-4065-9532-2a432927fe70" />
   </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>

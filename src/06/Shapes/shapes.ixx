@@ -60,7 +60,7 @@ public:
 		Init();
 	}
 
-	void Init()
+	void Init() override
 	{
 		D3DApp::Init();
 		BuildGeometryBuffers();
@@ -74,14 +74,14 @@ public:
 		HR(md3dDevice->CreateRasterizerState(&wireframeDesc, &mWireframeRS));
 	}
 
-	void OnResize()
+	void OnResize() override
 	{
 		D3DApp::OnResize();
 		auto P = DirectX::XMMATRIX{DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f)};
 		DirectX::XMStoreFloat4x4(&mProj, P);
 	}
 
-	void UpdateScene(float dt)
+	void UpdateScene(float dt) override
 	{
 		// Convert Spherical to Cartesian coordinates.
 		auto x = mRadius * std::sinf(mPhi) * std::cosf(mTheta);
@@ -96,7 +96,7 @@ public:
 		DirectX::XMStoreFloat4x4(&mView, V);
 	}
 
-	void DrawScene()
+	void DrawScene() override
 	{
 		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView.get(), reinterpret_cast<const float*>(&DirectX::Colors::LightSteelBlue));
 		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
@@ -177,7 +177,7 @@ public:
 		HR(mSwapChain->Present(0, 0));
 	}
 
-	void OnMouseDown(Win32::WPARAM btnState, int x, int y)
+	void OnMouseDown(Win32::WPARAM btnState, int x, int y) override
 	{
 		mLastMousePos.x = x;
 		mLastMousePos.y = y;
@@ -185,12 +185,12 @@ public:
 		Win32::SetCapture(mhMainWnd);
 	}
 
-	void OnMouseUp(Win32::WPARAM btnState, int x, int y)
+	void OnMouseUp(Win32::WPARAM btnState, int x, int y) override
 	{
 		Win32::ReleaseCapture();
 	}
 
-	void OnMouseMove(Win32::WPARAM btnState, int x, int y)
+	void OnMouseMove(Win32::WPARAM btnState, int x, int y) override
 	{
 		if ((btnState & Win32::MK::LButton) != 0)
 		{
@@ -396,8 +396,7 @@ private:
 			vertexShaderBytecode->GetBufferSize(),
 			&mInputLayout
 		);
-		if (Win32::Failed(hr))
-			throw std::runtime_error{ "Failed to create input layout." };
+		HR(hr, "Failed to create input layout.");
 	}
 
 private:
