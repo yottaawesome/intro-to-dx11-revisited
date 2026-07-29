@@ -7,3 +7,4 @@ export import :d3dapp;
 export import :build;
 export import :comptr;
 export import :geometrygenerator;
+export import :lighthelper;

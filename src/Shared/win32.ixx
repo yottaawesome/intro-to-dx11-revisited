@@ -222,6 +222,7 @@ export namespace DirectX
 		::DirectX::XMMatrixIdentity,
 		::DirectX::XMMatrixMultiply,
 		::DirectX::XMMatrixLookAtLH,
+		::DirectX::XMMatrixSet,
 		::DirectX::XMMatrixLookToLH,
 		::DirectX::XMLoadFloat4x4,
 		::DirectX::XMConvertToRadians,

@@ -19,5 +19,8 @@
     <Project Path="06/Skull/Skull.vcxproj" Id="172686f7-03b8-4065-9532-2a432927fe70" />
     <Project Path="06/Waves/Waves.vcxproj" Id="16ab53ce-151d-4fdf-94ae-3032fb8f7327" />
   </Folder>
+  <Folder Name="/07/">
+    <Project Path="07/Lighting/Lighting.vcxproj" Id="ff706c78-2871-4505-8a40-da562c0af98c" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>

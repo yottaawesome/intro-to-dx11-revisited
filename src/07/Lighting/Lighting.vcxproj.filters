@@ -15,35 +15,17 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="shared.ixx">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="win32.ixx">
+    <ClCompile Include="lighting.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gametimer.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="d3dutil.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="mathhelper.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="d3dapp.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="build.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="comptr.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="geometrygenerator.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="lighthelper.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="FX\Lighting.fx" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FX\LightHelper.fx" />
   </ItemGroup>
 </Project>
