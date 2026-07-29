@@ -14,6 +14,7 @@ The effort is ongoing. The following projects are functional.
 * [06/Box](./src/06/Box)
 * [06/Hills](./src/06/Hills)
 * [06/Shapes](./src/06/Shapes)
+* [06/Skull](./src/06/Skull)
 
 ## Running log of changes
 
