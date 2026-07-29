@@ -29,7 +29,7 @@ public:
 	~ShapesApp() = default;
 
 	ShapesApp(Win32::HINSTANCE hInstance)
-		: D3DApp(hInstance)
+		: D3DApp{ hInstance }
 	{
 		mMainWndCaption = L"Shapes Demo";
 
@@ -63,10 +63,8 @@ public:
 	void Init()
 	{
 		D3DApp::Init();
-
 		BuildGeometryBuffers();
 		BuildShaders();
-
 		auto wireframeDesc = D3D11::D3D11_RASTERIZER_DESC{
 			.FillMode = D3D11::D3D11_FILL_MODE::D3D11_FILL_WIREFRAME,
 			.CullMode = D3D11::D3D11_CULL_MODE::D3D11_CULL_BACK,
@@ -179,7 +177,7 @@ public:
 		HR(mSwapChain->Present(0, 0));
 	}
 
-	void OnMouseDown(WPARAM btnState, int x, int y)
+	void OnMouseDown(Win32::WPARAM btnState, int x, int y)
 	{
 		mLastMousePos.x = x;
 		mLastMousePos.y = y;
@@ -187,12 +185,12 @@ public:
 		Win32::SetCapture(mhMainWnd);
 	}
 
-	void OnMouseUp(WPARAM btnState, int x, int y)
+	void OnMouseUp(Win32::WPARAM btnState, int x, int y)
 	{
 		Win32::ReleaseCapture();
 	}
 
-	void OnMouseMove(WPARAM btnState, int x, int y)
+	void OnMouseMove(Win32::WPARAM btnState, int x, int y)
 	{
 		if ((btnState & Win32::MK::LButton) != 0)
 		{
@@ -311,7 +309,7 @@ private:
 		auto vinitData = D3D11::D3D11_SUBRESOURCE_DATA{
 			.pSysMem = &vertices[0]
 		};
-		HR(md3dDevice->CreateBuffer(&vbd, &vinitData, &mVB));
+		HR(md3dDevice->CreateBuffer(&vbd, &vinitData, &mVB), "Failed to create vertex buffer.");
 
 		//
 		// Pack the indices of all the meshes into one index buffer.
@@ -331,7 +329,7 @@ private:
 		auto iinitData = D3D11::D3D11_SUBRESOURCE_DATA{
 			.pSysMem = &indices[0]
 		};
-		HR(md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
+		HR(md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB), "Failed to create index buffer.");
 	}
 
 	void BuildShaders()
@@ -350,15 +348,10 @@ private:
 		vertexShaderBytecode.reset();
 
 		auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		hr = D3D::D3DReadFileToBlob(L"FX/color_PS.cso", &pixelShaderBytecode);
-		if (Win32::Failed(hr))
-			throw std::runtime_error{ "Failed to read pixel shader file." };
+		HR(D3D::D3DReadFileToBlob(L"FX/color_PS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
 
-		hr = md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(),
-			pixelShaderBytecode->GetBufferSize(), 0, &mColorPS);
+		HR(md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mColorPS), "Failed to create pixel shader.");
 		pixelShaderBytecode.reset();
-		if (Win32::Failed(hr))
-			throw std::runtime_error{ "Failed to create pixel shader." };
 
 		auto cbd = D3D11::D3D11_BUFFER_DESC{
 			.ByteWidth = sizeof(PerObjectConstants),
@@ -369,8 +362,7 @@ private:
 			.StructureByteStride = 0,
 		};
 
-		if (hr = md3dDevice->CreateBuffer(&cbd, 0, &mPerObjectCB); Win32::Failed(hr))
-			throw std::runtime_error{ "Failed to create constant buffer." };
+		HR(md3dDevice->CreateBuffer(&cbd, 0, &mPerObjectCB), "Failed to create constant buffer.");
 	}
 
 	void BuildVertexLayout(D3D::ID3DBlob* vertexShaderBytecode)
