@@ -21,6 +21,9 @@
     <ClCompile Include="lighting.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="waves.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="FX\Lighting.fx" />
