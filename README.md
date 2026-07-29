@@ -25,6 +25,7 @@ The effort is ongoing. The following projects are functional.
 * ShaderFX compilation has been replaced with `D3DReadFileToBlob()`, `CreateVertexShader()`, and `CreatePixelShader()`.
 * I'm working on converting the `.fx` shader files over to standard HLSL.
 * Replaced the `Colors` namespace with `DirectX::Colors`.
+* Use of the `ZeroMemory` macro was replaced with simpler empty initialisers.
 * Functions have been updated to use trailing return type syntax.
 * Variable initialization has been updated to use right-hand braced and aggregate initialisation (where applicable).
 * The demo classes now call `Init()` in their constructors, removing the original two-phase initialisation process and its mixed return value/exception checking.
