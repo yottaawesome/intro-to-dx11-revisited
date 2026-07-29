@@ -15,6 +15,7 @@ module;
 #include <DirectXColors.h>
 #include <dxgi.h>
 #include <dxgi1_4.h>
+#include <comdef.h>
 
 export module shared:win32;
 
@@ -73,6 +74,9 @@ export namespace Win32
 		MButton = MK_MBUTTON
 	};
 
+	constexpr auto CpUtf8 = CP_UTF8;
+	constexpr auto WcNoBestFitChars = WC_NO_BEST_FIT_CHARS;
+
 	using
 		::HINSTANCE,
 		::LPWSTR,
@@ -98,7 +102,10 @@ export namespace Win32
 		::HICON,
 		::POINT,
 		::MSG,
+		::_com_error,
 		::_CrtSetDbgFlag,
+		::WideCharToMultiByte,
+		::MultiByteToWideChar,
 		::OutputDebugStringA,
 		::PeekMessageW,
 		::TranslateMessage,
