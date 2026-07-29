@@ -12,6 +12,7 @@ cbuffer cbPerFrame
     PointLight gPointLight;
     SpotLight gSpotLight;
     float3 gEyePosW;
+    float pad;
 };
 
 cbuffer cbPerObject

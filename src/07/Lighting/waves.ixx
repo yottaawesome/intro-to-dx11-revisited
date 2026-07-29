@@ -5,38 +5,65 @@ import shared;
 class Waves
 {
 public:
-	auto RowCount()const->std::uint32_t
+	auto RowCount()const -> std::uint32_t
 	{
 		return mNumRows;
 	}
 
-	auto ColumnCount()const->std::uint32_t
+	auto ColumnCount()const -> std::uint32_t
 	{
 		return mNumCols;
 	}
 
-	auto VertexCount()const->std::uint32_t
+	auto VertexCount()const -> std::uint32_t
 	{
 		return mVertexCount;
 	}
 
-	auto TriangleCount()const->std::uint32_t
+	auto TriangleCount()const -> std::uint32_t
 	{
 		return mTriangleCount;
 	}
 
+	auto Width()const -> float
+	{
+		return mNumCols * mSpatialStep;
+	}
+
+	auto Depth()const -> float
+	{
+		return mNumRows * mSpatialStep;
+	}
+
 	// Returns the solution at the ith grid point.
-	auto operator[](int i)const -> const DirectX::XMFLOAT3& { return mCurrSolution[i]; }
+	auto operator[](int i)const -> const DirectX::XMFLOAT3& 
+	{ 
+		return mCurrSolution[i]; 
+	}
+
+	// Returns the solution normal at the ith grid point.
+	auto Normal(int i)const -> const DirectX::XMFLOAT3& 
+	{ 
+		return mNormals[i]; 
+	}
+
+	// Returns the unit tangent vector at the ith grid point in the local x-axis direction.
+	auto TangentX(int i)const -> const DirectX::XMFLOAT3& 
+	{ 
+		return mTangentX[i]; 
+	}
 
 	void Init(std::uint32_t m, std::uint32_t n, float dx, float dt, float speed, float damping)
 	{
 		// In case Init() called again.
-		if (m != mNumRows or n != mNumCols or not mPrevSolution or not mCurrSolution)
+		if (m != mNumRows or n != mNumCols or not mCurrSolution or not mPrevSolution or not mNormals or not mTangentX)
 		{
 			mNumRows = m;
 			mNumCols = n;
-			mPrevSolution = std::unique_ptr<DirectX::XMFLOAT3[]>(new DirectX::XMFLOAT3[m * n]);
-			mCurrSolution = std::unique_ptr<DirectX::XMFLOAT3[]>(new DirectX::XMFLOAT3[m * n]);
+			mPrevSolution = std::unique_ptr<DirectX::XMFLOAT3[]>{ new DirectX::XMFLOAT3[m * n] };
+			mCurrSolution = std::unique_ptr<DirectX::XMFLOAT3[]>{ new DirectX::XMFLOAT3[m * n] };
+			mNormals = std::unique_ptr<DirectX::XMFLOAT3[]>{ new DirectX::XMFLOAT3[m * n] };
+			mTangentX = std::unique_ptr<DirectX::XMFLOAT3[]>{ new DirectX::XMFLOAT3[m * n] };
 		}
 
 		mVertexCount = m * n;
@@ -52,7 +79,6 @@ public:
 		mK3 = (2.0f * e) / d;
 
 		// Generate grid vertices in system memory.
-
 		auto halfWidth = (n - 1) * dx * 0.5f;
 		auto halfDepth = (m - 1) * dx * 0.5f;
 		for (auto i = 0u; i < m; ++i)
@@ -64,6 +90,8 @@ public:
 
 				mPrevSolution[i * n + j] = DirectX::XMFLOAT3(x, 0.0f, z);
 				mCurrSolution[i * n + j] = DirectX::XMFLOAT3(x, 0.0f, z);
+				mNormals[i * n + j] = DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f);
+				mTangentX[i * n + j] = DirectX::XMFLOAT3(1.0f, 0.0f, 0.0f);
 			}
 		}
 	}
@@ -107,6 +135,30 @@ public:
 		std::swap(mPrevSolution, mCurrSolution);
 
 		t = 0.0f; // reset time
+
+		//
+		// Compute normals using finite difference scheme.
+		//
+		for (auto i = 1u; i < mNumRows - 1; ++i)
+		{
+			for (auto j = 1u; j < mNumCols - 1; ++j)
+			{
+				auto l = mCurrSolution[i * mNumCols + j - 1].y;
+				auto r = mCurrSolution[i * mNumCols + j + 1].y;
+				auto t = mCurrSolution[(i - 1) * mNumCols + j].y;
+				auto b = mCurrSolution[(i + 1) * mNumCols + j].y;
+				mNormals[i * mNumCols + j].x = -r + l;
+				mNormals[i * mNumCols + j].y = 2.0f * mSpatialStep;
+				mNormals[i * mNumCols + j].z = b - t;
+
+				auto n = DirectX::XMVECTOR{DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&mNormals[i * mNumCols + j]))};
+				DirectX::XMStoreFloat3(&mNormals[i * mNumCols + j], n);
+
+				mTangentX[i * mNumCols + j] = DirectX::XMFLOAT3(2.0f * mSpatialStep, r - l, 0.0f);
+				auto T = DirectX::XMVECTOR{DirectX::XMVector3Normalize(DirectX::XMLoadFloat3(&mTangentX[i * mNumCols + j]))};
+				DirectX::XMStoreFloat3(&mTangentX[i * mNumCols + j], T);
+			}
+		}
 	}
 
 	void Disturb(std::uint32_t i, std::uint32_t j, float magnitude)
@@ -142,4 +194,6 @@ private:
 
 	std::unique_ptr<DirectX::XMFLOAT3[]> mPrevSolution;
 	std::unique_ptr<DirectX::XMFLOAT3[]> mCurrSolution;
+	std::unique_ptr<DirectX::XMFLOAT3[]> mNormals;
+	std::unique_ptr<DirectX::XMFLOAT3[]> mTangentX;
 };

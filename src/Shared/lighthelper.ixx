@@ -13,7 +13,7 @@ export
 		DirectX::XMFLOAT4 Diffuse = DirectX::XMFLOAT4{0.0f, 0.0f, 0.0f, 0.0f};
 		DirectX::XMFLOAT4 Specular = DirectX::XMFLOAT4{0.0f, 0.0f, 0.0f, 0.0f};
 		DirectX::XMFLOAT3 Direction = DirectX::XMFLOAT3{0.0f, 0.0f, 0.0f};
-		float Pad = 0; // Pad the last float so we can set an array of lights if we wanted.
+		[[maybe_unused]]float Pad = 0.f; // Pad the last float so we can set an array of lights if we wanted.
 	};
 
 	struct PointLight
@@ -28,7 +28,7 @@ export
 
 		// Packed into 4D vector: (A0, A1, A2, Pad)
 		DirectX::XMFLOAT3 Att = DirectX::XMFLOAT3{0.0f, 0.0f, 0.0f};
-		float Pad = 0.0f; // Pad the last float so we can set an array of lights if we wanted.
+		[[maybe_unused]] float Pad = 0.0f; // Pad the last float so we can set an array of lights if we wanted.
 	};
 
 	struct SpotLight
@@ -47,7 +47,7 @@ export
 
 		// Packed into 4D vector: (Att, Pad)
 		DirectX::XMFLOAT3 Att = DirectX::XMFLOAT3{0.0f, 0.0f, 0.0f};
-		float Pad = 0.0f; // Pad the last float so we can set an array of lights if we wanted.
+		[[maybe_unused]] float Pad = 0.0f; // Pad the last float so we can set an array of lights if we wanted.
 	};
 
 	struct Material

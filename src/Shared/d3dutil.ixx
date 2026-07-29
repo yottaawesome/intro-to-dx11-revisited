@@ -147,12 +147,12 @@ export
 	inline auto HR(Win32::HRESULT hr, std::source_location location = std::source_location::current())
 	{                                                           
 		if (Win32::Failed(hr))                                  
-			throw std::runtime_error{std::format("HRESULT 0x{:08X} failed at {}:{}:{}", hr, location.function_name(), location.file_name(), location.line())};
+			throw DxException{hr, location};
 	}
 	inline auto HR(Win32::HRESULT hr, std::string_view msg, std::source_location location = std::source_location::current())
 	{
 		if (Win32::Failed(hr))
-			throw std::runtime_error{ std::format("HRESULT 0x{:08X} failed at {}:{}:{}; message: {}", hr, location.function_name(), location.file_name(), location.line(), msg) };
+			throw DxException{hr, msg, location};
 	}
 
 	struct d3dHelper

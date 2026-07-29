@@ -197,7 +197,11 @@ export namespace Win32
 
 export
 {
-	using DirectX::operator*;
+	using 
+		::DirectX::operator*,
+		::DirectX::operator-,
+		::DirectX::operator+
+		;
 }
 
 export namespace DirectX
