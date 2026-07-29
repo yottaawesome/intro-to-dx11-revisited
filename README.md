@@ -13,6 +13,7 @@ The effort is ongoing. The following projects are functional.
 * [04/Init Direct3D](<./src/04/Init Direct3D>)
 * [06/Box](./src/06/Box)
 * [06/Hills](./src/06/Hills)
+* [06/Shapes](./src/06/Shapes)
 
 ## Running log of changes
 
