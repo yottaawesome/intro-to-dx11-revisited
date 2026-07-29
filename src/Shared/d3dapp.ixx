@@ -132,7 +132,7 @@ public:
 		HR(md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.get(), 0, &mDepthStencilView));
 
 		// Bind the render target view and depth/stencil view to the pipeline.
-		md3dImmediateContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView.get());
+		md3dImmediateContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), mDepthStencilView.get());
 
 		// Set the viewport transform.
 		mScreenViewport = {

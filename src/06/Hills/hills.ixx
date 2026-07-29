@@ -62,7 +62,8 @@ public:
 
 		auto stride = std::uint32_t{ sizeof(Vertex) };
 		auto offset = 0u;
-		md3dImmediateContext->IASetVertexBuffers(0, 1, &mVB, &stride, &offset);
+		auto vertexBuffers = std::array{ mVB.get() };
+		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(vertexBuffers.size()), vertexBuffers.data(), &stride, &offset);
 		md3dImmediateContext->IASetIndexBuffer(mIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
 		// Set constants

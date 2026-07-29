@@ -72,6 +72,8 @@ public:
 
 	constexpr auto operator&() -> T**
 	{
+		if (m_ptr)
+			m_ptr->Release();
 		return &m_ptr;
 	}
 
