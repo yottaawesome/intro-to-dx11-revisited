@@ -17,6 +17,7 @@ The effort is ongoing. The following projects are functional.
 * [06/Skull](./src/06/Skull)
 * [06/Waves](./src/06/Waves)
 * [07/Lighting](./src/07/Lighting)
+* [07/LitSkull](./src/07/LitSkull)
 
 ## Running log of changes
 
