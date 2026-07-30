@@ -21,6 +21,12 @@
     <ClCompile Include="litskull.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="litskullapp.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vertex.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="FX\LightHelper.fx" />

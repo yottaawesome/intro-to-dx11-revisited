@@ -103,6 +103,7 @@ export namespace Win32
 		::POINT,
 		::MSG,
 		::_com_error,
+		::GetAsyncKeyState,
 		::_CrtSetDbgFlag,
 		::WideCharToMultiByte,
 		::MultiByteToWideChar,
