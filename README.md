@@ -16,6 +16,7 @@ The effort is ongoing. The following projects are functional.
 * [06/Shapes](./src/06/Shapes)
 * [06/Skull](./src/06/Skull)
 * [06/Waves](./src/06/Waves)
+* [07/Lighting](./src/07/Lighting)
 
 ## Running log of changes
 
@@ -25,7 +26,7 @@ The effort is ongoing. The following projects are functional.
 * Added a lightweight `ComPtr` wrapper for COM types. I did not use Microsoft's `WRL::ComPtr` class as I'm not a fan of its constructor semantics. My version also includes a `Uuid()` member, removing the need for the ugly `IID_PPV_ARGS` macro.
 * `InitMainWindow()` and `InitDirect3D()` now throw exceptions on errors, which also simplifies the code be removing the `bool` checks.
 * ShaderFX compilation has been replaced with `D3DReadFileToBlob()`, `CreateVertexShader()`, and `CreatePixelShader()`.
-* I'm working on converting the `.fx` shader files over to standard HLSL.
+* I'm working on converting the `.fx` shader files over to standard HLSL. I'm still investigating the feasibility of this and whether it's worthwhile, as DX11 is limited to Shader Model 5.0, which is unrecognised by the newer `DXCompiler`, which in turn means we're stuck on the older `D3DCompiler` when working with DX11.
 * Replaced the `Colors` namespace with `DirectX::Colors`.
 * Use of the `ZeroMemory` macro was replaced with simpler empty initialisers.
 * Functions have been updated to use trailing return type syntax.
@@ -34,6 +35,8 @@ The effort is ongoing. The following projects are functional.
 * Replaced some macros with `constexpr` functions and conditionals.
 * Various preprocessor numeric definitions have been converted into `constexpr` variables.
 * Removed some redundant null pointer checks, such as when `std::make_unique()` is used (this throws on error).
+* Incorrect padding and alignment issues in constant buffers that were encountered in some samples (e.g. Lighting) have been fixed.
+* Constructor value setting has been moved to inline initialisers, where possible.
 
 ## License and copyright
 
