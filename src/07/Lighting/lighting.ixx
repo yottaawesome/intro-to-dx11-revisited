@@ -37,13 +37,13 @@ public:
 		mLastMousePos.x = 0;
 		mLastMousePos.y = 0;
 
-		DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
+		auto I = DirectX::XMMATRIX{DirectX::XMMatrixIdentity()};
 		DirectX::XMStoreFloat4x4(&mLandWorld, I);
 		DirectX::XMStoreFloat4x4(&mWavesWorld, I);
 		DirectX::XMStoreFloat4x4(&mView, I);
 		DirectX::XMStoreFloat4x4(&mProj, I);
 
-		DirectX::XMMATRIX wavesOffset = DirectX::XMMatrixTranslation(0.0f, -3.0f, 0.0f);
+		auto wavesOffset = DirectX::XMMATRIX{DirectX::XMMatrixTranslation(0.0f, -3.0f, 0.0f)};
 		DirectX::XMStoreFloat4x4(&mWavesWorld, wavesOffset);
 
 		// Directional light.
@@ -175,13 +175,17 @@ public:
 		DirectX::XMMATRIX proj = XMLoadFloat4x4(&mProj);
 		DirectX::XMMATRIX viewProj = view * proj;
 
+		//
 		// Set per frame constants.
-		//mfxDirLight->SetRawValue(&mDirLight, 0, sizeof(mDirLight));
-		//mfxPointLight->SetRawValue(&mPointLight, 0, sizeof(mPointLight));
-		//mfxSpotLight->SetRawValue(&mSpotLight, 0, sizeof(mSpotLight));
-		//mfxEyePosW->SetRawValue(&mEyePosW, 0, sizeof(mEyePosW));
-
-		
+		auto perFrame = PerFrameConstants{
+			.gDirLight = mDirLight,
+			.gPointLight = mPointLight,
+			.gSpotLight = mSpotLight,
+			.gEyePosW = mEyePosW,
+		};
+		md3dImmediateContext->UpdateSubresource(mPerFrameCB.get(), 0, 0, &perFrame, 0, 0);
+		md3dImmediateContext->VSSetShader(mColorVS.get(), 0, 0);
+		md3dImmediateContext->PSSetShader(mColorPS.get(), 0, 0);
 
 		//
 		// Draw the hills.
@@ -189,59 +193,41 @@ public:
 		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(vertexBuffers.size()), vertexBuffers.data(), &stride, &offset);
 		md3dImmediateContext->IASetIndexBuffer(mLandIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		auto perFrame = PerFrameConstants{
-			.gDirLight = mDirLight,
-			.gPointLight = mPointLight,
-			.gSpotLight = mSpotLight,
-			.gEyePosW = mEyePosW,
-		};
-
 		// Set per object constants.
-		auto perObject = PerObjectConstants{.Mat = mLandMat };
-		DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&mLandWorld);
-		DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		DirectX::XMMATRIX worldViewProj = world * view * proj;
-		DirectX::XMStoreFloat4x4(&perObject.World, world);
-		DirectX::XMStoreFloat4x4(&perObject.WorldInvTranspose, worldInvTranspose);
-		DirectX::XMStoreFloat4x4(&perObject.WorldViewProj, worldViewProj);
-		md3dImmediateContext->UpdateSubresource(mPerFrameCB.get(), 0, 0, &perFrame, 0, 0);
-		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, 0, &perObject, 0, 0);
+		auto landObject = PerObjectConstants{.Mat = mLandMat };
+		auto world = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mLandWorld)};
+		auto worldInvTranspose = DirectX::XMMATRIX{MathHelper::InverseTranspose(world)};
+		auto worldViewProj = DirectX::XMMATRIX{world * view * proj};
+		DirectX::XMStoreFloat4x4(&landObject.World, world);
+		DirectX::XMStoreFloat4x4(&landObject.WorldInvTranspose, worldInvTranspose);
+		DirectX::XMStoreFloat4x4(&landObject.WorldViewProj, worldViewProj);
+		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, 0, &landObject, 0, 0);
 
-		md3dImmediateContext->VSSetShader(mColorVS.get(), 0, 0);
 		auto vsConstantBuffers = std::array{ mPerObjectCB.get() };
 		md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(vsConstantBuffers.size()), vsConstantBuffers.data());
-		md3dImmediateContext->PSSetShader(mColorPS.get(), 0, 0);
 		md3dImmediateContext->UpdateSubresource(mPerFrameCB.get(), 0, 0, &perFrame, 0, 0);
 		auto psConstantBuffers = std::array{ mPerFrameCB.get(), mPerObjectCB.get() };
 		md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstantBuffers.size()), psConstantBuffers.data());
 
-			//mfxWorld->SetMatrix(reinterpret_cast<float*>(&world));
-			//mfxWorldInvTranspose->SetMatrix(reinterpret_cast<float*>(&worldInvTranspose));
-			//mfxWorldViewProj->SetMatrix(reinterpret_cast<float*>(&worldViewProj));
-			//mfxMaterial->SetRawValue(&mLandMat, 0, sizeof(mLandMat));
-
-			//mTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
 		md3dImmediateContext->DrawIndexed(mLandIndexCount, 0, 0);
 
-			//
-			// Draw the waves.
-			//
-			/*md3dImmediateContext->IASetVertexBuffers(0, 1, &mWavesVB, &stride, &offset);
-			md3dImmediateContext->IASetIndexBuffer(mWavesIB, DXGI_FORMAT_R32_UINT, 0);*/
+		//
+		// Draw the waves.
+		auto waveVertexBuffers = std::array{ mWavesVB.get() };
+		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(waveVertexBuffers.size()), waveVertexBuffers.data(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mWavesIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-			// Set per object constants.
-			/*world = XMLoadFloat4x4(&mWavesWorld);
-			worldInvTranspose = MathHelper::InverseTranspose(world);
-			worldViewProj = world * view * proj;
+		// Set per object constants.
+		auto wavesObject = PerObjectConstants{ .Mat = mWavesMat };
+		world = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mWavesWorld)};
+		worldInvTranspose = DirectX::XMMATRIX{MathHelper::InverseTranspose(world)};
+		worldViewProj = DirectX::XMMATRIX{world * view * proj};
+		DirectX::XMStoreFloat4x4(&wavesObject.World, world);
+		DirectX::XMStoreFloat4x4(&wavesObject.WorldInvTranspose, worldInvTranspose);
+		DirectX::XMStoreFloat4x4(&wavesObject.WorldViewProj, worldViewProj);
+		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, 0, &wavesObject, 0, 0);
 
-			mfxWorld->SetMatrix(reinterpret_cast<float*>(&world));
-			mfxWorldInvTranspose->SetMatrix(reinterpret_cast<float*>(&worldInvTranspose));
-			mfxWorldViewProj->SetMatrix(reinterpret_cast<float*>(&worldViewProj));
-			mfxMaterial->SetRawValue(&mWavesMat, 0, sizeof(mWavesMat));
-
-			mTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-			md3dImmediateContext->DrawIndexed(3 * mWaves.TriangleCount(), 0, 0);*/
-		//}
+		md3dImmediateContext->DrawIndexed(3 * mWaves.TriangleCount(), 0, 0);
 
 		HR(mSwapChain->Present(0, 0));
 	}
@@ -513,7 +499,7 @@ private:
 	DirectX::XMFLOAT4X4 mLandWorld;
 	DirectX::XMFLOAT4X4 mWavesWorld;
 
-	UINT mLandIndexCount = 0;
+	std::uint32_t mLandIndexCount = 0;
 
 	std::uint32_t mGridIndexCount = 0;
 
