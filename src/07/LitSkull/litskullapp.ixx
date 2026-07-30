@@ -105,10 +105,6 @@ public:
 	{
 		D3DApp::Init();
 
-		// Must init Effects first since InputLayouts depend on shader signatures.
-		//Effects::InitAll(md3dDevice);
-		//InputLayouts::InitAll(md3dDevice.get());
-
 		BuildShapeGeometryBuffers();
 		BuildSkullGeometryBuffers();
 		BuildShaders();
@@ -215,55 +211,54 @@ public:
 
 		md3dImmediateContext->DrawIndexed(mBoxIndexCount, mBoxIndexOffset, mBoxVertexOffset);
 
-		//	// Draw the cylinders.
-		//	for (int i = 0; i < 10; ++i)
-		//	{
-		//		world = XMLoadFloat4x4(&mCylWorld[i]);
-		//		worldInvTranspose = MathHelper::InverseTranspose(world);
-		//		worldViewProj = world * view * proj;
+		// Draw the cylinders.
+		for (int i = 0; i < 10; ++i)
+		{
+			world = XMLoadFloat4x4(&mCylWorld[i]);
+			worldInvTranspose = MathHelper::InverseTranspose(world);
+			worldViewProj = world * viewProj;
 
-		//		Effects::BasicFX->SetWorld(world);
-		//		Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//		Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//		Effects::BasicFX->SetMaterial(mCylinderMat);
+			auto cylinderObject = PerObjectConstants{ .gMaterial = mCylinderMat };
+			DirectX::XMStoreFloat4x4(&cylinderObject.gWorld, world);
+			DirectX::XMStoreFloat4x4(&cylinderObject.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&cylinderObject.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&cylinderObject.gTexTransform, DirectX::XMMatrixIdentity());
+			md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, 0, &cylinderObject, 0, 0);
+			md3dImmediateContext->DrawIndexed(mCylinderIndexCount, mCylinderIndexOffset, mCylinderVertexOffset);
+		}
 
-		//		activeTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//		md3dImmediateContext->DrawIndexed(mCylinderIndexCount, mCylinderIndexOffset, mCylinderVertexOffset);
-		//	}
+		// Draw the spheres.
+		for (int i = 0; i < 10; ++i)
+		{
+			world = XMLoadFloat4x4(&mSphereWorld[i]);
+			worldInvTranspose = MathHelper::InverseTranspose(world);
+			worldViewProj = world * viewProj;
 
-		//	// Draw the spheres.
-		//	for (int i = 0; i < 10; ++i)
-		//	{
-		//		world = XMLoadFloat4x4(&mSphereWorld[i]);
-		//		worldInvTranspose = MathHelper::InverseTranspose(world);
-		//		worldViewProj = world * view * proj;
+			auto sphereObject = PerObjectConstants{ .gMaterial = mSphereMat };
+			DirectX::XMStoreFloat4x4(&sphereObject.gWorld, world);
+			DirectX::XMStoreFloat4x4(&sphereObject.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&sphereObject.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&sphereObject.gTexTransform, DirectX::XMMatrixIdentity());
+			md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, 0, &sphereObject, 0, 0);
+			md3dImmediateContext->DrawIndexed(mSphereIndexCount, mSphereIndexOffset, mSphereVertexOffset);
+		}
 
-		//		Effects::BasicFX->SetWorld(world);
-		//		Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//		Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//		Effects::BasicFX->SetMaterial(mSphereMat);
+		// Draw the skull.
+		auto skullVertexBuffers = std::array{ mSkullVB.get() };
+		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(skullVertexBuffers.size()), skullVertexBuffers.data(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mSkullIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		//		activeTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//		md3dImmediateContext->DrawIndexed(mSphereIndexCount, mSphereIndexOffset, mSphereVertexOffset);
-		//	}
+		world = XMLoadFloat4x4(&mSkullWorld);
+		worldInvTranspose = MathHelper::InverseTranspose(world);
+		worldViewProj = world * viewProj;
 
-		//	// Draw the skull.
-
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mSkullVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mSkullIB, DXGI_FORMAT_R32_UINT, 0);
-
-		//	world = XMLoadFloat4x4(&mSkullWorld);
-		//	worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	worldViewProj = world * view * proj;
-
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetMaterial(mSkullMat);
-
-		//	activeTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
-		//}
+		auto skullObject = PerObjectConstants{ .gMaterial = mSkullMat };
+		DirectX::XMStoreFloat4x4(&skullObject.gWorld, world);
+		DirectX::XMStoreFloat4x4(&skullObject.gWorldInvTranspose, worldInvTranspose);
+		DirectX::XMStoreFloat4x4(&skullObject.gWorldViewProj, worldViewProj);
+		DirectX::XMStoreFloat4x4(&skullObject.gTexTransform, DirectX::XMMatrixIdentity());
+		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, 0, &skullObject, 0, 0);
+		md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
 
 		HR(mSwapChain->Present(0, 0));
 	}
@@ -427,7 +422,6 @@ private:
 	void BuildSkullGeometryBuffers()
 	{
 		auto fin = std::ifstream("Models/skull.txt");
-
 		if (not fin)
 			throw std::runtime_error("Models/skull.txt not found.");
 
@@ -456,7 +450,6 @@ private:
 		{
 			fin >> indices[i * 3 + 0] >> indices[i * 3 + 1] >> indices[i * 3 + 2];
 		}
-
 		fin.close();
 
 		auto vbd = D3D11::D3D11_BUFFER_DESC{
