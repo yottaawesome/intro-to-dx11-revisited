@@ -16,9 +16,10 @@ cbuffer cbPerFrame
 	// It's not clear why, but this variable does not work
 	// if it's placed after gFogColor. I think I'm not understanding
 	// something about the packing rules.
+	// https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-packing-rules
     int gLightCount;
-    float4 gFogColor;
     float pad[2];
+    float4 gFogColor;
 };
 
 cbuffer cbPerObject

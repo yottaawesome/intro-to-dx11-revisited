@@ -8,6 +8,7 @@ struct PosNormal
 	DirectX::XMFLOAT3 Normal;
 };
 
+// https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-packing-rules
 struct PerFrameConstants
 {
 	DirectionalLight gDirLights[3];
@@ -16,10 +17,11 @@ struct PerFrameConstants
 	float gFogStart;
 	float gFogRange;
 	int gLightCount = 0;
-	DirectX::XMFLOAT4 gFogColor;
 	float pad[2];
+	DirectX::XMFLOAT4 gFogColor;
 };
 
+// https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-packing-rules
 struct PerObjectConstants
 {
 	DirectX::XMFLOAT4X4 gWorld;
