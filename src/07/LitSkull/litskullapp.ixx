@@ -14,9 +14,11 @@ struct PerFrameConstants
 	DirectionalLight gDirLights[3];
 	DirectX::XMFLOAT3 gEyePosW;
 
-	float  gFogStart;
-	float  gFogRange;
+	float gFogStart;
+	float gFogRange;
+	int gLightCount = 0;
 	DirectX::XMFLOAT4 gFogColor;
+	float pad[2];
 };
 
 struct PerObjectConstants
@@ -153,11 +155,11 @@ public:
 		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView.get(), reinterpret_cast<const float*>(&DirectX::Colors::LightSteelBlue));
 		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
 
-		md3dImmediateContext->IASetInputLayout(posNormal.get());
+		md3dImmediateContext->IASetInputLayout(mPosNormal.get());
 		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 		auto stride = static_cast<std::uint32_t>(sizeof(PosNormal));
-		auto offset = 0;
+		auto offset = 0u;
 
 		auto view = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mView)};
 		auto proj = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mProj) };
@@ -166,67 +168,52 @@ public:
 		// Set per frame constants.
 		md3dImmediateContext->VSSetShader(mColorVS.get(), 0, 0);
 		md3dImmediateContext->PSSetShader(mColorPS.get(), 0, 0);
-
 		auto perframe = PerFrameConstants{
+			.gDirLights = {},
 			.gEyePosW = mEyePosW,
 			.gFogStart = 15.0f,
 			.gFogRange = 175.0f,
+			.gLightCount = static_cast<std::int32_t>(mLightCount),
 			.gFogColor = DirectX::XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f),
 		};
 		for (auto i = 0u; i < mLightCount; ++i)
 			perframe.gDirLights[i] = mDirLights[i];
 		md3dImmediateContext->UpdateSubresource(mPerFrameCB.get(), 0, 0, &perframe, 0, 0);
+		
+		auto shapesVertexBuffers = std::array{ mShapesVB.get() };
+		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(shapesVertexBuffers.size()), shapesVertexBuffers.data(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mShapesIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		//Effects::BasicFX->SetDirLights(mDirLights);
-		//Effects::BasicFX->SetEyePosW(mEyePosW);
+		// Draw the grid.
+		auto perObject = PerObjectConstants{.gMaterial = mGridMat};
+		DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&mGridWorld);
+		DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
+		DirectX::XMMATRIX worldViewProj = world * viewProj;
+		DirectX::XMStoreFloat4x4(&perObject.gWorld, world);
+		DirectX::XMStoreFloat4x4(&perObject.gWorldInvTranspose, worldInvTranspose);
+		DirectX::XMStoreFloat4x4(&perObject.gWorldViewProj, worldViewProj);
+		DirectX::XMStoreFloat4x4(&perObject.gTexTransform, DirectX::XMMatrixIdentity());
+		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, 0, &perObject, 0, 0);
 
-		//// Figure out which technique to use.
-		//ID3DX11EffectTechnique* activeTech = Effects::BasicFX->Light1Tech;
-		//switch (mLightCount)
-		//{
-		//case 1:
-		//	activeTech = Effects::BasicFX->Light1Tech;
-		//	break;
-		//case 2:
-		//	activeTech = Effects::BasicFX->Light2Tech;
-		//	break;
-		//case 3:
-		//	activeTech = Effects::BasicFX->Light3Tech;
-		//	break;
-		//}
+		auto gridVSConstantBuffers = std::array{ mPerObjectCB.get() };
+		md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(gridVSConstantBuffers.size()), gridVSConstantBuffers.data());
+		auto gridPSConstantBuffers = std::array{ mPerFrameCB.get(), mPerObjectCB.get() };
+		md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(gridPSConstantBuffers.size()), gridPSConstantBuffers.data());
 
-		//D3DX11_TECHNIQUE_DESC techDesc;
-		//activeTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mShapesVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mShapesIB, DXGI_FORMAT_R32_UINT, 0);
-
-		//	// Draw the grid.
-		//	XMMATRIX world = XMLoadFloat4x4(&mGridWorld);
-		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	XMMATRIX worldViewProj = world * view * proj;
-
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetMaterial(mGridMat);
-
-		//	activeTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mGridIndexCount, mGridIndexOffset, mGridVertexOffset);
+		md3dImmediateContext->DrawIndexed(mGridIndexCount, mGridIndexOffset, mGridVertexOffset);
 
 		//	// Draw the box.
-		//	world = XMLoadFloat4x4(&mBoxWorld);
-		//	worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	worldViewProj = world * view * proj;
+		world = XMLoadFloat4x4(&mBoxWorld);
+		worldInvTranspose = MathHelper::InverseTranspose(world);
+		worldViewProj = world * viewProj;
+		auto boxObject = PerObjectConstants{ .gMaterial = mBoxMat };
+		DirectX::XMStoreFloat4x4(&boxObject.gWorld, world);
+		DirectX::XMStoreFloat4x4(&boxObject.gWorldInvTranspose, worldInvTranspose);
+		DirectX::XMStoreFloat4x4(&boxObject.gWorldViewProj, worldViewProj);
+		DirectX::XMStoreFloat4x4(&boxObject.gTexTransform, DirectX::XMMatrixIdentity());
+		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, 0, &boxObject, 0, 0);
 
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetMaterial(mBoxMat);
-
-		//	activeTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mBoxIndexCount, mBoxIndexOffset, mBoxVertexOffset);
+		md3dImmediateContext->DrawIndexed(mBoxIndexCount, mBoxIndexOffset, mBoxVertexOffset);
 
 		//	// Draw the cylinders.
 		//	for (int i = 0; i < 10; ++i)
@@ -502,7 +489,7 @@ private:
 	void BuildShaders()
 	{
 		auto vertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		HR(D3D::D3DReadFileToBlob(L"FX/Lighting_VS.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
+		HR(D3D::D3DReadFileToBlob(L"FX/Basic_VS.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
 
 		auto hr = md3dDevice->CreateVertexShader(vertexShaderBytecode->GetBufferPointer(),
 			vertexShaderBytecode->GetBufferSize(), 0, &mColorVS);
@@ -512,7 +499,7 @@ private:
 		vertexShaderBytecode.reset();
 
 		auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		HR(D3D::D3DReadFileToBlob(L"FX/Lighting_PS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
+		HR(D3D::D3DReadFileToBlob(L"FX/Basic_PS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
 
 		HR(md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mColorPS), "Failed to create pixel shader.");
 		pixelShaderBytecode.reset();
@@ -527,7 +514,7 @@ private:
 		};
 		HR(md3dDevice->CreateBuffer(&perFrameCbd, 0, &mPerFrameCB), "Failed to create constant buffer.");
 
-		auto cbd = D3D11::D3D11_BUFFER_DESC{
+		auto perObjectCbd = D3D11::D3D11_BUFFER_DESC{
 			.ByteWidth = sizeof(PerObjectConstants),
 			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
 			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
@@ -535,7 +522,7 @@ private:
 			.MiscFlags = 0,
 			.StructureByteStride = 0,
 		};
-		HR(md3dDevice->CreateBuffer(&cbd, 0, &mPerObjectCB), "Failed to create constant buffer.");
+		HR(md3dDevice->CreateBuffer(&perObjectCbd, 0, &mPerObjectCB), "Failed to create constant buffer.");
 	}
 
 	void BuildInputLayout(D3D::ID3DBlob* vertexShaderBytecode)
@@ -567,7 +554,7 @@ private:
 			static_cast<std::uint32_t>(vertexDesc.size()),
 			vertexShaderBytecode->GetBufferPointer(),
 			vertexShaderBytecode->GetBufferSize(),
-			&posNormal
+			&mPosNormal
 		);
 		HR(hr, "Failed to create input layout.");
 	}
@@ -578,7 +565,7 @@ private:
 
 	ComPtr<D3D11::ID3D11Buffer> mSkullVB;
 	ComPtr<D3D11::ID3D11Buffer> mSkullIB;
-	ComPtr<D3D11::ID3D11InputLayout> posNormal;
+	ComPtr<D3D11::ID3D11InputLayout> mPosNormal;
 	ComPtr<D3D11::ID3D11VertexShader> mColorVS;
 	ComPtr<D3D11::ID3D11PixelShader> mColorPS;
 	ComPtr<D3D11::ID3D11Buffer> mPerFrameCB;

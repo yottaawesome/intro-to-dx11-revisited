@@ -11,17 +11,24 @@ cbuffer cbPerFrame
 	DirectionalLight gDirLights[3];
 	float3 gEyePosW;
 
-	float  gFogStart;
-	float  gFogRange;
-	float4 gFogColor;
+	float gFogStart;
+	float gFogRange;
+	// It's not clear why, but this variable does not work
+	// if it's placed after gFogColor. I think I'm not understanding
+	// something about the packing rules.
+    int gLightCount;
+    float4 gFogColor;
+    float pad[2];
 };
 
 cbuffer cbPerObject
 {
-	float4x4 gWorld;
-	float4x4 gWorldInvTranspose;
-	float4x4 gWorldViewProj;
-	float4x4 gTexTransform;
+	// Row major matrices are required because we will be using DirectXMath to do the matrix math on the CPU side.  
+	// If we were to use column major matrices, we would have to transpose them before sending them to the GPU.
+    row_major float4x4 gWorld;
+    row_major float4x4 gWorldInvTranspose;
+    row_major float4x4 gWorldViewProj;
+    row_major float4x4 gTexTransform;
 	Material gMaterial;
 }; 
 
@@ -64,7 +71,7 @@ VertexOut VS(VertexIn vin)
 	return vout;
 }
  
-float4 PS(VertexOut pin, uniform int gLightCount) : SV_Target
+float4 PS(VertexOut pin) : SV_Target
 {
 	// Interpolating normal can unnormalize it, so normalize it.
     pin.NormalW = normalize(pin.NormalW);
