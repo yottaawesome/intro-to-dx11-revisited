@@ -150,9 +150,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="litskull.ixx" />
-    <ClCompile Include="litskullapp.ixx" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="vertex.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.vcxproj">
