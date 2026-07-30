@@ -34,6 +34,8 @@ The effort is ongoing. The following projects are functional.
 * Replaced some macros with `constexpr` functions and conditionals.
 * Various preprocessor numeric definitions have been converted into `constexpr` variables.
 * Removed some redundant null pointer checks, such as when `std::make_unique()` is used (this throws on error).
+* Incorrect padding and alignment issues in constant buffers that were encountered in some samples (e.g. Lighting) have been fixed.
+* Constructor value setting has been moved to inline initialisers, where possible.
 
 ## License and copyright
 
