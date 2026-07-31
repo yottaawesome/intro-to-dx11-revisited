@@ -18,7 +18,7 @@ struct PerFrameConstants
 	float gFogStart;
 	float gFogRange;
 	int gLightCount = 0;
-	int gUseTexure = 0;
+	int gUseTexture = 0;
 	DirectX::XMFLOAT4 gFogColor;
 	int pad;
 };
@@ -124,7 +124,7 @@ public:
 			.gFogStart = 0,
 			.gFogRange = 0,
 			.gLightCount = mLightCount,
-			.gUseTexure = true,
+			.gUseTexture = true,
 			.gFogColor = DirectX::XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f),
 		};
 		std::copy(std::begin(mDirLights), std::end(mDirLights), std::begin(perframe.gDirLights));
@@ -151,14 +151,8 @@ public:
 		md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(vsConstantBuffers.size()), vsConstantBuffers.data());
 		auto psConstantBuffers = std::array{ mPerFrameCB.get(), mPerObjectCB.get() };
 		md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstantBuffers.size()), psConstantBuffers.data());
-		md3dImmediateContext->PSSetShaderResources(0, 1, mDiffuseMapSRV.GetAddressOf());
-
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetTexTransform(XMLoadFloat4x4(&mTexTransform));
-		//	Effects::BasicFX->SetMaterial(mBoxMat);
-		//	Effects::BasicFX->SetDiffuseMap(mDiffuseMapSRV);
+		auto shaderResourceViews = std::array{ mDiffuseMapSRV.get() };
+		md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(shaderResourceViews.size()), shaderResourceViews.data());
 
 		md3dImmediateContext->DrawIndexed(mBoxIndexCount, mBoxIndexOffset, mBoxVertexOffset);
 
@@ -339,7 +333,7 @@ private:
 		// Pack the indices of all the meshes into one index buffer.
 		//
 
-		auto indices = std::vector<std::uint32_t>(totalIndexCount);
+		auto indices = std::vector<std::uint32_t>{};
 		indices.insert(indices.end(), box.Indices.begin(), box.Indices.end());
 
 		auto ibd = D3D11::D3D11_BUFFER_DESC{
