@@ -39,6 +39,7 @@ The effort is ongoing. The following projects are functional.
 * Removed some redundant null pointer checks, such as when `std::make_unique()` is used (this throws on error).
 * Incorrect padding and alignment issues in constant buffers that were encountered in some samples (e.g. Lighting) have been fixed.
 * Constructor value setting has been moved to inline initialisers, where possible.
+* FX-specific `SampleState` definitions in .fx files have been replaced with proper sampler definitions, set through the C++ side.
 
 ## License and copyright
 
