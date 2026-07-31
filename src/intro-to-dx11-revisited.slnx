@@ -23,5 +23,8 @@
     <Project Path="07/Lighting/Lighting.vcxproj" Id="ff706c78-2871-4505-8a40-da562c0af98c" />
     <Project Path="07/LitSkull/LitSkull.vcxproj" Id="4fbe8ef8-058d-4c4c-a50f-5d4cd6beb51c" />
   </Folder>
+  <Folder Name="/08/">
+    <Project Path="08/Crate/Crate.vcxproj" Id="4b6310c9-966f-4d6f-a36d-a5bb51e5277f" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
