@@ -12,7 +12,10 @@ cbuffer cbPerFrame
     float3 gEyePosW;
     float gFogStart;
     float gFogRange;
+    int gLightCount;
+    bool gUseTexure;
     float4 gFogColor;
+	int pad;
 };
 
 cbuffer cbPerObject
@@ -67,8 +70,9 @@ VertexOut VS(VertexIn vin)
 
     return vout;
 }
- 
-float4 PS(VertexOut pin, uniform int gLightCount, uniform bool gUseTexure) : SV_Target
+
+// uniform int gLightCount, uniform bool gUseTexure
+float4 PS(VertexOut pin) : SV_Target
 {
 	// Interpolating normal can unnormalize it, so normalize it.
     pin.NormalW = normalize(pin.NormalW);

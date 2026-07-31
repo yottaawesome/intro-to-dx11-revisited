@@ -16,6 +16,8 @@ module;
 #include <dxgi.h>
 #include <dxgi1_4.h>
 #include <comdef.h>
+#include <directxtk/DDSTextureLoader.h>
+#include <directxtk/WICTextureLoader.h>
 
 export module shared:win32;
 
@@ -251,6 +253,11 @@ export namespace DirectX
 		::DirectX::XMMatrixTranspose,
 		::DirectX::XMMatrixInverse,
 		::DirectX::XMStoreFloat4
+		;
+
+	using
+		::DirectX::CreateDDSTextureFromFile,
+		::DirectX::CreateWICTextureFromFile
 		;
 
 	namespace PackedVector
