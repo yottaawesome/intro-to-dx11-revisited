@@ -19,6 +19,7 @@ The effort is ongoing. The following projects are functional.
 * [07/Lighting](./src/07/Lighting)
 * [07/LitSkull](./src/07/LitSkull)
 * [08/Crate](./src/08/Crate)
+* [08/TexturedHillsAndWaves](./src/08/TexturedHillsAndWaves)
 
 ## Running log of changes
 
