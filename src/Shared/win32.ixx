@@ -322,7 +322,6 @@ export namespace DXGI
 
 export namespace D3D11
 {
-	
 	constexpr auto SdkVersion = D3D11_SDK_VERSION;
 	using 
 		::ID3D11ShaderResourceView,
@@ -359,9 +358,14 @@ export namespace D3D11
 		::D3D11_CPU_ACCESS_FLAG,
 		::D3D11_INPUT_ELEMENT_DESC,
 		::D3D11_RESOURCE_MISC_FLAG,
+		::D3D11_FILTER,
 		::ID3D11InputLayout,
+		::D3D11_COMPARISON_FUNC,
 		::D3D11_INPUT_ELEMENT_DESC,
+		::D3D11_TEXTURE_ADDRESS_MODE,
 		::D3D11_BUFFER_DESC,
+		::D3D11_SAMPLER_DESC,
+		::ID3D11SamplerState,
 		::D3D11CreateDevice
 		;
 }

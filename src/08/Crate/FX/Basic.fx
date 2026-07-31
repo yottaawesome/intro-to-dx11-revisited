@@ -30,14 +30,9 @@ cbuffer cbPerObject
 // Nonnumeric values cannot be added to a cbuffer.
 Texture2D gDiffuseMap;
 
-SamplerState samAnisotropic
-{
-    Filter = ANISOTROPIC;
-    MaxAnisotropy = 4;
-
-    AddressU = WRAP;
-    AddressV = WRAP;
-};
+// The original code had a sampler state defined here, but this was fx framework specific, 
+// which is ignored.
+SamplerState samAnisotropic : register(s0);
 
 struct VertexIn
 {

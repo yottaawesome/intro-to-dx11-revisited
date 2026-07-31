@@ -20,7 +20,7 @@ struct PerFrameConstants
 	int gLightCount = 0;
 	int gUseTexture = 0;
 	DirectX::XMFLOAT4 gFogColor;
-	int pad;
+	int pad [[maybe_unused]];
 };
 
 struct PerObjectConstants
@@ -79,25 +79,25 @@ public:
 	void OnResize() override
 	{
 		D3DApp::OnResize();
-		DirectX::XMMATRIX P = DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+		auto P = DirectX::XMMATRIX{DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f)};
 		DirectX::XMStoreFloat4x4(&mProj, P);
 	}
 
 	void UpdateScene(float dt) override
 	{
 		// Convert Spherical to Cartesian coordinates.
-		float x = mRadius * std::sinf(mPhi) * std::cosf(mTheta);
-		float z = mRadius * std::sinf(mPhi) * std::sinf(mTheta);
-		float y = mRadius * std::cosf(mPhi);
+		auto x = mRadius * std::sinf(mPhi) * std::cosf(mTheta);
+		auto z = mRadius * std::sinf(mPhi) * std::sinf(mTheta);
+		auto y = mRadius * std::cosf(mPhi);
 
 		mEyePosW = DirectX::XMFLOAT3(x, y, z);
 
 		// Build the view matrix.
-		DirectX::XMVECTOR pos = DirectX::XMVectorSet(x, y, z, 1.0f);
-		DirectX::XMVECTOR target = DirectX::XMVectorZero();
-		DirectX::XMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		auto pos = DirectX::XMVectorSet(x, y, z, 1.0f);
+		auto target = DirectX::XMVectorZero();
+		auto up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-		DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(pos, target, up);
+		auto V = DirectX::XMMatrixLookAtLH(pos, target, up);
 		DirectX::XMStoreFloat4x4(&mView, V);
 	}
 	void DrawScene() override
@@ -111,12 +111,12 @@ public:
 		md3dImmediateContext->VSSetShader(mColorVS.get(), nullptr, 0);
 		md3dImmediateContext->PSSetShader(mColorPS.get(), nullptr, 0);
 
-		UINT stride = sizeof(Basic32);
-		UINT offset = 0;
+		auto stride = static_cast<std::uint32_t>(sizeof(Basic32));
+		auto offset = 0u;
 
-		DirectX::XMMATRIX view = XMLoadFloat4x4(&mView);
-		DirectX::XMMATRIX proj = XMLoadFloat4x4(&mProj);
-		DirectX::XMMATRIX viewProj = view * proj;
+		auto view = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mView)};
+		auto proj = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mProj)};
+		auto viewProj = view * proj;
 
 		// Set per frame constants.
 		auto perframe = PerFrameConstants{
@@ -135,9 +135,9 @@ public:
 		md3dImmediateContext->IASetIndexBuffer(mBoxIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
 		// Draw the box.
-		DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&mBoxWorld);
-		DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		DirectX::XMMATRIX worldViewProj = world * viewProj;
+		auto world = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mBoxWorld)};
+		auto worldInvTranspose = MathHelper::InverseTranspose(world);
+		auto worldViewProj = world * viewProj;
 		auto perObject = PerObjectConstants{
 			.gMaterial = mBoxMat,
 		};
@@ -153,6 +153,8 @@ public:
 		md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstantBuffers.size()), psConstantBuffers.data());
 		auto shaderResourceViews = std::array{ mDiffuseMapSRV.get() };
 		md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(shaderResourceViews.size()), shaderResourceViews.data());
+		auto samplers = std::array{ mSamplerState.get() };
+		md3dImmediateContext->PSSetSamplers(0, static_cast<std::uint32_t>(samplers.size()), samplers.data());
 
 		md3dImmediateContext->DrawIndexed(mBoxIndexCount, mBoxIndexOffset, mBoxVertexOffset);
 
@@ -240,6 +242,19 @@ private:
 			.StructureByteStride = 0,
 		};
 		HR(md3dDevice->CreateBuffer(&perObjectCbd, 0, &mPerObjectCB), "Failed to create constant buffer.");
+
+		auto samplerDesc = D3D11::D3D11_SAMPLER_DESC{
+			.Filter = D3D11::D3D11_FILTER::D3D11_FILTER_ANISOTROPIC,
+			.AddressU = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressV = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressW = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
+			.MipLODBias = 0.0f,
+			.MaxAnisotropy = 4,
+			.ComparisonFunc = D3D11::D3D11_COMPARISON_FUNC::D3D11_COMPARISON_NEVER,
+			.MinLOD = 0.0f,
+			.MaxLOD = std::numeric_limits<float>::max(),
+		};
+		HR(md3dDevice->CreateSamplerState(&samplerDesc, &mSamplerState), "Failed to create sampler state.");
 	}
 
 	void BuildInputLayout(D3D::ID3DBlob* vertexShaderBytecode)
@@ -356,6 +371,7 @@ private:
 	ComPtr<D3D11::ID3D11PixelShader> mColorPS;
 	ComPtr<D3D11::ID3D11Buffer> mPerFrameCB;
 	ComPtr<D3D11::ID3D11Buffer> mPerObjectCB;
+	ComPtr<D3D11::ID3D11SamplerState> mSamplerState;
 
 	DirectionalLight mDirLights[3];
 	Material mBoxMat;
