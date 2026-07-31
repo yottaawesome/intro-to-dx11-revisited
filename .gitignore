@@ -429,3 +429,5 @@ FodyWeavers.xsd
 *.msp
 
 *.cso
+
+vcpkg_installed/
