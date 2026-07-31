@@ -27,5 +27,8 @@
     <Project Path="08/Crate/Crate.vcxproj" Id="4b6310c9-966f-4d6f-a36d-a5bb51e5277f" />
     <Project Path="08/TexturedHillsAndWaves/TexturedHillsAndWaves.vcxproj" Id="edbcb315-f900-4dfb-9ae5-916a56934234" />
   </Folder>
+  <Folder Name="/09/">
+    <Project Path="09/BlendDemo/BlendDemo.vcxproj" Id="c998e305-1a35-477f-8181-8ddb7dde498f" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>

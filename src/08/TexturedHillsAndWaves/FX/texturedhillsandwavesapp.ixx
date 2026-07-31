@@ -485,7 +485,7 @@ private:
 		// Create the index buffer.  The index buffer is fixed, so we only 
 		// need to create and set once.
 
-		auto indices = std::vector<UINT>(3 * mWaves.TriangleCount()); // 3 indices per face
+		auto indices = std::vector<std::uint32_t>(3 * mWaves.TriangleCount()); // 3 indices per face
 
 		// Iterate over each quad.
 		auto m = mWaves.RowCount();
