@@ -154,9 +154,11 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="app.ixx" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="renderstates.ixx" />
     <ClCompile Include="treebillboard.ixx" />
+    <ClCompile Include="waves.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.vcxproj">
@@ -165,6 +167,29 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="FX\Basic.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fxc /nologo /Od /Zi /E VS /T vs_5_0 /Fo "%(RelativeDir)\%(Filename)_VS.cso" "%(FullPath)" &amp;&amp; fxc /nologo /Od /Zi /E PS /T ps_5_0 /Fo "%(RelativeDir)\%(Filename)_PS.cso" "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fxc compile for debug: %(FullPath)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)\%(Filename)_VS.cso;%(RelativeDir)\%(Filename)_PS.cso</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fxc /nologo /O3 /E VS /T vs_5_0 /Fo "%(RelativeDir)\%(Filename)_VS.cso" "%(FullPath)" &amp;&amp; fxc /nologo /O3 /E PS /T ps_5_0 /Fo "%(RelativeDir)\%(Filename)_PS.cso" "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fxc compile for release: %(FullPath)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)\%(Filename)_VS.cso;%(RelativeDir)\%(Filename)_PS.cso</Outputs>
+    </CustomBuild>
+    <None Include="FX\LightHelper.fx">
+      <FileType>Document</FileType>
+    </None>
+    <CustomBuild Include="FX\TreeSprite.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fxc /nologo /Od /Zi /E VS /T vs_5_0 /Fo "%(RelativeDir)\%(Filename)_VS.cso" "%(FullPath)" &amp;&amp; fxc /nologo /Od /Zi /E PS /T ps_5_0 /Fo "%(RelativeDir)\%(Filename)_PS.cso" "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fxc compile for debug: %(FullPath)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)\%(Filename)_VS.cso;%(RelativeDir)\%(Filename)_PS.cso</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fxc /nologo /O3 /E VS /T vs_5_0 /Fo "%(RelativeDir)\%(Filename)_VS.cso" "%(FullPath)" &amp;&amp; fxc /nologo /O3 /E PS /T ps_5_0 /Fo "%(RelativeDir)\%(Filename)_PS.cso" "%(FullPath)"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fxc compile for release: %(FullPath)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)\%(Filename)_VS.cso;%(RelativeDir)\%(Filename)_PS.cso</Outputs>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
