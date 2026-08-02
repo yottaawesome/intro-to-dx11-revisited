@@ -33,6 +33,8 @@
   <Folder Name="/10 - Stenciling/">
     <Project Path="10/Mirror/Mirror.vcxproj" Id="bfe39511-b822-4421-bc41-f738c1ab6fc7" />
   </Folder>
-  <Folder Name="/11 - The Geometry Shader/" />
+  <Folder Name="/11 - The Geometry Shader/">
+    <Project Path="11/TreeBillboard/TreeBillboard.vcxproj" Id="8da44faa-7700-4fc5-839b-336a15d252ee" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
