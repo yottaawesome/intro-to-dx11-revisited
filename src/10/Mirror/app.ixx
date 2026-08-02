@@ -28,9 +28,11 @@ struct PerFrameConstants
 	int gUseTexture;
 	int gAlphaClip;
 	int gFogEnabled;
-	int pad[3];
+	DirectX::XMFLOAT3 gPadding;
 	DirectX::XMFLOAT4 gFogColor;
 };
+
+static_assert(sizeof(PerFrameConstants) == 256);
 
 struct PerObjectConstants
 {
@@ -182,6 +184,7 @@ public:
 		auto view = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mView)};
 		auto proj = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mProj)};
 		auto viewProj = DirectX::XMMATRIX{view * proj};
+		auto useTextures = mRenderOptions != RenderOptions::Lighting;
 
 		// Set per frame constants.
 		auto perFrame = PerFrameConstants{
@@ -189,7 +192,7 @@ public:
 			.gFogStart = 2.0f,
 			.gFogRange = 40.0f,
 			.gLightCount = mLightCount,
-			.gUseTexture = (mRenderOptions == RenderOptions::Lighting) ? 0 : 1,
+			.gUseTexture = useTextures ? 1 : 0,
 			.gFogEnabled = (mRenderOptions == RenderOptions::TexturesAndFog) ? 1 : 0,
 			.gFogColor = DirectX::XMFLOAT4(DirectX::Colors::Black),
 		};
@@ -248,7 +251,10 @@ public:
 		DirectX::XMStoreFloat4x4(&perObjectSkull.gWorldViewProj, skullWorldViewProj);
 		DirectX::XMStoreFloat4x4(&perObjectSkull.gTexTransform, DirectX::XMMatrixIdentity());
 		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, nullptr, &perObjectSkull, 0, 0);
-		md3dImmediateContext->PSSetShaderResources(0, 0, nullptr);
+		perFrame.gUseTexture = 0;
+		md3dImmediateContext->UpdateSubresource(mPerFrameCB.get(), 0, nullptr, &perFrame, 0, 0);
+		auto nullSRVs = std::array<D3D11::ID3D11ShaderResourceView*, 1>{};
+		md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(nullSRVs.size()), nullSRVs.data());
 		md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
 		
 
@@ -333,7 +339,9 @@ public:
 		for (int i = 0; i < 3; ++i)
 		{
 			mDirLights[i].Direction = oldLightDirections[i];
+			perFrame.gDirLights[i] = mDirLights[i];
 		}
+		md3dImmediateContext->UpdateSubresource(mPerFrameCB.get(), 0, nullptr, &perFrame, 0, 0);
 
 		//
 		// Draw the mirror to the back buffer as usual but with transparency
@@ -354,6 +362,8 @@ public:
 		DirectX::XMStoreFloat4x4(&mirrorPerObject.gWorldViewProj, mirrorWorldViewProj);
 		DirectX::XMStoreFloat4x4(&mirrorPerObject.gTexTransform, DirectX::XMMatrixIdentity());
 		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, nullptr, &mirrorPerObject, 0, 0);
+		perFrame.gUseTexture = useTextures ? 1 : 0;
+		md3dImmediateContext->UpdateSubresource(mPerFrameCB.get(), 0, nullptr, &perFrame, 0, 0);
 		auto mirrorSRVs = std::array{ mMirrorDiffuseMapSRV.get() };
 		md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(mirrorSRVs.size()), mirrorSRVs.data());
 
@@ -384,6 +394,8 @@ public:
 		DirectX::XMStoreFloat4x4(&perObjectShadow.gWorldViewProj, skullShadowWorldViewProj);
 		DirectX::XMStoreFloat4x4(&perObjectShadow.gTexTransform, DirectX::XMMatrixIdentity());
 		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, nullptr, &perObjectShadow, 0, 0);
+		perFrame.gUseTexture = 0;
+		md3dImmediateContext->UpdateSubresource(mPerFrameCB.get(), 0, nullptr, &perFrame, 0, 0);
 		md3dImmediateContext->OMSetDepthStencilState(mRenderStates.NoDoubleBlendDSS.get(), 0);
 		md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
 

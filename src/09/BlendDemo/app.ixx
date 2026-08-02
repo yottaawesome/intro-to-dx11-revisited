@@ -21,7 +21,7 @@ struct PerFrameConstants
 	int gUseTexture;
 	int gAlphaClip;
 	int gFogEnabled;
-	int pad[3];
+	DirectX::XMFLOAT3 gPadding;
 	DirectX::XMFLOAT4 gFogColor;
 };
 

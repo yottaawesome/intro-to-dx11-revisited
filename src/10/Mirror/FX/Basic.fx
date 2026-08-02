@@ -13,10 +13,10 @@ cbuffer cbPerFrame
     float gFogStart;
     float gFogRange;
     int gLightCount;
-    bool gUseTexure;
+    bool gUseTexture;
     bool gAlphaClip;
     bool gFogEnabled;
-    float pad[3];
+    float3 gPadding;
     float4 gFogColor;
 };
 
@@ -82,7 +82,7 @@ float4 PS(VertexOut pin) : SV_Target
 	
     // Default to multiplicative identity.
     float4 texColor = float4(1, 1, 1, 1);
-    if (gUseTexure)
+    if (gUseTexture)
     {
 		// Sample texture.
         texColor = gDiffuseMap.Sample(samAnisotropic, pin.Tex);
