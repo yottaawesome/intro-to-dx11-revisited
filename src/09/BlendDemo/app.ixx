@@ -210,6 +210,8 @@ public:
 
 		md3dImmediateContext->VSSetShader(mColorVS.get(), nullptr, 0);
 		md3dImmediateContext->PSSetShader(mColorPS.get(), nullptr, 0);
+		auto samplers = std::array{ mSamplerState.get() };
+		md3dImmediateContext->PSSetSamplers(0, static_cast<std::uint32_t>(samplers.size()), samplers.data());
 
 		auto blendFactor = std::array{ 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -228,7 +230,7 @@ public:
 			.gFogRange = 175.0f,
 			.gLightCount = mLightCount,
 			.gUseTexture = (mRenderOptions == RenderOptions::Lighting) ? 0 : 1,
-			.gAlphaClip = 0,
+			.gAlphaClip = 1,
 			.gFogEnabled = (mRenderOptions == RenderOptions::TexturesAndFog) ? 1 : 0,
 		};
 		DirectX::XMStoreFloat4(&perframe.gFogColor, DirectX::Colors::Silver);
@@ -286,7 +288,7 @@ public:
 		DirectX::XMStoreFloat4x4(&landPerObject.gWorld, landWorld);
 		DirectX::XMStoreFloat4x4(&landPerObject.gWorldInvTranspose, landWorldInvTranspose);
 		DirectX::XMStoreFloat4x4(&landPerObject.gWorldViewProj, landWorldViewProj);
-		DirectX::XMStoreFloat4x4(&landPerObject.gTexTransform, DirectX::XMMatrixIdentity());
+		DirectX::XMStoreFloat4x4(&landPerObject.gTexTransform, DirectX::XMLoadFloat4x4(&mGrassTexTransform));
 		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, nullptr, &landPerObject, 0, 0);
 		auto landShaderResourceViews = std::array{ mGrassMapSRV.get() };
 		md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(landShaderResourceViews.size()), landShaderResourceViews.data());
@@ -576,6 +578,19 @@ private:
 			.StructureByteStride = 0,
 		};
 		HR(md3dDevice->CreateBuffer(&perObjectCbd, 0, &mPerObjectCB), "Failed to create constant buffer.");
+
+		auto samplerDesc = D3D11::D3D11_SAMPLER_DESC{
+			.Filter = D3D11::D3D11_FILTER::D3D11_FILTER_ANISOTROPIC,
+			.AddressU = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressV = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressW = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
+			.MipLODBias = 0.0f,
+			.MaxAnisotropy = 4,
+			.ComparisonFunc = D3D11::D3D11_COMPARISON_FUNC::D3D11_COMPARISON_NEVER,
+			.MinLOD = 0.0f,
+			.MaxLOD = std::numeric_limits<float>::max(),
+		};
+		HR(md3dDevice->CreateSamplerState(&samplerDesc, &mSamplerState), "Failed to create sampler state.");
 	}
 
 	void BuildInputLayout(D3D::ID3DBlob* vertexShaderBytecode)
@@ -631,7 +646,8 @@ private:
 	ComPtr<D3D11::ID3D11PixelShader> mColorPS;
 	ComPtr<D3D11::ID3D11Buffer> mPerFrameCB;
 	ComPtr<D3D11::ID3D11Buffer> mPerObjectCB;
-	int mLightCount = 2;
+	ComPtr<D3D11::ID3D11SamplerState> mSamplerState;
+	int mLightCount = 3;
 	RenderStates mRenderStates;
 
 	ComPtr<D3D11::ID3D11ShaderResourceView> mGrassMapSRV;
@@ -658,7 +674,7 @@ private:
 
 	DirectX::XMFLOAT2 mWaterTexOffset = {0.0f, 0.0f};
 
-	RenderOptions mRenderOptions;
+	RenderOptions mRenderOptions = RenderOptions::TexturesAndFog;
 
 	DirectX::XMFLOAT3 mEyePosW = {0.0f, 0.0f, 0.0f};
 
