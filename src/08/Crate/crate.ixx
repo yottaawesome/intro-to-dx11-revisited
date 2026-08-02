@@ -43,7 +43,7 @@ public:
 		mLastMousePos.x = 0;
 		mLastMousePos.y = 0;
 
-		DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
+		auto I = DirectX::XMMATRIX{DirectX::XMMatrixIdentity()};
 		DirectX::XMStoreFloat4x4(&mBoxWorld, I);
 		DirectX::XMStoreFloat4x4(&mTexTransform, I);
 		DirectX::XMStoreFloat4x4(&mView, I);
