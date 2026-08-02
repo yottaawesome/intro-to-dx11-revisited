@@ -30,5 +30,8 @@
   <Folder Name="/09/">
     <Project Path="09/BlendDemo/BlendDemo.vcxproj" Id="c998e305-1a35-477f-8181-8ddb7dde498f" />
   </Folder>
+  <Folder Name="/10/">
+    <Project Path="10/Mirror/Mirror.vcxproj" Id="bfe39511-b822-4421-bc41-f738c1ab6fc7" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>

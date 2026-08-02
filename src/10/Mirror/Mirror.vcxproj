@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{c998e305-1a35-477f-8181-8ddb7dde498f}</ProjectGuid>
-    <RootNamespace>BlendDemo</RootNamespace>
+    <ProjectGuid>{bfe39511-b822-4421-bc41-f738c1ab6fc7}</ProjectGuid>
+    <RootNamespace>Mirror</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -154,33 +154,15 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="app.ixx" />
-    <ClCompile Include="blenddemo.ixx" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="renderstates.ixx" />
-    <ClCompile Include="waves.ixx" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Shared\Shared.vcxproj">
-      <Project>{df990ccb-27b1-487f-aac6-728208932207}</Project>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="FX\Basic.fx">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fxc /nologo /Od /Zi /E VS /T vs_5_0 /Fo "%(RelativeDir)\%(Filename)_VS.cso" "%(FullPath)" &amp;&amp; fxc /nologo /Od /Zi /E PS /T ps_5_0 /Fo "%(RelativeDir)\%(Filename)_PS.cso" "%(FullPath)"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fxc compile for debug: %(FullPath)</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)\%(Filename)_VS.cso;%(RelativeDir)\%(Filename)_PS.cso</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fxc /nologo /O3 /E VS /T vs_5_0 /Fo "%(RelativeDir)\%(Filename)_VS.cso" "%(FullPath)" &amp;&amp; fxc /nologo /O3 /E PS /T ps_5_0 /Fo "%(RelativeDir)\%(Filename)_PS.cso" "%(FullPath)"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fxc compile for release: %(FullPath)</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)\%(Filename)_VS.cso;%(RelativeDir)\%(Filename)_PS.cso</Outputs>
-    </CustomBuild>
-    <None Include="FX\LightHelper.fx">
-      <FileType>Document</FileType>
-    </None>
+    <ProjectReference Include="..\..\Shared\Shared.vcxproj">
+      <Project>{df990ccb-27b1-487f-aac6-728208932207}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
