@@ -66,7 +66,7 @@ VertexOut VS(VertexIn vin)
     return vout;
 }
  
-float4 PS(VertexOut pin, uniform int gLightCount) : SV_Target
+float4 PS(VertexOut pin) : SV_Target
 {
 	// Interpolating normal can unnormalize it, so normalize it.
     pin.NormalW = normalize(pin.NormalW);

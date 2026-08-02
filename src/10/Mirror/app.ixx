@@ -108,7 +108,7 @@ public:
 	void OnResize()
 	{
 		D3DApp::OnResize();
-		DirectX::XMMATRIX P = DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+		auto P = DirectX::XMMATRIX{DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f)};
 		DirectX::XMStoreFloat4x4(&mProj, P);
 	}
 
@@ -122,11 +122,11 @@ public:
 		mEyePosW = DirectX::XMFLOAT3(x, y, z);
 
 		// Build the view matrix.
-		DirectX::XMVECTOR pos = DirectX::XMVectorSet(x, y, z, 1.0f);
-		DirectX::XMVECTOR target = DirectX::XMVectorZero();
-		DirectX::XMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		auto pos = DirectX::XMVECTOR{DirectX::XMVectorSet(x, y, z, 1.0f)};
+		auto target = DirectX::XMVECTOR{DirectX::XMVectorZero()};
+		auto up = DirectX::XMVECTOR{DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)};
 
-		DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(pos, target, up);
+		auto V = DirectX::XMMATRIX{DirectX::XMMatrixLookAtLH(pos, target, up)};
 		DirectX::XMStoreFloat4x4(&mView, V);
 
 		//
@@ -156,9 +156,9 @@ public:
 		mSkullTranslation.y = std::max(mSkullTranslation.y, 0.0f);
 
 		// Update the new world matrix.
-		DirectX::XMMATRIX skullRotate = DirectX::XMMatrixRotationY(0.5f * MathHelper::Pi);
-		DirectX::XMMATRIX skullScale = DirectX::XMMatrixScaling(0.45f, 0.45f, 0.45f);
-		DirectX::XMMATRIX skullOffset = DirectX::XMMatrixTranslation(mSkullTranslation.x, mSkullTranslation.y, mSkullTranslation.z);
+		auto skullRotate = DirectX::XMMATRIX{DirectX::XMMatrixRotationY(0.5f * MathHelper::Pi)};
+		auto skullScale = DirectX::XMMATRIX{DirectX::XMMatrixScaling(0.45f, 0.45f, 0.45f)};
+		auto skullOffset = DirectX::XMMATRIX{DirectX::XMMatrixTranslation(mSkullTranslation.x, mSkullTranslation.y, mSkullTranslation.z)};
 		DirectX::XMStoreFloat4x4(&mSkullWorld, skullRotate * skullScale * skullOffset);
 	}
 
@@ -233,176 +233,159 @@ public:
 		//
 		// Draw the skull to the back buffer as normal.
 		//
+		auto skullVBs = std::array{ mSkullVB.get() };
+		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(skullVBs.size()), skullVBs.data(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mSkullIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		//activeSkullTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	ID3DX11EffectPass* pass = activeSkullTech->GetPassByIndex(p);
+		auto skullWorld = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mSkullWorld)};
+		auto skullWorldInvTranspose = DirectX::XMMATRIX{MathHelper::InverseTranspose(skullWorld)};
+		auto skullWorldViewProj = DirectX::XMMATRIX{skullWorld * viewProj};
+		auto perObjectSkull = PerObjectConstants{
+			.gMaterial = mSkullMat,
+		};
+		DirectX::XMStoreFloat4x4(&perObjectSkull.gWorld, skullWorld);
+		DirectX::XMStoreFloat4x4(&perObjectSkull.gWorldInvTranspose, skullWorldInvTranspose);
+		DirectX::XMStoreFloat4x4(&perObjectSkull.gWorldViewProj, skullWorldViewProj);
+		DirectX::XMStoreFloat4x4(&perObjectSkull.gTexTransform, DirectX::XMMatrixIdentity());
+		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, nullptr, &perObjectSkull, 0, 0);
+		md3dImmediateContext->PSSetShaderResources(0, 0, nullptr);
+		md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
+		
 
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mSkullVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mSkullIB, DXGI_FORMAT_R32_UINT, 0);
+		//
+		// Draw the mirror to stencil buffer only.
+		//
 
-		//	XMMATRIX world = XMLoadFloat4x4(&mSkullWorld);
-		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	XMMATRIX worldViewProj = world * view * proj;
+		auto mirrorVBs = std::array{ mRoomVB.get() };
+		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(mirrorVBs.size()), mirrorVBs.data(), &stride, &offset);
 
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetMaterial(mSkullMat);
+		// Set per object constants.
+		auto mirrorRoomWorld = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mRoomWorld)};
+		auto mirrorRoomWorldInvTranspose = DirectX::XMMATRIX{MathHelper::InverseTranspose(mirrorRoomWorld)};
+		auto mirrorRoomWorldViewProj = DirectX::XMMATRIX{mirrorRoomWorld * viewProj};
+		auto mirrorRoomPerObject = PerObjectConstants{
+			.gMaterial = mMirrorMat,
+		};
+		DirectX::XMStoreFloat4x4(&mirrorRoomPerObject.gWorld, mirrorRoomWorld);
+		DirectX::XMStoreFloat4x4(&mirrorRoomPerObject.gWorldInvTranspose, mirrorRoomWorldInvTranspose);
+		DirectX::XMStoreFloat4x4(&mirrorRoomPerObject.gWorldViewProj, mirrorRoomWorldViewProj);
+		DirectX::XMStoreFloat4x4(&mirrorRoomPerObject.gTexTransform, DirectX::XMMatrixIdentity());
+		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, nullptr, &mirrorRoomPerObject, 0, 0);
 
-		//	pass->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
-		//}
+		// Do not write to render target.
+		md3dImmediateContext->OMSetBlendState(mRenderStates.NoRenderTargetWritesBS.get(), blendFactor, 0xffffffff);
 
-		////
-		//// Draw the mirror to stencil buffer only.
-		////
+		// Render visible mirror pixels to stencil buffer.
+		// Do not write mirror depth to depth buffer at this point, otherwise it will occlude the reflection.
+		md3dImmediateContext->OMSetDepthStencilState(mRenderStates.MarkMirrorDSS.get(), 1);
 
-		//activeTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	ID3DX11EffectPass* pass = activeTech->GetPassByIndex(p);
+		md3dImmediateContext->Draw(6, 24);
 
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mRoomVB, &stride, &offset);
-
-		//	// Set per object constants.
-		//	XMMATRIX world = XMLoadFloat4x4(&mRoomWorld);
-		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	XMMATRIX worldViewProj = world * view * proj;
-
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetTexTransform(XMMatrixIdentity());
-
-		//	// Do not write to render target.
-		//	md3dImmediateContext->OMSetBlendState(RenderStates::NoRenderTargetWritesBS, blendFactor, 0xffffffff);
-
-		//	// Render visible mirror pixels to stencil buffer.
-		//	// Do not write mirror depth to depth buffer at this point, otherwise it will occlude the reflection.
-		//	md3dImmediateContext->OMSetDepthStencilState(RenderStates::MarkMirrorDSS, 1);
-
-		//	pass->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->Draw(6, 24);
-
-		//	// Restore states.
-		//	md3dImmediateContext->OMSetDepthStencilState(0, 0);
-		//	md3dImmediateContext->OMSetBlendState(0, blendFactor, 0xffffffff);
-		//}
+		// Restore states.
+		md3dImmediateContext->OMSetDepthStencilState(0, 0);
+		md3dImmediateContext->OMSetBlendState(0, blendFactor, 0xffffffff);
 
 
-		////
-		//// Draw the skull reflection.
-		////
-		//activeSkullTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	ID3DX11EffectPass* pass = activeSkullTech->GetPassByIndex(p);
+		//
+		// Draw the skull reflection.
+		//
+		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(skullVBs.size()), skullVBs.data(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mSkullIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mSkullVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mSkullIB, DXGI_FORMAT_R32_UINT, 0);
+		auto mirrorPlane = DirectX::XMVECTOR{DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f)}; // xy plane
+		auto R = DirectX::XMMATRIX{DirectX::XMMatrixReflect(mirrorPlane)};
+		auto mirrorSkullWorld = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mSkullWorld) * R};
+		auto mirrorSkullWorldInvTranspose = DirectX::XMMATRIX{MathHelper::InverseTranspose(mirrorSkullWorld)};
+		auto mirrorSkullWorldViewProj = DirectX::XMMATRIX{mirrorSkullWorld * view * proj};
+		auto mirrorSkullPerObject = PerObjectConstants{
+			.gMaterial = mSkullMat,
+		};
+		DirectX::XMStoreFloat4x4(&mirrorSkullPerObject.gWorld, mirrorSkullWorld);
+		DirectX::XMStoreFloat4x4(&mirrorSkullPerObject.gWorldInvTranspose, mirrorSkullWorldInvTranspose);
+		DirectX::XMStoreFloat4x4(&mirrorSkullPerObject.gWorldViewProj, mirrorSkullWorldViewProj);
+		DirectX::XMStoreFloat4x4(&mirrorSkullPerObject.gTexTransform, DirectX::XMMatrixIdentity());
+		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, nullptr, &mirrorSkullPerObject, 0, 0);
 
-		//	XMVECTOR mirrorPlane = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f); // xy plane
-		//	XMMATRIX R = XMMatrixReflect(mirrorPlane);
-		//	XMMATRIX world = XMLoadFloat4x4(&mSkullWorld) * R;
-		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	XMMATRIX worldViewProj = world * view * proj;
+		// Cache the old light directions, and reflect the light directions.
+		DirectX::XMFLOAT3 oldLightDirections[3];
+		for (int i = 0; i < 3; ++i)
+		{
+			oldLightDirections[i] = mDirLights[i].Direction;
+			auto lightDir = DirectX::XMVECTOR{DirectX::XMLoadFloat3(&mDirLights[i].Direction)};
+			auto reflectedLightDir = DirectX::XMVECTOR{ DirectX::XMVector3TransformNormal(lightDir, R)};
+			DirectX::XMStoreFloat3(&mDirLights[i].Direction, reflectedLightDir);
+		}
+		perFrame.gLightCount = mLightCount;
+		md3dImmediateContext->UpdateSubresource(mPerFrameCB.get(), 0, nullptr, &perFrame, 0, 0);
 
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetMaterial(mSkullMat);
+		// Cull clockwise triangles for reflection.
+		md3dImmediateContext->RSSetState(mRenderStates.CullClockwiseRS.get());
 
-		//	// Cache the old light directions, and reflect the light directions.
-		//	XMFLOAT3 oldLightDirections[3];
-		//	for (int i = 0; i < 3; ++i)
-		//	{
-		//		oldLightDirections[i] = mDirLights[i].Direction;
+		// Only draw reflection into visible mirror pixels as marked by the stencil buffer. 
+		md3dImmediateContext->OMSetDepthStencilState(mRenderStates.DrawReflectionDSS.get(), 1);
+		md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
 
-		//		XMVECTOR lightDir = XMLoadFloat3(&mDirLights[i].Direction);
-		//		XMVECTOR reflectedLightDir = XMVector3TransformNormal(lightDir, R);
-		//		XMStoreFloat3(&mDirLights[i].Direction, reflectedLightDir);
-		//	}
+		// Restore default states.
+		md3dImmediateContext->RSSetState(0);
+		md3dImmediateContext->OMSetDepthStencilState(0, 0);
 
-		//	Effects::BasicFX->SetDirLights(mDirLights);
+		// Restore light directions.
+		for (int i = 0; i < 3; ++i)
+		{
+			mDirLights[i].Direction = oldLightDirections[i];
+		}
 
-		//	// Cull clockwise triangles for reflection.
-		//	md3dImmediateContext->RSSetState(RenderStates::CullClockwiseRS);
+		//
+		// Draw the mirror to the back buffer as usual but with transparency
+		// blending so the reflection shows through.
+		// 
 
-		//	// Only draw reflection into visible mirror pixels as marked by the stencil buffer. 
-		//	md3dImmediateContext->OMSetDepthStencilState(RenderStates::DrawReflectionDSS, 1);
-		//	pass->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
+		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(roomVertexBuffers.size()), roomVertexBuffers.data(), &stride, &offset);
 
-		//	// Restore default states.
-		//	md3dImmediateContext->RSSetState(0);
-		//	md3dImmediateContext->OMSetDepthStencilState(0, 0);
+		// Set per object constants.
+		auto mirrorWorld = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mRoomWorld)};
+		auto mirrorWorldInvTranspose = DirectX::XMMATRIX{MathHelper::InverseTranspose(mirrorWorld)};
+		auto mirrorWorldViewProj = DirectX::XMMATRIX{mirrorWorld * view * proj};
+		auto mirrorPerObject = PerObjectConstants{
+			.gMaterial = mMirrorMat,
+		};
+		DirectX::XMStoreFloat4x4(&mirrorPerObject.gWorld, mirrorWorld);
+		DirectX::XMStoreFloat4x4(&mirrorPerObject.gWorldInvTranspose, mirrorWorldInvTranspose);
+		DirectX::XMStoreFloat4x4(&mirrorPerObject.gWorldViewProj, mirrorWorldViewProj);
+		DirectX::XMStoreFloat4x4(&mirrorPerObject.gTexTransform, DirectX::XMMatrixIdentity());
+		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, nullptr, &mirrorPerObject, 0, 0);
+		auto mirrorSRVs = std::array{ mMirrorDiffuseMapSRV.get() };
+		md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(mirrorSRVs.size()), mirrorSRVs.data());
 
-		//	// Restore light directions.
-		//	for (int i = 0; i < 3; ++i)
-		//	{
-		//		mDirLights[i].Direction = oldLightDirections[i];
-		//	}
+		// Mirror
+		md3dImmediateContext->OMSetBlendState(mRenderStates.TransparentBS.get(), blendFactor, 0xffffffff);
+		md3dImmediateContext->Draw(6, 24);
 
-		//	Effects::BasicFX->SetDirLights(mDirLights);
-		//}
+		//
+		// Draw the skull shadow.
+		//
+		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(skullVBs.size()), skullVBs.data(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mSkullIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		////
-		//// Draw the mirror to the back buffer as usual but with transparency
-		//// blending so the reflection shows through.
-		//// 
+		auto shadowPlane = DirectX::XMVECTOR{DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)}; // xz plane
+		auto toMainLight = DirectX::XMVECTOR{-DirectX::XMLoadFloat3(&mDirLights[0].Direction)};
+		auto S = DirectX::XMMATRIX{DirectX::XMMatrixShadow(shadowPlane, toMainLight)};
+		auto shadowOffsetY = DirectX::XMMATRIX{DirectX::XMMatrixTranslation(0.0f, 0.001f, 0.0f)};
 
-
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mRoomVB, &stride, &offset);
-
-		//	// Set per object constants.
-		//	XMMATRIX world = XMLoadFloat4x4(&mRoomWorld);
-		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	XMMATRIX worldViewProj = world * view * proj;
-
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetTexTransform(XMMatrixIdentity());
-		//	Effects::BasicFX->SetMaterial(mMirrorMat);
-		//	Effects::BasicFX->SetDiffuseMap(mMirrorDiffuseMapSRV);
-
-		//	// Mirror
-		//	md3dImmediateContext->OMSetBlendState(RenderStates::TransparentBS, blendFactor, 0xffffffff);
-		//	pass->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->Draw(6, 24);
-		//}
-
-		////
-		//// Draw the skull shadow.
-		////
-		//activeSkullTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	ID3DX11EffectPass* pass = activeSkullTech->GetPassByIndex(p);
-
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mSkullVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mSkullIB, DXGI_FORMAT_R32_UINT, 0);
-
-		//	XMVECTOR shadowPlane = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f); // xz plane
-		//	XMVECTOR toMainLight = -XMLoadFloat3(&mDirLights[0].Direction);
-		//	XMMATRIX S = XMMatrixShadow(shadowPlane, toMainLight);
-		//	XMMATRIX shadowOffsetY = XMMatrixTranslation(0.0f, 0.001f, 0.0f);
-
-		//	// Set per object constants.
-		//	XMMATRIX world = XMLoadFloat4x4(&mSkullWorld) * S * shadowOffsetY;
-		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	XMMATRIX worldViewProj = world * view * proj;
-
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetMaterial(mShadowMat);
-
-		//	md3dImmediateContext->OMSetDepthStencilState(RenderStates::NoDoubleBlendDSS, 0);
-		//	pass->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
+		// Set per object constants.
+		auto skullShadowWorld = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mSkullWorld) * S * shadowOffsetY};
+		auto skullShadowWorldInvTranspose = DirectX::XMMATRIX{MathHelper::InverseTranspose(skullShadowWorld)};
+		auto skullShadowWorldViewProj = DirectX::XMMATRIX{skullShadowWorld * view * proj};
+		auto perObjectShadow = PerObjectConstants{
+			.gMaterial = mShadowMat,
+		};
+		DirectX::XMStoreFloat4x4(&perObjectShadow.gWorld, skullShadowWorld);
+		DirectX::XMStoreFloat4x4(&perObjectShadow.gWorldInvTranspose, skullShadowWorldInvTranspose);
+		DirectX::XMStoreFloat4x4(&perObjectShadow.gWorldViewProj, skullShadowWorldViewProj);
+		DirectX::XMStoreFloat4x4(&perObjectShadow.gTexTransform, DirectX::XMMatrixIdentity());
+		md3dImmediateContext->UpdateSubresource(mPerObjectCB.get(), 0, nullptr, &perObjectShadow, 0, 0);
+		md3dImmediateContext->OMSetDepthStencilState(mRenderStates.NoDoubleBlendDSS.get(), 0);
+		md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
 
 		// Restore default states.
 		md3dImmediateContext->OMSetBlendState(0, blendFactor, 0xffffffff);
@@ -700,14 +683,14 @@ private:
 	Material mMirrorMat;
 	Material mShadowMat;
 
-	DirectX::XMFLOAT4X4 mRoomWorld;
-	DirectX::XMFLOAT4X4 mSkullWorld;
+	DirectX::XMFLOAT4X4 mRoomWorld = DirectX::XMFLOAT4X4{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	DirectX::XMFLOAT4X4 mSkullWorld = DirectX::XMFLOAT4X4{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 	std::uint32_t mSkullIndexCount = 0;
 	DirectX::XMFLOAT3 mSkullTranslation = {0.0f, 1.0f, -5.0f};
 
-	DirectX::XMFLOAT4X4 mView;
-	DirectX::XMFLOAT4X4 mProj;
+	DirectX::XMFLOAT4X4 mView = DirectX::XMFLOAT4X4{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+	DirectX::XMFLOAT4X4 mProj = DirectX::XMFLOAT4X4{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 	RenderOptions mRenderOptions = RenderOptions::Textures;
 
