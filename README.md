@@ -20,6 +20,7 @@ The effort is ongoing. The following projects are functional.
 * [07/LitSkull](./src/07/LitSkull)
 * [08/Crate](./src/08/Crate)
 * [08/TexturedHillsAndWaves](./src/08/TexturedHillsAndWaves)
+* [09/BlendDemo](./src/09/BlendDemo)
 
 ## Running log of changes
 
