@@ -30,5 +30,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="FX\LightHelper.fx" />
+    <None Include="vcpkg.json" />
   </ItemGroup>
 </Project>

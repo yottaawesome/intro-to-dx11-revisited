@@ -1,0 +1,7 @@
+{
+  "name": "hills",
+  "version": "1.0.0",
+  "dependencies": [
+    "directxtk"
+  ]
+}
