@@ -3,34 +3,34 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Folder Name="/01/">
+  <Folder Name="/01 - Vecor Algebra/">
     <Project Path="01/XMVECTOR/XMVECTOR.vcxproj" Id="fca12c10-bde0-480a-ad86-a4ce89fd8d93" />
   </Folder>
-  <Folder Name="/02/">
+  <Folder Name="/02 - Matrix Algebra/">
     <Project Path="02/XMMATRIX/XMMATRIX.vcxproj" Id="e5bfe8b8-5afc-4530-89d3-444ca581fc24" />
   </Folder>
-  <Folder Name="/04/">
+  <Folder Name="/04 - Direct3D Initialization/">
     <Project Path="04/Init Direct3D/Init Direct3D.vcxproj" Id="ebc9b106-2852-4353-a305-25e58b5f0828" />
   </Folder>
-  <Folder Name="/06/">
+  <Folder Name="/06 - Drawing in Direct3D/">
     <Project Path="06/Box/Box.vcxproj" Id="6d643628-9e35-48dc-95c0-585619572f11" />
     <Project Path="06/Hills/Hills.vcxproj" Id="e0ab6c62-1926-4d29-a5b1-7820a5d580b9" />
     <Project Path="06/Shapes/Shapes.vcxproj" Id="330e3f30-ac0c-4400-ac87-f1f0380009fa" />
     <Project Path="06/Skull/Skull.vcxproj" Id="172686f7-03b8-4065-9532-2a432927fe70" />
     <Project Path="06/Waves/Waves.vcxproj" Id="16ab53ce-151d-4fdf-94ae-3032fb8f7327" />
   </Folder>
-  <Folder Name="/07/">
+  <Folder Name="/07 - Lighting/">
     <Project Path="07/Lighting/Lighting.vcxproj" Id="ff706c78-2871-4505-8a40-da562c0af98c" />
     <Project Path="07/LitSkull/LitSkull.vcxproj" Id="4fbe8ef8-058d-4c4c-a50f-5d4cd6beb51c" />
   </Folder>
-  <Folder Name="/08/">
+  <Folder Name="/08 - Texturing/">
     <Project Path="08/Crate/Crate.vcxproj" Id="4b6310c9-966f-4d6f-a36d-a5bb51e5277f" />
     <Project Path="08/TexturedHillsAndWaves/TexturedHillsAndWaves.vcxproj" Id="edbcb315-f900-4dfb-9ae5-916a56934234" />
   </Folder>
-  <Folder Name="/09/">
+  <Folder Name="/09 - Blending/">
     <Project Path="09/BlendDemo/BlendDemo.vcxproj" Id="c998e305-1a35-477f-8181-8ddb7dde498f" />
   </Folder>
-  <Folder Name="/10/">
+  <Folder Name="/10 - Stenciling/">
     <Project Path="10/Mirror/Mirror.vcxproj" Id="bfe39511-b822-4421-bc41-f738c1ab6fc7" />
   </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
