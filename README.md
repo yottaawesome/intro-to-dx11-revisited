@@ -21,6 +21,7 @@ The effort is ongoing. The following projects are functional.
 * [08/Crate](./src/08/Crate)
 * [08/TexturedHillsAndWaves](./src/08/TexturedHillsAndWaves)
 * [09/BlendDemo](./src/09/BlendDemo)
+* [10/Mirror](./src/10/Mirror)
 
 ## Running log of changes
 
