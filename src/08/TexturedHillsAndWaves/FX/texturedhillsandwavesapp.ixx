@@ -19,9 +19,11 @@ struct PerFrameConstants
 	float gFogRange;
 	int gLightCount;
 	int gUseTexture;
+	int gPadding;
 	DirectX::XMFLOAT4 gFogColor;
-	int pad;
 };
+
+static_assert(sizeof(PerFrameConstants) == 240);
 
 struct PerObjectConstants
 {

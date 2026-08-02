@@ -57,4 +57,9 @@ export
 		DirectX::XMFLOAT4 Specular = DirectX::XMFLOAT4{0.0f, 0.0f, 0.0f, 0.0f}; // w = SpecPower
 		DirectX::XMFLOAT4 Reflect = DirectX::XMFLOAT4{0.0f, 0.0f, 0.0f, 0.0f};
 	};
+
+	static_assert(sizeof(DirectionalLight) == 64);
+	static_assert(sizeof(PointLight) == 80);
+	static_assert(sizeof(SpotLight) == 96);
+	static_assert(sizeof(Material) == 64);
 }

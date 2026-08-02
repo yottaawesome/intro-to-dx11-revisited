@@ -14,8 +14,8 @@ cbuffer cbPerFrame
     float gFogRange;
     int gLightCount;
     int gUseTexture;
+    int gPadding;
     float4 gFogColor;
-    int pad;
 };
 
 cbuffer cbPerObject

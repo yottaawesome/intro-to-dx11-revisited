@@ -18,7 +18,7 @@ cbuffer cbPerFrame
 	// something about the packing rules.
 	// https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-packing-rules
     int gLightCount;
-    float pad[2];
+    float2 gPadding;
     float4 gFogColor;
 };
 
@@ -116,4 +116,3 @@ float4 PS(VertexOut pin) : SV_Target
 
     return litColor;
 }
-

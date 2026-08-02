@@ -17,9 +17,11 @@ struct PerFrameConstants
 	float gFogStart;
 	float gFogRange;
 	int gLightCount = 0;
-	float pad[2];
+	DirectX::XMFLOAT2 gPadding;
 	DirectX::XMFLOAT4 gFogColor;
 };
+
+static_assert(sizeof(PerFrameConstants) == 240);
 
 // https://learn.microsoft.com/en-us/windows/win32/direct3dhlsl/dx-graphics-hlsl-packing-rules
 struct PerObjectConstants
@@ -609,4 +611,3 @@ private:
 
 	Win32::POINT mLastMousePos{};
 };
-
