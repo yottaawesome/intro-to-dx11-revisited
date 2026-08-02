@@ -247,6 +247,7 @@ export namespace DirectX
 		::DirectX::XMVector3Cross,
 		::DirectX::XMVector3LengthSq,
 		::DirectX::XMVector3Less,
+		::DirectX::XMMatrixRotationY,
 		::DirectX::XMVectorZero,
 		::DirectX::XMVectorSet,
 		::DirectX::XMMatrixDeterminant,
@@ -324,6 +325,11 @@ export namespace D3D11
 {
 	constexpr auto SdkVersion = D3D11_SDK_VERSION;
 	using 
+		::D3D11_DEPTH_STENCIL_DESC,
+		::D3D11_DEPTH_WRITE_MASK,
+		::D3D11_COMPARISON_FUNC,
+		::D3D11_STENCIL_OP,
+		::ID3D11DepthStencilState,
 		::ID3D11ShaderResourceView,
 		::ID3D11Device,
 		::D3D11_SRV_DIMENSION,
