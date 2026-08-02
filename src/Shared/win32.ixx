@@ -79,6 +79,14 @@ export namespace Win32
 	constexpr auto CpUtf8 = CP_UTF8;
 	constexpr auto WcNoBestFitChars = WC_NO_BEST_FIT_CHARS;
 
+	// Enable run-time debug checks for debug builds. No effect in release builds.
+	constexpr auto SetDebugBuildFlag(int flag) noexcept
+	{
+#ifdef _DEBUG
+		_CrtSetDbgFlag(flag);
+#endif
+	}
+
 	using
 		::HINSTANCE,
 		::LPWSTR,
@@ -106,7 +114,6 @@ export namespace Win32
 		::MSG,
 		::_com_error,
 		::GetAsyncKeyState,
-		::_CrtSetDbgFlag,
 		::WideCharToMultiByte,
 		::MultiByteToWideChar,
 		::OutputDebugStringA,

@@ -7,9 +7,7 @@ import initdirect3d;
 auto wWinMain(Win32::HINSTANCE hInstance, Win32::HINSTANCE,Win32::LPWSTR, int) -> int
 try
 {
-	// Enable run-time memory check for debug builds.
-	if constexpr (IsDebugBuild)
-		Win32::_CrtSetDbgFlag(Win32::CrtAllocMemDf | Win32::CrtLeakCheckDf);
+	Win32::SetDebugBuildFlag(Win32::CrtAllocMemDf | Win32::CrtLeakCheckDf);
 	return InitDirect3DApp{ hInstance }.Run();
 }
 catch (const std::exception& e)
