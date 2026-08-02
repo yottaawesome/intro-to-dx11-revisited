@@ -42,6 +42,7 @@ The effort is ongoing. The following projects are functional.
 * Incorrect padding and alignment issues in constant buffers that were encountered in some samples (e.g. Lighting) have been fixed.
 * Constructor value setting has been moved to inline initialisers, where possible.
 * FX-specific `SampleState` definitions in .fx files have been replaced with proper sampler definitions, set through the C++ side.
+* `DirectXTK` has been added as vcpkg dependency, specifically for DDS texture loading, replacing the old `D3DX11CreateShaderResourceViewFromFile()` calls with `DirectX::CreateDDSTextureFromFile()`.
 
 ## License and copyright
 
