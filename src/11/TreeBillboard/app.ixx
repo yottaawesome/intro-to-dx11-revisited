@@ -293,12 +293,11 @@ public:
 		};
 		std::copy(std::begin(mDirLights), std::end(mDirLights), std::begin(perFrameConstants.gDirLights));
 		md3dImmediateContext->UpdateSubresource(mPerFrameCB32.get(), 0, nullptr, &perFrameConstants, 0, 0);
-
+		md3dImmediateContext->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
 		//
 		// Draw the box.
 		//
-
-		md3dImmediateContext->IASetVertexBuffers(0, 1, mBoxVB.GetAddressOf()	, &stride, &offset);
+		md3dImmediateContext->IASetVertexBuffers(0, 1, mBoxVB.GetAddressOf(), &stride, &offset);
 		md3dImmediateContext->IASetIndexBuffer(mBoxIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
 		// Set per object constants.
