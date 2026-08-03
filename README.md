@@ -22,6 +22,7 @@ The effort is ongoing. The following projects are functional.
 * [08/TexturedHillsAndWaves](./src/08/TexturedHillsAndWaves)
 * [09/BlendDemo](./src/09/BlendDemo)
 * [10/Mirror](./src/10/Mirror)
+* [11/TreeBillboard](./src/11/TreeBillboard)
 
 ## Running log of changes
 
