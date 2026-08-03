@@ -161,6 +161,8 @@ public:
 		BuildCrateGeometryBuffers();
 		BuildTreeSpritesBuffer();
 		BuildShaders();
+
+		mRenderStates = { md3dDevice.get() };
 	}
 
 	void OnResize()
@@ -263,7 +265,6 @@ public:
 		auto proj = DirectX::XMMATRIX{XMLoadFloat4x4(&mProj)};
 		auto viewProj = DirectX::XMMATRIX{view * proj};
 
-		
 		// Draw the tree sprites
 		DrawTreeSprites(viewProj);
 
@@ -279,7 +280,12 @@ public:
 		auto stride = static_cast<std::uint32_t>(sizeof(Basic32Vertex::Vertex));
 		auto offset = 0u;
 
-		
+		//
+		// Draw the box.
+		//
+		md3dImmediateContext->IASetVertexBuffers(0, 1, mBoxVB.GetAddressOf(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mBoxIB.get(), DXGI_FORMAT_R32_UINT, 0);
+
 		// Set per frame constants for the rest of the objects.
 		auto perFrameConstants = Basic32Vertex::PerFrameConstants{
 			.gEyePosW = mEyePosW,
@@ -294,45 +300,39 @@ public:
 		std::copy(std::begin(mDirLights), std::end(mDirLights), std::begin(perFrameConstants.gDirLights));
 		md3dImmediateContext->UpdateSubresource(mPerFrameCB32.get(), 0, nullptr, &perFrameConstants, 0, 0);
 		md3dImmediateContext->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
-		//
-		// Draw the box.
-		//
-		md3dImmediateContext->IASetVertexBuffers(0, 1, mBoxVB.GetAddressOf(), &stride, &offset);
-		md3dImmediateContext->IASetIndexBuffer(mBoxIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
 		// Set per object constants.
-		
 		DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&mBoxWorld);
 		DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
 		DirectX::XMMATRIX worldViewProj = world * viewProj;
 		auto perObjectConstants = Basic32Vertex::PerObjectConstants{
-			.gWorld = mBoxWorld,
 			.gMaterial = mBoxMat,
 		};
+		DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
 		DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
 		DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
 		DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
 		md3dImmediateContext->PSSetShaderResources(0, 1, mBoxMapSRV.GetAddressOf());
+		md3dImmediateContext->UpdateSubresource(mPerObjectCB32.get(), 0, nullptr, &perObjectConstants, 0, 0);
 		auto boxConstantBuffersVS = std::array{ mPerObjectCB32.get() };
+		md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(boxConstantBuffersVS.size()), boxConstantBuffersVS.data());
 		auto boxConstantBuffersPS = std::array{ mPerFrameCB32.get(), mPerObjectCB32.get() };
+		md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(boxConstantBuffersPS.size()), boxConstantBuffersPS.data());
 
-		//md3dImmediateContext->OMSetBlendState(RenderStates::AlphaToCoverageBS, blendFactor, 0xffffffff);
+		md3dImmediateContext->OMSetBlendState(mRenderStates.AlphaToCoverageBS.get(), blendFactor.data(), 0xffffffff);
 		md3dImmediateContext->RSSetState(mRenderStates.NoCullRS.get());
 		md3dImmediateContext->DrawIndexed(36, 0, 0);
 
 		// Restore default render state.
 		md3dImmediateContext->RSSetState(0);
 
-		////
-		//// Draw the hills and water with texture and fog (no alpha clipping needed).
-		////
+		//
+		// Draw the hills and water with texture and fog (no alpha clipping needed).
+		//
 
-		//landAndWavesTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	//
-		//	// Draw the hills.
-		//	//
+		//
+		// Draw the hills.
+		//
 		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mLandVB, &stride, &offset);
 		//	md3dImmediateContext->IASetIndexBuffer(mLandIB, DXGI_FORMAT_R32_UINT, 0);
 
@@ -351,9 +351,9 @@ public:
 		//	landAndWavesTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
 		//	md3dImmediateContext->DrawIndexed(mLandIndexCount, 0, 0);
 
-		//	//
-		//	// Draw the waves.
-		//	//
+		//
+		// Draw the waves.
+		//
 		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mWavesVB, &stride, &offset);
 		//	md3dImmediateContext->IASetIndexBuffer(mWavesIB, DXGI_FORMAT_R32_UINT, 0);
 
@@ -369,13 +369,11 @@ public:
 		//	Effects::BasicFX->SetMaterial(mWavesMat);
 		//	Effects::BasicFX->SetDiffuseMap(mWavesMapSRV);
 
-		//	md3dImmediateContext->OMSetBlendState(RenderStates::TransparentBS, blendFactor, 0xffffffff);
-		//	landAndWavesTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
+		md3dImmediateContext->OMSetBlendState(mRenderStates.TransparentBS.get(), blendFactor.data(), 0xffffffff);
 		//	md3dImmediateContext->DrawIndexed(3 * mWaves.TriangleCount(), 0, 0);
 
-		//	// Restore default blend state
-		//	md3dImmediateContext->OMSetBlendState(0, blendFactor, 0xffffffff);
-		//}
+		// Restore default blend state
+		md3dImmediateContext->OMSetBlendState(0, blendFactor.data(), 0xffffffff);
 
 		HR(mSwapChain->Present(0, 0));
 	}
@@ -650,7 +648,7 @@ private:
 
 		auto vsConstantBuffers = std::array{ mPerObjectTreeCB.get() };
 		md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(vsConstantBuffers.size()), vsConstantBuffers.data());
-		auto psConstantBuffers = std::array{ mPerObjectTreeCB.get(), mPerObjectTreeCB.get() };
+		auto psConstantBuffers = std::array{ mPerFrameTreeCB.get(), mPerObjectTreeCB.get() };
 		md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstantBuffers.size()), psConstantBuffers.data());
 
 		auto treeVBs = std::array{ mTreeSpritesVB.get() };
