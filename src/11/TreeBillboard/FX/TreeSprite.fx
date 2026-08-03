@@ -19,7 +19,7 @@ cbuffer cbPerFrame
 
 cbuffer cbPerObject
 {
-    float4x4 gViewProj;
+    row_major float4x4 gViewProj;
     Material gMaterial;
     int gLightCount;
     bool gUseTexture;
