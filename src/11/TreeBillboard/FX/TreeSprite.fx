@@ -13,6 +13,10 @@ cbuffer cbPerFrame
     float3 gEyePosW;
     float gFogStart;
     float gFogRange;
+    int gLightCount;
+    bool gUseTexture;
+    bool gAlphaClip;
+    bool gFogEnabled;
     float3 gPadding;
     float4 gFogColor;
 };
@@ -21,10 +25,6 @@ cbuffer cbPerObject
 {
     row_major float4x4 gViewProj;
     Material gMaterial;
-    int gLightCount;
-    bool gUseTexture;
-    bool gAlphaClip;
-    bool gFogEnabled;
 };
 
 cbuffer cbFixed

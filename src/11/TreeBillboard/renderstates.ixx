@@ -4,7 +4,8 @@ import shared;
 
 struct RenderStates
 {
-	void InitAll(D3D11::ID3D11Device* device)
+	RenderStates() = default;
+	RenderStates(D3D11::ID3D11Device* device)
 	{
 		//
 		// WireframeRS
