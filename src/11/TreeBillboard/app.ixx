@@ -63,9 +63,9 @@ namespace TreeSpriteVertex
 		float gFogStart;
 		float gFogRange;
 		int gLightCount;
-		bool gUseTexture;
-		bool gAlphaClip;
-		bool gFogEnabled;
+		int gUseTexture;
+		int gAlphaClip;
+		int gFogEnabled;
 		DirectX::XMFLOAT3 gPadding;
 		DirectX::XMFLOAT4 gFogColor;
 	};
@@ -81,9 +81,7 @@ export class TreeBillboardApp : public D3DApp
 {
 public:
 	TreeBillboardApp(Win32::HINSTANCE hInstance)
-		: D3DApp(hInstance), mAlphaToCoverageOn(true),
-		mWaterTexOffset(0.0f, 0.0f), mEyePosW(0.0f, 0.0f, 0.0f), mLandIndexCount(0), mRenderOptions(RenderOptions::TexturesAndFog),
-		mTheta(1.3f * MathHelper::Pi), mPhi(0.4f * MathHelper::Pi), mRadius(80.0f)
+		: D3DApp(hInstance)
 	{
 		mMainWndCaption = L"Tree Billboard Demo";
 		mEnable4xMsaa = true;
@@ -134,6 +132,8 @@ public:
 		mTreeMat.Ambient = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 		mTreeMat.Diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 		mTreeMat.Specular = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 16.0f);
+
+		Init();
 	}
 
 	void Init()
@@ -143,9 +143,6 @@ public:
 		mWaves.Init(160, 160, 1.0f, 0.03f, 5.0f, 0.3f);
 
 		// Must init Effects first since InputLayouts depend on shader signatures.
-		//Effects::InitAll(md3dDevice);
-		//InputLayouts::InitAll(md3dDevice);
-		//RenderStates::InitAll(md3dDevice);
 
 		HR(DirectX::CreateDDSTextureFromFile(md3dDevice.get(), L"Textures/grass.dds", nullptr, &mGrassMapSRV));
 		HR(DirectX::CreateDDSTextureFromFile(md3dDevice.get(), L"Textures/water2.dds", nullptr, &mWavesMapSRV));
@@ -157,14 +154,13 @@ public:
 		treeFilenames.push_back(L"Textures/tree2.dds");
 		treeFilenames.push_back(L"Textures/tree3.dds");
 
-		/*mTreeTextureMapArraySRV = d3dHelper::CreateTexture2DArraySRV(
-			md3dDevice, md3dImmediateContext, treeFilenames, DXGI_FORMAT_R8G8B8A8_UNORM);*/
+		mTreeTextureMapArraySRV = d3dHelper::CreateTexture2DArraySRV(md3dDevice.get(), md3dImmediateContext.get(), treeFilenames);
 
 		BuildLandGeometryBuffers();
 		BuildWaveGeometryBuffers();
 		BuildCrateGeometryBuffers();
 		BuildTreeSpritesBuffer();
-		Init();
+		BuildShaders();
 	}
 
 	void OnResize()
@@ -178,33 +174,30 @@ public:
 	void UpdateScene(float dt)
 	{
 		// Convert Spherical to Cartesian coordinates.
-		float x = mRadius * std::sinf(mPhi) * std::cosf(mTheta);
-		float z = mRadius * std::sinf(mPhi) * std::sinf(mTheta);
-		float y = mRadius * std::cosf(mPhi);
+		auto x = mRadius * std::sinf(mPhi) * std::cosf(mTheta);
+		auto z = mRadius * std::sinf(mPhi) * std::sinf(mTheta);
+		auto y = mRadius * std::cosf(mPhi);
 
 		mEyePosW = DirectX::XMFLOAT3(x, y, z);
 
 		// Build the view matrix.
-		DirectX::XMVECTOR pos = DirectX::XMVectorSet(x, y, z, 1.0f);
-		DirectX::XMVECTOR target = DirectX::XMVectorZero();
-		DirectX::XMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+		auto pos = DirectX::XMVECTOR{DirectX::XMVectorSet(x, y, z, 1.0f)};
+		auto target = DirectX::XMVECTOR{DirectX::XMVectorZero()};
+		auto up = DirectX::XMVECTOR{DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f)};
 
-		DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(pos, target, up);
+		auto V = DirectX::XMMATRIX{DirectX::XMMatrixLookAtLH(pos, target, up)};
 		DirectX::XMStoreFloat4x4(&mView, V);
 
 		//
 		// Every quarter second, generate a random wave.
 		//
-		static float t_base = 0.0f;
+		static auto t_base = 0.0f;
 		if ((mTimer.TotalTime() - t_base) >= 0.1f)
 		{
 			t_base += 0.1f;
-
 			auto i = static_cast<std::uint32_t>(5 + std::rand() % (mWaves.RowCount() - 10));
 			auto j = static_cast<std::uint32_t>(5 + std::rand() % (mWaves.ColumnCount() - 10));
-
-			float r = MathHelper::RandF(0.5f, 1.0f);
-
+			auto r = MathHelper::RandF(0.5f, 1.0f);
 			mWaves.Disturb(i, j, r);
 		}
 
@@ -213,8 +206,7 @@ public:
 		//
 		// Update the wave vertex buffer with the new solution.
 		//
-
-		D3D11::D3D11_MAPPED_SUBRESOURCE mappedData;
+		auto mappedData = D3D11::D3D11_MAPPED_SUBRESOURCE{};
 		HR(md3dImmediateContext->Map(mWavesVB.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
 
 		auto v = reinterpret_cast<Basic32Vertex::Vertex*>(mappedData.pData);
@@ -235,12 +227,12 @@ public:
 		//
 
 		// Tile water texture.
-		DirectX::XMMATRIX wavesScale = DirectX::XMMatrixScaling(5.0f, 5.0f, 0.0f);
+		auto wavesScale = DirectX::XMMATRIX{DirectX::XMMatrixScaling(5.0f, 5.0f, 0.0f)};
 
 		// Translate texture over time.
 		mWaterTexOffset.y += 0.05f * dt;
 		mWaterTexOffset.x += 0.1f * dt;
-		DirectX::XMMATRIX wavesOffset = DirectX::XMMatrixTranslation(mWaterTexOffset.x, mWaterTexOffset.y, 0.0f);
+		auto wavesOffset = DirectX::XMMATRIX{DirectX::XMMatrixTranslation(mWaterTexOffset.x, mWaterTexOffset.y, 0.0f)};
 
 		// Combine scale and translation.
 		DirectX::XMStoreFloat4x4(&mWaterTexTransform, wavesScale * wavesOffset);
@@ -250,16 +242,12 @@ public:
 		//
 		if (Win32::GetAsyncKeyState('1') & 0x8000)
 			mRenderOptions = RenderOptions::Lighting;
-
 		if (Win32::GetAsyncKeyState('2') & 0x8000)
 			mRenderOptions = RenderOptions::Textures;
-
 		if (Win32::GetAsyncKeyState('3') & 0x8000)
 			mRenderOptions = RenderOptions::TexturesAndFog;
-
 		if (Win32::GetAsyncKeyState('R') & 0x8000)
 			mAlphaToCoverageOn = true;
-
 		if (Win32::GetAsyncKeyState('T') & 0x8000)
 			mAlphaToCoverageOn = false;
 	}
@@ -269,91 +257,72 @@ public:
 		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView.get(), reinterpret_cast<const float*>(&DirectX::Colors::Silver));
 		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
 
-		float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		auto blendFactor = std::array<float, 4>{ 0.0f, 0.0f, 0.0f, 0.0f };
 
-		DirectX::XMMATRIX view = XMLoadFloat4x4(&mView);
-		DirectX::XMMATRIX proj = XMLoadFloat4x4(&mProj);
-		DirectX::XMMATRIX viewProj = view * proj;
+		auto view = DirectX::XMMATRIX{XMLoadFloat4x4(&mView)};
+		auto proj = DirectX::XMMATRIX{XMLoadFloat4x4(&mProj)};
+		auto viewProj = DirectX::XMMATRIX{view * proj};
 
-		//
+		
 		// Draw the tree sprites
+		DrawTreeSprites(viewProj);
+
+		//
+		// DrawTreeSprites() changes InputLayout and PrimitiveTopology, so change it based on 
+		// the geometry we draw next.
+		//
+		
+		md3dImmediateContext->IASetInputLayout(mBasic32.get());
+		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		md3dImmediateContext->VSSetShader(mColorVS.get(), nullptr, 0);
+		md3dImmediateContext->PSSetShader(mColorPS.get(), nullptr, 0);
+		auto stride = static_cast<std::uint32_t>(sizeof(Basic32Vertex::Vertex));
+		auto offset = 0u;
+
+		
+		// Set per frame constants for the rest of the objects.
+		auto perFrameConstants = Basic32Vertex::PerFrameConstants{
+			.gEyePosW = mEyePosW,
+			.gFogStart = 15.0f,
+			.gFogRange = 175.0f,
+			.gLightCount = 3,
+			.gUseTexture = mRenderOptions == RenderOptions::Textures or mRenderOptions == RenderOptions::TexturesAndFog,
+			.gAlphaClip = mRenderOptions == RenderOptions::Textures or mRenderOptions == RenderOptions::TexturesAndFog,
+			.gFogEnabled = mRenderOptions == RenderOptions::TexturesAndFog,
+			.gFogColor = DirectX::XMFLOAT4(0.75f, 0.75f, 0.75f, 1.0f)
+		};
+		std::copy(std::begin(mDirLights), std::end(mDirLights), std::begin(perFrameConstants.gDirLights));
+		md3dImmediateContext->UpdateSubresource(mPerFrameCB32.get(), 0, nullptr, &perFrameConstants, 0, 0);
+
+		//
+		// Draw the box.
 		//
 
-		//DrawTreeSprites(viewProj);
+		md3dImmediateContext->IASetVertexBuffers(0, 1, mBoxVB.GetAddressOf()	, &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mBoxIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		////
-		//// DrawTreeSprites() changes InputLayout and PrimitiveTopology, so change it based on 
-		//// the geometry we draw next.
-		////
+		// Set per object constants.
+		
+		DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&mBoxWorld);
+		DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
+		DirectX::XMMATRIX worldViewProj = world * viewProj;
+		auto perObjectConstants = Basic32Vertex::PerObjectConstants{
+			.gWorld = mBoxWorld,
+			.gMaterial = mBoxMat,
+		};
+		DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+		DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+		DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
+		md3dImmediateContext->PSSetShaderResources(0, 1, mBoxMapSRV.GetAddressOf());
+		auto boxConstantBuffersVS = std::array{ mPerObjectCB32.get() };
+		auto boxConstantBuffersPS = std::array{ mPerFrameCB32.get(), mPerObjectCB32.get() };
 
-		//md3dImmediateContext->IASetInputLayout(InputLayouts::Basic32);
-		//md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		//UINT stride = sizeof(Vertex::Basic32);
-		//UINT offset = 0;
+		//md3dImmediateContext->OMSetBlendState(RenderStates::AlphaToCoverageBS, blendFactor, 0xffffffff);
+		md3dImmediateContext->RSSetState(mRenderStates.NoCullRS.get());
+		md3dImmediateContext->DrawIndexed(36, 0, 0);
 
-		////
-		//// Set per frame constants for the rest of the objects.
-		////
-		//Effects::BasicFX->SetDirLights(mDirLights);
-		//Effects::BasicFX->SetEyePosW(mEyePosW);
-		//Effects::BasicFX->SetFogColor(Colors::Silver);
-		//Effects::BasicFX->SetFogStart(15.0f);
-		//Effects::BasicFX->SetFogRange(175.0f);
-
-		////
-		//// Figure out which technique to use.
-		////
-		//ID3DX11EffectTechnique* boxTech;
-		//ID3DX11EffectTechnique* landAndWavesTech;
-
-		//switch (mRenderOptions)
-		//{
-		//case RenderOptions::Lighting:
-		//	boxTech = Effects::BasicFX->Light3Tech;
-		//	landAndWavesTech = Effects::BasicFX->Light3Tech;
-		//	break;
-		//case RenderOptions::Textures:
-		//	boxTech = Effects::BasicFX->Light3TexAlphaClipTech;
-		//	landAndWavesTech = Effects::BasicFX->Light3TexTech;
-		//	break;
-		//case RenderOptions::TexturesAndFog:
-		//	boxTech = Effects::BasicFX->Light3TexAlphaClipFogTech;
-		//	landAndWavesTech = Effects::BasicFX->Light3TexFogTech;
-		//	break;
-		//}
-
-		//D3DX11_TECHNIQUE_DESC techDesc;
-
-		////
-		//// Draw the box.
-		//// 
-
-		//boxTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mBoxVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mBoxIB, DXGI_FORMAT_R32_UINT, 0);
-
-		//	// Set per object constants.
-		//	XMMATRIX world = XMLoadFloat4x4(&mBoxWorld);
-		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	XMMATRIX worldViewProj = world * view * proj;
-
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetTexTransform(XMMatrixIdentity());
-		//	Effects::BasicFX->SetMaterial(mBoxMat);
-		//	Effects::BasicFX->SetDiffuseMap(mBoxMapSRV);
-
-		//	//md3dImmediateContext->OMSetBlendState(RenderStates::AlphaToCoverageBS, blendFactor, 0xffffffff);
-		//	md3dImmediateContext->RSSetState(RenderStates::NoCullRS);
-		//	boxTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(36, 0, 0);
-
-		//	// Restore default render state.
-		//	md3dImmediateContext->RSSetState(0);
-		//}
+		// Restore default render state.
+		md3dImmediateContext->RSSetState(0);
 
 		////
 		//// Draw the hills and water with texture and fog (no alpha clipping needed).
@@ -653,6 +622,11 @@ private:
 	{
 		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_POINTLIST);
 		md3dImmediateContext->IASetInputLayout(mTreePointSprite.get());
+
+		md3dImmediateContext->VSSetShader(mTreeVS.get(), nullptr, 0);
+		md3dImmediateContext->PSSetShader(mTreePS.get(), nullptr, 0);
+		md3dImmediateContext->PSSetSamplers(0, 1, mTreeSamplerState.GetAddressOf());
+
 		auto stride = static_cast<std::uint32_t>(sizeof(TreeSpriteVertex::Vertex));
 		auto offset = 0u;
 
@@ -667,13 +641,21 @@ private:
 			.gFogColor = DirectX::XMFLOAT4(0.75f, 0.75f, 0.75f, 1.0f)
 		};
 		std::copy(std::begin(mDirLights), std::end(mDirLights), std::begin(perFrameTreeCB.gDirLights));
+		md3dImmediateContext->UpdateSubresource(mPerFrameTreeCB.get(), 0, nullptr, &perFrameTreeCB, 0, 0);
 
-		auto perFrameTreeCBData = TreeSpriteVertex::PerObjectConstants{
+		auto perObjectTreeCBData = TreeSpriteVertex::PerObjectConstants{
 			.gMaterial = mTreeMat,
 		};
-		DirectX::XMStoreFloat4x4(&perFrameTreeCBData.gViewProj, viewProj);
+		DirectX::XMStoreFloat4x4(&perObjectTreeCBData.gViewProj, viewProj);
+		md3dImmediateContext->UpdateSubresource(mPerObjectTreeCB.get(), 0, nullptr, &perObjectTreeCBData, 0, 0);
 
-		md3dImmediateContext->IASetVertexBuffers(0, 1, &mTreeSpritesVB, &stride, &offset);
+		auto vsConstantBuffers = std::array{ mPerObjectTreeCB.get() };
+		md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(vsConstantBuffers.size()), vsConstantBuffers.data());
+		auto psConstantBuffers = std::array{ mPerObjectTreeCB.get(), mPerObjectTreeCB.get() };
+		md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstantBuffers.size()), psConstantBuffers.data());
+
+		auto treeVBs = std::array{ mTreeSpritesVB.get() };
+		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(treeVBs.size()), treeVBs.data(), &stride, &offset);
 		auto blendFactor = std::array{ 0.0f, 0.0f, 0.0f, 0.0f };
 
 		if (mAlphaToCoverageOn)
@@ -764,6 +746,19 @@ private:
 			.MaxLOD = std::numeric_limits<float>::max(),
 		};
 		HR(md3dDevice->CreateSamplerState(&samplerDesc, &mSamplerState), "Failed to create sampler state.");
+
+		auto samplerDesc2 = D3D11::D3D11_SAMPLER_DESC{
+			.Filter = D3D11::D3D11_FILTER::D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR,
+			.AddressU = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_CLAMP,
+			.AddressV = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_CLAMP,
+			.AddressW = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_CLAMP,
+			.MipLODBias = 0.0f,
+			.MaxAnisotropy = 4,
+			.ComparisonFunc = D3D11::D3D11_COMPARISON_FUNC::D3D11_COMPARISON_NEVER,
+			.MinLOD = 0.0f,
+			.MaxLOD = std::numeric_limits<float>::max(),
+		};
+		HR(md3dDevice->CreateSamplerState(&samplerDesc2, &mTreeSamplerState), "Failed to create sampler state.");
 	}
 
 	void BuildInputLayout(D3D::ID3DBlob* vertexShaderBytecode, D3D::ID3DBlob* treeShaderBytecode)
@@ -857,6 +852,7 @@ private:
 	ComPtr<D3D11::ID3D11Buffer> mPerObjectTreeCB;
 
 	ComPtr<D3D11::ID3D11SamplerState> mSamplerState;
+	ComPtr<D3D11::ID3D11SamplerState> mTreeSamplerState;
 
 	ComPtr<D3D11::ID3D11ShaderResourceView> mGrassMapSRV;
 	ComPtr<D3D11::ID3D11ShaderResourceView> mWavesMapSRV;
@@ -865,7 +861,7 @@ private:
 
 	RenderStates mRenderStates;
 	Waves mWaves;
-
+	int mNumLights = 3;
 	DirectionalLight mDirLights[3];
 	Material mLandMat;
 	Material mWavesMat;
@@ -881,21 +877,21 @@ private:
 	DirectX::XMFLOAT4X4 mView;
 	DirectX::XMFLOAT4X4 mProj;
 
-	std::uint32_t mLandIndexCount = 3;
+	std::uint32_t mLandIndexCount = 0;
 
 	static constexpr auto TreeCount = 16u;
 
-	bool mAlphaToCoverageOn;
+	bool mAlphaToCoverageOn = true;
 
-	DirectX::XMFLOAT2 mWaterTexOffset;
+	DirectX::XMFLOAT2 mWaterTexOffset = {0.0f, 0.0f};
 
-	RenderOptions mRenderOptions;
+	RenderOptions mRenderOptions = RenderOptions::TexturesAndFog;
 
-	DirectX::XMFLOAT3 mEyePosW;
+	DirectX::XMFLOAT3 mEyePosW = {0.0f, 0.0f, 0.0f};
 
-	float mTheta;
-	float mPhi;
-	float mRadius;
+	float mTheta = 1.3f * MathHelper::Pi;
+	float mPhi = 0.4f * MathHelper::Pi;
+	float mRadius = 80.0f;
 
 	Win32::POINT mLastMousePos{};
 };

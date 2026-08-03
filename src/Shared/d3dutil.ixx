@@ -164,6 +164,127 @@ export
 			0.0f, 0.0f, 0.0f, 1.0f
 		};
 
+		static auto CreateTexture2DArraySRV(
+			D3D11::ID3D11Device* device,
+			D3D11::ID3D11DeviceContext* context,
+			const std::vector<std::wstring>& filenames
+		) -> ComPtr<D3D11::ID3D11ShaderResourceView>
+		{
+			if (filenames.empty())
+				throw std::invalid_argument{ "At least one texture filename is required" };
+
+			auto sourceTextures = std::vector<ComPtr<D3D11::ID3D11Texture2D>>{};
+			sourceTextures.reserve(filenames.size());
+
+			for (const auto& filename : filenames)
+			{
+				auto sourceResource = ComPtr<D3D11::ID3D11Resource>{};
+				HR(
+					DirectX::CreateDDSTextureFromFile(
+						device,
+						filename.c_str(),
+						sourceResource.ReleaseAndGetAddressOf(),
+						nullptr
+					),
+					std::format("Failed to load texture '{}'", WStringToAnsi(filename))
+				);
+
+				auto sourceTexture = ComPtr<D3D11::ID3D11Texture2D>{};
+				HR(
+					sourceResource->QueryInterface(
+						sourceTexture.Uuid(),
+						sourceTexture.ReleaseAndGetAddressOfVoid()
+					),
+					std::format("'{}' is not a 2D texture", WStringToAnsi(filename))
+				);
+				sourceTextures.push_back(std::move(sourceTexture));
+			}
+
+			auto textureElementDesc = D3D11::D3D11_TEXTURE2D_DESC{};
+			sourceTextures.front()->GetDesc(&textureElementDesc);
+
+			if (textureElementDesc.ArraySize != 1 or textureElementDesc.SampleDesc.Count != 1)
+				throw std::runtime_error{ "Texture array elements must be non-multisampled 2D textures" };
+
+			for (auto i = 1ull; i < sourceTextures.size(); ++i)
+			{
+				/*auto desc = D3D11::D3D11_TEXTURE2D_DESC{};
+				sourceTextures[i]->GetDesc(&desc);
+
+				if (desc.Width != textureElementDesc.Width or
+					desc.Height != textureElementDesc.Height or
+					desc.MipLevels != textureElementDesc.MipLevels or
+					desc.ArraySize != 1 or
+					desc.Format != textureElementDesc.Format or
+					desc.SampleDesc.Count != textureElementDesc.SampleDesc.Count or
+					desc.SampleDesc.Quality != textureElementDesc.SampleDesc.Quality)
+				{
+					throw std::runtime_error{
+						std::format("Texture '{}' does not match the texture array element layout", WStringToAnsi(filenames[i]))
+					};
+				}*/
+			}
+
+			auto textureArrayDesc = D3D11::D3D11_TEXTURE2D_DESC{
+				.Width = textureElementDesc.Width,
+				.Height = textureElementDesc.Height,
+				.MipLevels = textureElementDesc.MipLevels,
+				.ArraySize = static_cast<std::uint32_t>(sourceTextures.size()),
+				.Format = textureElementDesc.Format,
+				.SampleDesc = {
+					.Count = 1,
+					.Quality = 0,
+				},
+				.Usage = D3D11_USAGE_DEFAULT,
+				.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_SHADER_RESOURCE,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0,
+			};
+
+			auto textureArray = ComPtr<D3D11::ID3D11Texture2D>{};
+			HR(device->CreateTexture2D(&textureArrayDesc, nullptr, textureArray.ReleaseAndGetAddressOf()));
+
+			for (auto arraySlice = 0ull; arraySlice < textureArrayDesc.ArraySize; ++arraySlice)
+			{
+				for (auto mipLevel = 0ull; mipLevel < textureArrayDesc.MipLevels; ++mipLevel)
+				{
+					const auto destinationSubresource =
+						mipLevel + arraySlice * textureArrayDesc.MipLevels;
+
+					context->CopySubresourceRegion(
+						textureArray.get(),
+						static_cast<std::uint32_t>(destinationSubresource),
+						0,
+						0,
+						0,
+						sourceTextures[arraySlice].get(),
+						static_cast<std::uint32_t>(mipLevel),
+						nullptr
+					);
+				}
+			}
+
+			auto viewDesc = D3D11::D3D11_SHADER_RESOURCE_VIEW_DESC{
+				.Format = textureArrayDesc.Format,
+				.ViewDimension = D3D11::D3D11_SRV_DIMENSION::D3D11_SRV_DIMENSION_TEXTURE2DARRAY,
+				.Texture2DArray = {
+					.MostDetailedMip = 0,
+					.MipLevels = textureArrayDesc.MipLevels,
+					.FirstArraySlice = 0,
+					.ArraySize = textureArrayDesc.ArraySize,
+				}
+			};
+
+			auto textureArraySRV = ComPtr<D3D11::ID3D11ShaderResourceView>{};
+			HR(device->CreateShaderResourceView(
+				textureArray.get(),
+				&viewDesc,
+				textureArraySRV.ReleaseAndGetAddressOf()
+			));
+
+			return textureArraySRV;
+		}
+
 		static auto CreateRandomTexture1DSRV(D3D11::ID3D11Device* device) -> ComPtr<D3D11::ID3D11ShaderResourceView>
 		{
 			// 
@@ -171,7 +292,7 @@ export
 			//
 			auto randomValues = std::array<DirectX::XMFLOAT4, 1024>{};
 
-			for (int i = 0; i < 1024; ++i)
+			for (auto i = 0; i < 1024; ++i)
 			{
 				randomValues[i].x = MathHelper::RandF(-1.0f, 1.0f);
 				randomValues[i].y = MathHelper::RandF(-1.0f, 1.0f);
