@@ -27,19 +27,15 @@ cbuffer cbPerObject
     Material gMaterial;
 };
 
-cbuffer cbFixed
+//
+// Compute texture coordinates to stretch texture over the quad.
+//
+static const float2 gTexC[4] =
 {
-	//
-	// Compute texture coordinates to stretch texture over quad.
-	//
-
-    float2 gTexC[4] =
-    {
-        float2(0.0f, 1.0f),
-		float2(0.0f, 0.0f),
-		float2(1.0f, 1.0f),
-		float2(1.0f, 0.0f)
-    };
+    float2(0.0f, 1.0f),
+	float2(0.0f, 0.0f),
+	float2(1.0f, 1.0f),
+	float2(1.0f, 0.0f)
 };
 
 // Nonnumeric values cannot be added to a cbuffer.

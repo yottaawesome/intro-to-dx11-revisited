@@ -164,6 +164,144 @@ export
 			0.0f, 0.0f, 0.0f, 1.0f
 		};
 
+		static auto CreateConvertedTexture2DArraySRV(
+			D3D11::ID3D11Device* device,
+			const std::vector<std::wstring>& filenames,
+			DXGI::DXGI_FORMAT format
+		) -> ComPtr<D3D11::ID3D11ShaderResourceView>
+		{
+			if (filenames.empty())
+				throw std::invalid_argument{ "At least one texture filename is required" };
+
+			auto textures = std::vector<DirectX::ScratchImage>{};
+			textures.reserve(filenames.size());
+
+			auto elementMetadata = DirectX::TexMetadata{};
+
+			for (const auto& filename : filenames)
+			{
+				auto source = DirectX::ScratchImage{};
+				auto sourceMetadata = DirectX::TexMetadata{};
+				HR(
+					DirectX::LoadFromDDSFile(
+						filename.c_str(),
+						DirectX::DDS_FLAGS_NONE,
+						&sourceMetadata,
+						source
+					),
+					std::format("Failed to load texture '{}'", WStringToAnsi(filename))
+				);
+
+				if (sourceMetadata.dimension != DirectX::TEX_DIMENSION_TEXTURE2D or
+					sourceMetadata.arraySize != 1 or
+					sourceMetadata.IsCubemap())
+				{
+					throw std::runtime_error{
+						std::format("'{}' is not a single 2D texture", WStringToAnsi(filename))
+					};
+				}
+
+				auto converted = DirectX::ScratchImage{};
+				if (DirectX::IsCompressed(sourceMetadata.format))
+				{
+					HR(
+						DirectX::Decompress(
+							source.GetImages(),
+							source.GetImageCount(),
+							sourceMetadata,
+							format,
+							converted
+						),
+						std::format("Failed to decompress texture '{}'", WStringToAnsi(filename))
+					);
+				}
+				else if (sourceMetadata.format != format)
+				{
+					HR(
+						DirectX::Convert(
+							source.GetImages(),
+							source.GetImageCount(),
+							sourceMetadata,
+							format,
+							DirectX::TEX_FILTER_DEFAULT,
+							DirectX::TexThresholdDefault,
+							converted
+						),
+						std::format("Failed to convert texture '{}'", WStringToAnsi(filename))
+					);
+				}
+				else
+				{
+					converted = std::move(source);
+				}
+
+				const auto& metadata = converted.GetMetadata();
+				if (textures.empty())
+				{
+					elementMetadata = metadata;
+				}
+				else if (metadata.width != elementMetadata.width or
+					metadata.height != elementMetadata.height or
+					metadata.mipLevels != elementMetadata.mipLevels)
+				{
+					throw std::runtime_error{
+						std::format("Texture '{}' does not match the texture array element dimensions", WStringToAnsi(filename))
+					};
+				}
+
+				textures.push_back(std::move(converted));
+			}
+
+			auto textureArray = DirectX::ScratchImage{};
+			HR(
+				textureArray.Initialize2D(
+					format,
+					elementMetadata.width,
+					elementMetadata.height,
+					textures.size(),
+					elementMetadata.mipLevels
+				),
+				"Failed to allocate the texture array"
+			);
+
+			for (auto arraySlice = 0ull; arraySlice < textures.size(); ++arraySlice)
+			{
+				for (auto mipLevel = 0ull; mipLevel < elementMetadata.mipLevels; ++mipLevel)
+				{
+					const auto* source = textures[arraySlice].GetImage(mipLevel, 0, 0);
+					const auto* destination = textureArray.GetImage(mipLevel, arraySlice, 0);
+					if (source == nullptr or destination == nullptr)
+						throw std::runtime_error{ "Failed to access a texture array subresource" };
+
+					HR(
+						DirectX::CopyRectangle(
+							*source,
+							DirectX::Rect{ 0, 0, source->width, source->height },
+							*destination,
+							DirectX::TEX_FILTER_DEFAULT,
+							0,
+							0
+						),
+						"Failed to copy a texture array subresource"
+					);
+				}
+			}
+
+			auto textureArraySRV = ComPtr<D3D11::ID3D11ShaderResourceView>{};
+			HR(
+				DirectX::CreateShaderResourceView(
+					device,
+					textureArray.GetImages(),
+					textureArray.GetImageCount(),
+					textureArray.GetMetadata(),
+					textureArraySRV.ReleaseAndGetAddressOf()
+				),
+				"Failed to create the texture array shader resource view"
+			);
+
+			return textureArraySRV;
+		}
+
 		static auto CreateTexture2DArraySRV(
 			D3D11::ID3D11Device* device,
 			D3D11::ID3D11DeviceContext* context,
@@ -208,7 +346,7 @@ export
 
 			for (auto i = 1ull; i < sourceTextures.size(); ++i)
 			{
-				/*auto desc = D3D11::D3D11_TEXTURE2D_DESC{};
+				auto desc = D3D11::D3D11_TEXTURE2D_DESC{};
 				sourceTextures[i]->GetDesc(&desc);
 
 				if (desc.Width != textureElementDesc.Width or
@@ -222,7 +360,7 @@ export
 					throw std::runtime_error{
 						std::format("Texture '{}' does not match the texture array element layout", WStringToAnsi(filenames[i]))
 					};
-				}*/
+				}
 			}
 
 			auto textureArrayDesc = D3D11::D3D11_TEXTURE2D_DESC{

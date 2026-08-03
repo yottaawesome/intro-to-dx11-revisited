@@ -154,7 +154,11 @@ public:
 		treeFilenames.push_back(L"Textures/tree2.dds");
 		treeFilenames.push_back(L"Textures/tree3.dds");
 
-		mTreeTextureMapArraySRV = d3dHelper::CreateTexture2DArraySRV(md3dDevice.get(), md3dImmediateContext.get(), treeFilenames);
+		mTreeTextureMapArraySRV = d3dHelper::CreateConvertedTexture2DArraySRV(
+			md3dDevice.get(),
+			treeFilenames,
+			DXGI::DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM
+		);
 
 		BuildLandGeometryBuffers();
 		BuildWaveGeometryBuffers();
@@ -257,7 +261,12 @@ public:
 	void DrawScene()
 	{
 		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView.get(), reinterpret_cast<const float*>(&DirectX::Colors::Silver));
-		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
+		md3dImmediateContext->ClearDepthStencilView(
+			mDepthStencilView.get(),
+			static_cast<D3D11::D3D11_CLEAR_FLAG>(D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL),
+			1.0f,
+			0
+		);
 
 		auto blendFactor = std::array<float, 4>{ 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -277,6 +286,7 @@ public:
 		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		md3dImmediateContext->VSSetShader(mColorVS.get(), nullptr, 0);
 		md3dImmediateContext->PSSetShader(mColorPS.get(), nullptr, 0);
+		md3dImmediateContext->GSSetShader(nullptr, nullptr, 0);
 		auto stride = static_cast<std::uint32_t>(sizeof(Basic32Vertex::Vertex));
 		auto offset = 0u;
 
@@ -333,44 +343,50 @@ public:
 		//
 		// Draw the hills.
 		//
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mLandVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mLandIB, DXGI_FORMAT_R32_UINT, 0);
+		md3dImmediateContext->IASetVertexBuffers(0, 1, mLandVB.GetAddressOf(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mLandIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		//	// Set per object constants.
-		//	XMMATRIX world = XMLoadFloat4x4(&mLandWorld);
-		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	XMMATRIX worldViewProj = world * view * proj;
+		// Set per object constants.
+		{
+			DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&mLandWorld);
+			DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
+			DirectX::XMMATRIX worldViewProj = world * viewProj;
 
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetTexTransform(XMLoadFloat4x4(&mGrassTexTransform));
-		//	Effects::BasicFX->SetMaterial(mLandMat);
-		//	Effects::BasicFX->SetDiffuseMap(mGrassMapSRV);
-
-		//	landAndWavesTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mLandIndexCount, 0, 0);
+			auto landPerObject = Basic32Vertex::PerObjectConstants{
+				.gMaterial = mLandMat,
+			};
+			DirectX::XMStoreFloat4x4(&landPerObject.gWorld, world);
+			DirectX::XMStoreFloat4x4(&landPerObject.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&landPerObject.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&landPerObject.gTexTransform, DirectX::XMLoadFloat4x4(&mGrassTexTransform));
+			md3dImmediateContext->PSSetShaderResources(0, 1, mGrassMapSRV.GetAddressOf());
+			md3dImmediateContext->UpdateSubresource(mPerObjectCB32.get(), 0, nullptr, &landPerObject, 0, 0);
+			md3dImmediateContext->DrawIndexed(mLandIndexCount, 0, 0);
+		}
 
 		//
 		// Draw the waves.
 		//
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mWavesVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mWavesIB, DXGI_FORMAT_R32_UINT, 0);
+		{
+			md3dImmediateContext->IASetVertexBuffers(0, 1, mWavesVB.GetAddressOf(), &stride, &offset);
+			md3dImmediateContext->IASetIndexBuffer(mWavesIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		//	// Set per object constants.
-		//	world = XMLoadFloat4x4(&mWavesWorld);
-		//	worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	worldViewProj = world * view * proj;
-
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetTexTransform(XMLoadFloat4x4(&mWaterTexTransform));
-		//	Effects::BasicFX->SetMaterial(mWavesMat);
-		//	Effects::BasicFX->SetDiffuseMap(mWavesMapSRV);
-
-		md3dImmediateContext->OMSetBlendState(mRenderStates.TransparentBS.get(), blendFactor.data(), 0xffffffff);
-		//	md3dImmediateContext->DrawIndexed(3 * mWaves.TriangleCount(), 0, 0);
+			//	// Set per object constants.
+			DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&mWavesWorld);
+			DirectX::XMMATRIX  worldInvTranspose = MathHelper::InverseTranspose(world);
+			DirectX::XMMATRIX worldViewProj = world * viewProj;
+			auto wavesPerObject = Basic32Vertex::PerObjectConstants{
+				.gMaterial = mWavesMat,
+			};
+			DirectX::XMStoreFloat4x4(&wavesPerObject.gWorld, world);
+			DirectX::XMStoreFloat4x4(&wavesPerObject.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&wavesPerObject.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&wavesPerObject.gTexTransform, DirectX::XMLoadFloat4x4(&mWaterTexTransform));
+			md3dImmediateContext->PSSetShaderResources(0, 1, mWavesMapSRV.GetAddressOf());
+			md3dImmediateContext->UpdateSubresource(mPerObjectCB32.get(), 0, nullptr, &wavesPerObject, 0, 0);
+			md3dImmediateContext->OMSetBlendState(mRenderStates.TransparentBS.get(), blendFactor.data(), 0xffffffff);
+			md3dImmediateContext->DrawIndexed(3 * mWaves.TriangleCount(), 0, 0);
+		}
 
 		// Restore default blend state
 		md3dImmediateContext->OMSetBlendState(0, blendFactor.data(), 0xffffffff);
@@ -622,6 +638,8 @@ private:
 
 		md3dImmediateContext->VSSetShader(mTreeVS.get(), nullptr, 0);
 		md3dImmediateContext->PSSetShader(mTreePS.get(), nullptr, 0);
+		md3dImmediateContext->GSSetShader(mTreeGS.get(), nullptr, 0);
+		md3dImmediateContext->PSSetShaderResources(0, 1, mTreeTextureMapArraySRV.GetAddressOf());
 		md3dImmediateContext->PSSetSamplers(0, 1, mTreeSamplerState.GetAddressOf());
 
 		auto stride = static_cast<std::uint32_t>(sizeof(TreeSpriteVertex::Vertex));
@@ -650,6 +668,8 @@ private:
 		md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(vsConstantBuffers.size()), vsConstantBuffers.data());
 		auto psConstantBuffers = std::array{ mPerFrameTreeCB.get(), mPerObjectTreeCB.get() };
 		md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstantBuffers.size()), psConstantBuffers.data());
+		auto gsConstantBuffers = std::array{ mPerFrameTreeCB.get(), mPerObjectTreeCB.get() };
+		md3dImmediateContext->GSSetConstantBuffers(0, static_cast<std::uint32_t>(gsConstantBuffers.size()), gsConstantBuffers.data());
 
 		auto treeVBs = std::array{ mTreeSpritesVB.get() };
 		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(treeVBs.size()), treeVBs.data(), &stride, &offset);
@@ -673,15 +693,22 @@ private:
 		HR(md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mColorPS), "Failed to create pixel shader.");
 		pixelShaderBytecode.reset();
 
-		// tree point sprite shaders
+		//
+		// Tree point sprite shaders
+		// Vertex Shader
 		auto treeVertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
 		HR(D3D::D3DReadFileToBlob(L"FX/TreeSprite_VS.cso", &treeVertexShaderBytecode), "Failed to read tree vertex shader file.");
 		hr = md3dDevice->CreateVertexShader(treeVertexShaderBytecode->GetBufferPointer(), treeVertexShaderBytecode->GetBufferSize(), 0, &mTreeVS);
 		HR(hr, "Failed to create vertex shader.");
+		// Pixel Shader
 		auto treePixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
 		HR(D3D::D3DReadFileToBlob(L"FX/TreeSprite_PS.cso", &treePixelShaderBytecode), "Failed to read tree pixel shader file.");
 		HR(md3dDevice->CreatePixelShader(treePixelShaderBytecode->GetBufferPointer(), treePixelShaderBytecode->GetBufferSize(), 0, &mTreePS), "Failed to create pixel shader.");
 		treePixelShaderBytecode.reset();
+		// Geometry Shader
+		auto treeGeometryShaderBytecode = ComPtr<D3D::ID3DBlob>{};
+		HR(D3D::D3DReadFileToBlob(L"FX/TreeSprite_GS.cso", &treeGeometryShaderBytecode), "Failed to read tree geometry shader file.");
+		HR(md3dDevice->CreateGeometryShader(treeGeometryShaderBytecode->GetBufferPointer(), treeGeometryShaderBytecode->GetBufferSize(), 0, &mTreeGS), "Failed to create geometry shader.");
 
 		// Build layouts
 		BuildInputLayout(vertexShaderBytecode.get(), treeVertexShaderBytecode.get());
@@ -745,7 +772,7 @@ private:
 		HR(md3dDevice->CreateSamplerState(&samplerDesc, &mSamplerState), "Failed to create sampler state.");
 
 		auto samplerDesc2 = D3D11::D3D11_SAMPLER_DESC{
-			.Filter = D3D11::D3D11_FILTER::D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR,
+			.Filter = D3D11::D3D11_FILTER::D3D11_FILTER_MIN_MAG_MIP_LINEAR,
 			.AddressU = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_CLAMP,
 			.AddressV = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_CLAMP,
 			.AddressW = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_CLAMP,
@@ -842,6 +869,7 @@ private:
 	ComPtr<D3D11::ID3D11PixelShader> mColorPS;
 	ComPtr<D3D11::ID3D11VertexShader> mTreeVS;
 	ComPtr<D3D11::ID3D11PixelShader> mTreePS;
+	ComPtr<D3D11::ID3D11GeometryShader> mTreeGS;
 
 	ComPtr<D3D11::ID3D11Buffer> mPerFrameCB32;
 	ComPtr<D3D11::ID3D11Buffer> mPerObjectCB32;

@@ -18,6 +18,7 @@ module;
 #include <comdef.h>
 #include <directxtk/DDSTextureLoader.h>
 #include <directxtk/WICTextureLoader.h>
+#include <DirectXTex.h>
 
 export module shared:win32;
 
@@ -265,8 +266,18 @@ export namespace DirectX
 		::DirectX::XMMatrixDeterminant,
 		::DirectX::XMMatrixTranspose,
 		::DirectX::XMMatrixInverse,
-		::DirectX::XMStoreFloat4
+		::DirectX::XMStoreFloat4,
+		::DirectX::LoadFromDDSFile,
+		::DirectX::IsCompressed,
+		::DirectX::Decompress,
+		::DirectX::Convert,
+		::DirectX::CopyRectangle,
+		::DirectX::CreateShaderResourceView,
+		::DirectX::TEX_FILTER_FLAGS,
+		::DirectX::ScratchImage
 		;
+
+	constexpr auto TexThresholdDefault = ::DirectX::TEX_THRESHOLD_DEFAULT;
 
 	using
 		::DirectX::CreateDDSTextureFromFile,
@@ -392,6 +403,7 @@ export namespace D3D11
 		::D3D11_BUFFER_DESC,
 		::D3D11_SAMPLER_DESC,
 		::ID3D11SamplerState,
+		::ID3D11GeometryShader,
 		::D3D11CreateDevice
 		;
 }
