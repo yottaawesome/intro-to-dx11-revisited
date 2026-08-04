@@ -148,12 +148,12 @@ public:
 		HR(DirectX::CreateDDSTextureFromFile(md3dDevice.get(), L"Textures/water2.dds", nullptr, &mWavesMapSRV));
 		HR(DirectX::CreateDDSTextureFromFile(md3dDevice.get(), L"Textures/WireFence.dds", nullptr, &mBoxMapSRV));
 
-		std::vector<std::wstring> treeFilenames;
-		treeFilenames.push_back(L"Textures/tree0.dds");
-		treeFilenames.push_back(L"Textures/tree1.dds");
-		treeFilenames.push_back(L"Textures/tree2.dds");
-		treeFilenames.push_back(L"Textures/tree3.dds");
-
+		auto treeFilenames = std::vector<std::wstring>{
+			L"Textures/tree0.dds",
+			L"Textures/tree1.dds",
+			L"Textures/tree2.dds",
+			L"Textures/tree3.dds"
+		};
 		mTreeTextureMapArraySRV = d3dHelper::CreateConvertedTexture2DArraySRV(
 			md3dDevice.get(),
 			treeFilenames,
