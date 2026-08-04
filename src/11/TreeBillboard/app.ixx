@@ -172,8 +172,7 @@ public:
 	void OnResize()
 	{
 		D3DApp::OnResize();
-
-		DirectX::XMMATRIX P = DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+		auto P = DirectX::XMMATRIX{DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f)};
 		DirectX::XMStoreFloat4x4(&mProj, P);
 	}
 
@@ -312,9 +311,9 @@ public:
 		md3dImmediateContext->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
 
 		// Set per object constants.
-		DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&mBoxWorld);
-		DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		DirectX::XMMATRIX worldViewProj = world * viewProj;
+		auto world = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mBoxWorld)};
+		auto worldInvTranspose = DirectX::XMMATRIX{MathHelper::InverseTranspose(world)};
+		auto worldViewProj = DirectX::XMMATRIX{world * viewProj};
 		auto perObjectConstants = Basic32Vertex::PerObjectConstants{
 			.gMaterial = mBoxMat,
 		};
@@ -350,9 +349,9 @@ public:
 
 		// Set per object constants.
 		{
-			DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&mLandWorld);
-			DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-			DirectX::XMMATRIX worldViewProj = world * viewProj;
+			auto world = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mLandWorld)};
+			auto worldInvTranspose = DirectX::XMMATRIX{MathHelper::InverseTranspose(world)};
+			auto worldViewProj = DirectX::XMMATRIX{world * viewProj};
 
 			auto landPerObject = Basic32Vertex::PerObjectConstants{
 				.gMaterial = mLandMat,
@@ -374,9 +373,9 @@ public:
 			md3dImmediateContext->IASetIndexBuffer(mWavesIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
 			//	// Set per object constants.
-			DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&mWavesWorld);
-			DirectX::XMMATRIX  worldInvTranspose = MathHelper::InverseTranspose(world);
-			DirectX::XMMATRIX worldViewProj = world * viewProj;
+			auto world = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mWavesWorld)};
+			auto worldInvTranspose = DirectX::XMMATRIX{MathHelper::InverseTranspose(world)};
+			auto worldViewProj = DirectX::XMMATRIX{world * viewProj};
 			auto wavesPerObject = Basic32Vertex::PerObjectConstants{
 				.gMaterial = mWavesMat,
 			};
