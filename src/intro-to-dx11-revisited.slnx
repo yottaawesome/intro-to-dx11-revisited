@@ -36,5 +36,9 @@
   <Folder Name="/11 - The Geometry Shader/">
     <Project Path="11/TreeBillboard/TreeBillboard.vcxproj" Id="8da44faa-7700-4fc5-839b-336a15d252ee" />
   </Folder>
+  <Folder Name="/12 - The Compute Shader/">
+    <Project Path="12/Blur/Blur.vcxproj" Id="eb624eb4-a234-4b3b-bf16-d8608bcd7a9e" />
+    <Project Path="12/VecAdd/VecAdd.vcxproj" Id="e69cb33b-a933-451d-9573-bd056889aa2e" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
