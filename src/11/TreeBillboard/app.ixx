@@ -329,12 +329,12 @@ public:
 		auto boxConstantBuffersPS = std::array{ mPerFrameCB32.get(), mPerObjectCB32.get() };
 		md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(boxConstantBuffersPS.size()), boxConstantBuffersPS.data());
 
-		md3dImmediateContext->OMSetBlendState(mRenderStates.AlphaToCoverageBS.get(), blendFactor.data(), 0xffffffff);
 		md3dImmediateContext->RSSetState(mRenderStates.NoCullRS.get());
 		md3dImmediateContext->DrawIndexed(36, 0, 0);
 
 		// Restore default render state.
 		md3dImmediateContext->RSSetState(0);
+		md3dImmediateContext->OMSetBlendState(0, blendFactor.data(), 0xffffffff);
 
 		//
 		// Draw the hills and water with texture and fog (no alpha clipping needed).
