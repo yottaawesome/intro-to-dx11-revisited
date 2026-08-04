@@ -339,6 +339,8 @@ public:
 		//
 		// Draw the hills and water with texture and fog (no alpha clipping needed).
 		//
+		perFrameConstants.gAlphaClip = false;
+		md3dImmediateContext->UpdateSubresource(mPerFrameCB32.get(), 0, nullptr, &perFrameConstants, 0, 0);
 
 		//
 		// Draw the hills.
