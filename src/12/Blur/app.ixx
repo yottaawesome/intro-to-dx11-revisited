@@ -442,10 +442,7 @@ private:
 		auto stride = static_cast<std::uint32_t>(sizeof(Basic32));
 		auto offset = 0u;
 
-		DirectX::XMMATRIX identity = DirectX::XMMatrixIdentity();
-
-		// 0 lights, true for texture, false for alpha clip, false for fog
-		//ID3DX11EffectTechnique* texOnlyTech = Effects::BasicFX->Light0TexTech;
+		auto identity = DirectX::XMMATRIX{DirectX::XMMatrixIdentity()};
 
 		md3dImmediateContext->IASetVertexBuffers(0, 1, mScreenQuadVB.GetAddressOf(), &stride, &offset);
 		md3dImmediateContext->IASetIndexBuffer(mScreenQuadIB.get(), DXGI_FORMAT_R32_UINT, 0);
@@ -476,7 +473,7 @@ private:
 
 		md3dImmediateContext->DrawIndexed(6, 0, 0);
 
-		auto nullSRVs = std::array<D3D11::ID3D11ShaderResourceView*, 1>{ nullptr };
+		auto nullSRVs = std::array<D3D11::ID3D11ShaderResourceView*, 1>{};
 		md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(nullSRVs.size()), nullSRVs.data());
 	}
 	auto GetHillHeight(float x, float z)const -> float
@@ -530,7 +527,6 @@ private:
 		//
 		// Pack the indices of all the meshes into one index buffer.
 		//
-
 		auto ibd = D3D11::D3D11_BUFFER_DESC{
 			.ByteWidth = static_cast<std::uint32_t>(sizeof(UINT) * mLandIndexCount),
 			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_IMMUTABLE,
@@ -571,11 +567,9 @@ private:
 				indices[k] = i * n + j;
 				indices[k + 1] = i * n + j + 1;
 				indices[k + 2] = (i + 1) * n + j;
-
 				indices[k + 3] = (i + 1) * n + j;
 				indices[k + 4] = i * n + j + 1;
 				indices[k + 5] = (i + 1) * n + j + 1;
-
 				k += 6; // next quad
 			}
 		}
