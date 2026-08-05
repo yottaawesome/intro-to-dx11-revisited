@@ -152,7 +152,11 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="app.ixx" />
+    <ClCompile Include="blur.ixx" />
+    <ClCompile Include="blurfilter.ixx" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="renderstates.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />

@@ -18,6 +18,18 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="blur.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="app.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="blurfilter.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderstates.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
