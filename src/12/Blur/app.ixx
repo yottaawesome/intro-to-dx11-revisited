@@ -273,8 +273,8 @@ public:
 		if ((btnState & Win32::MK::LButton) != 0)
 		{
 			// Make each pixel correspond to a quarter of a degree.
-			float dx = DirectX::XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
-			float dy = DirectX::XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
+			auto dx = DirectX::XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
+			auto dy = DirectX::XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
 
 			// Update angles based on input to orbit camera around box.
 			mTheta += dx;
@@ -286,8 +286,8 @@ public:
 		else if ((btnState & Win32::MK::RButton) != 0)
 		{
 			// Make each pixel correspond to 0.01 unit in the scene.
-			float dx = 0.1f * static_cast<float>(x - mLastMousePos.x);
-			float dy = 0.1f * static_cast<float>(y - mLastMousePos.y);
+			auto dx = 0.1f * static_cast<float>(x - mLastMousePos.x);
+			auto dy = 0.1f * static_cast<float>(y - mLastMousePos.y);
 
 			// Update the camera radius based on input.
 			mRadius += dx - dy;
@@ -310,12 +310,12 @@ private:
 		auto stride = static_cast<std::uint32_t>(sizeof(Basic32));
 		auto offset = 0u;
 
-		DirectX::XMMATRIX view = DirectX::XMLoadFloat4x4(&mView);
-		DirectX::XMMATRIX proj = DirectX::XMLoadFloat4x4(&mProj);
-		DirectX::XMMATRIX viewProj = view * proj;
+		auto view = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mView)};
+		auto proj = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mProj)};
+		auto viewProj = DirectX::XMMATRIX{view * proj};
 
 		// Set per frame constants.
-		auto perframeConstants = PerFrameConstants{
+		auto perFrameConstants = PerFrameConstants{
 			.gEyePosW = mEyePosW,
 			.gFogStart = 15.0f,
 			.gFogRange = 175.0f,
@@ -326,37 +326,39 @@ private:
 			.gPadding = DirectX::XMFLOAT3{},
 			.gFogColor = DirectX::XMFLOAT4{DirectX::Colors::Silver}
 		};
-		std::copy(std::begin(mDirLights), std::end(mDirLights), std::begin(perframeConstants.gDirLights));
-		md3dImmediateContext->UpdateSubresource(mPerFrame.get(), 0, nullptr, &perframeConstants, 0, 0);
+		std::copy(std::begin(mDirLights), std::end(mDirLights), std::begin(perFrameConstants.gDirLights));
+		md3dImmediateContext->UpdateSubresource(mPerFrame.get(), 0, nullptr, &perFrameConstants, 0, 0);
 
 		//
 		// Draw the box with alpha clipping.
 		// 
-		md3dImmediateContext->IASetVertexBuffers(0, 1, mBoxVB.GetAddressOf(), &stride, &offset);
-		md3dImmediateContext->IASetIndexBuffer(mBoxIB.get(), DXGI_FORMAT_R32_UINT, 0);
-		md3dImmediateContext->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
+		{
+			md3dImmediateContext->IASetVertexBuffers(0, 1, mBoxVB.GetAddressOf(), &stride, &offset);
+			md3dImmediateContext->IASetIndexBuffer(mBoxIB.get(), DXGI_FORMAT_R32_UINT, 0);
+			md3dImmediateContext->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
 
-		//	// Set per object constants.
-		DirectX::XMMATRIX world = XMLoadFloat4x4(&mBoxWorld);
-		DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		DirectX::XMMATRIX worldViewProj = world * viewProj;
-		auto perObjectConstants = PerObjectConstants{
-			.gMaterial = mBoxMat,
-		};
-		DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
-		DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
-		DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
-		DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
-		auto boxSRVs = std::array{mCrateSRV.get()};
-		md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
-		md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(boxSRVs.size()), boxSRVs.data());
-		auto boxConstantBuffersVS = std::array{ mPerObject.get() };
-		md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(boxConstantBuffersVS.size()), boxConstantBuffersVS.data());
-		auto boxConstantBuffersPS = std::array{ mPerFrame.get(), mPerObject.get() };
-		md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(boxConstantBuffersPS.size()), boxConstantBuffersPS.data());
+			// Set per object constants.
+			auto world = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mBoxWorld)};
+			auto worldInvTranspose = MathHelper::InverseTranspose(world);
+			auto worldViewProj = DirectX::XMMATRIX{world * viewProj};
+			auto perObjectConstants = PerObjectConstants{
+				.gMaterial = mBoxMat,
+			};
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
+			auto boxSRVs = std::array{mCrateSRV.get()};
+			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
+			md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(boxSRVs.size()), boxSRVs.data());
+			auto boxConstantBuffersVS = std::array{ mPerObject.get() };
+			md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(boxConstantBuffersVS.size()), boxConstantBuffersVS.data());
+			auto boxConstantBuffersPS = std::array{ mPerFrame.get(), mPerObject.get() };
+			md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(boxConstantBuffersPS.size()), boxConstantBuffersPS.data());
 
-		md3dImmediateContext->RSSetState(mRenderStates.NoCullRS.get());
-		md3dImmediateContext->DrawIndexed(36, 0, 0);
+			md3dImmediateContext->RSSetState(mRenderStates.NoCullRS.get());
+			md3dImmediateContext->DrawIndexed(36, 0, 0);
+		}
 
 		// Restore default render state.
 		md3dImmediateContext->RSSetState(0);
@@ -364,25 +366,21 @@ private:
 		//
 		// Draw the hills and water with texture and fog (no alpha clipping needed).
 		//
+		perFrameConstants.gAlphaClip = false;
+		md3dImmediateContext->UpdateSubresource(mPerFrame.get(), 0, nullptr, &perFrameConstants, 0, 0);
 
 		//
 		// Draw the hills.
 		//
-		md3dImmediateContext->IASetVertexBuffers(0, 1, mLandVB.GetAddressOf(), &stride, &offset);
-		md3dImmediateContext->IASetIndexBuffer(mLandIB.get(), DXGI_FORMAT_R32_UINT, 0);
-
-		// Set per object constants.
 		{
-			DirectX::XMMATRIX world = XMLoadFloat4x4(&mLandWorld);
-			DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-			DirectX::XMMATRIX worldViewProj = world * view * proj;
+			md3dImmediateContext->IASetVertexBuffers(0, 1, mLandVB.GetAddressOf(), &stride, &offset);
+			md3dImmediateContext->IASetIndexBuffer(mLandIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-			//	Effects::BasicFX->SetWorld(world);
-			//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-			//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-			//	Effects::BasicFX->SetTexTransform(XMLoadFloat4x4(&mGrassTexTransform));
-			//	Effects::BasicFX->SetMaterial(mLandMat);
-			//	Effects::BasicFX->SetDiffuseMap(mGrassMapSRV);
+			// Set per object constants.
+			auto world = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mLandWorld)};
+			auto worldInvTranspose = MathHelper::InverseTranspose(world);
+			auto worldViewProj = DirectX::XMMATRIX{world * view * proj};
+
 			auto landPerObject = PerObjectConstants{
 				.gMaterial = mLandMat,
 			};
@@ -401,26 +399,36 @@ private:
 			md3dImmediateContext->DrawIndexed(mLandIndexCount, 0, 0);
 		}
 
-		//	//
-		//	// Draw the waves.
-		//	//
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mWavesVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mWavesIB, DXGI_FORMAT_R32_UINT, 0);
+		//
+		//	Draw the waves.
+		//
+		{
+			md3dImmediateContext->IASetVertexBuffers(0, 1, mWavesVB.GetAddressOf(), &stride, &offset);
+			md3dImmediateContext->IASetIndexBuffer(mWavesIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		//	// Set per object constants.
-		//	world = XMLoadFloat4x4(&mWavesWorld);
-		//	worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	worldViewProj = world * view * proj;
+			// Set per object constants.
+			auto world = DirectX::XMLoadFloat4x4(&mWavesWorld);
+			auto worldInvTranspose = MathHelper::InverseTranspose(world);
+			auto worldViewProj = world * viewProj;
+			auto wavesPerObject = PerObjectConstants{
+				.gMaterial = mWavesMat,
+			};
+			DirectX::XMStoreFloat4x4(&wavesPerObject.gWorld, world);
+			DirectX::XMStoreFloat4x4(&wavesPerObject.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&wavesPerObject.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&wavesPerObject.gTexTransform, DirectX::XMLoadFloat4x4(&mWaterTexTransform));
+			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &wavesPerObject, 0, 0);
 
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetTexTransform(XMLoadFloat4x4(&mWaterTexTransform));
-		//	Effects::BasicFX->SetMaterial(mWavesMat);
-		//	Effects::BasicFX->SetDiffuseMap(mWavesMapSRV);
+			auto wavesSRVs = std::array{ mWavesMapSRV.get() };
+			md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(wavesSRVs.size()), wavesSRVs.data());
+			auto wavesConstantBuffersVS = std::array{ mPerObject.get() };
+			auto wavesConstantBuffersPS = std::array{ mPerFrame.get(), mPerObject.get() };
+			md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(wavesConstantBuffersVS.size()), wavesConstantBuffersVS.data());
+			md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(wavesConstantBuffersPS.size()), wavesConstantBuffersPS.data());
 
-		//	md3dImmediateContext->OMSetBlendState(RenderStates::TransparentBS, blendFactor, 0xffffffff);
-		//	md3dImmediateContext->DrawIndexed(3 * mWaves.TriangleCount(), 0, 0);
+			md3dImmediateContext->OMSetBlendState(mRenderStates.TransparentBS.get(), blendFactor.data(), 0xffffffff);
+			md3dImmediateContext->DrawIndexed(3 * mWaves.TriangleCount(), 0, 0);
+		}
 
 		// Restore default blend state
 		md3dImmediateContext->OMSetBlendState(0, blendFactor.data(), 0xffffffff);
