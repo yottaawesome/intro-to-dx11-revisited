@@ -235,8 +235,13 @@ public:
 		renderTargets[0] = mRenderTargetView.get();
 		md3dImmediateContext->OMSetRenderTargets(1, renderTargets, mDepthStencilView.get());
 
-		//mBlur.SetGaussianWeights(4.0f);
-		mBlur.BlurInPlace(md3dImmediateContext.get(), mOffscreenSRV.get(), mOffscreenUAV.get(), 4);
+		mBlur.BlurInPlace(
+			md3dImmediateContext.get(),
+			mOffscreenSRV.get(),
+			mOffscreenUAV.get(),
+			mHorzBlurCS.get(),
+			mVertBlurCS.get(),
+			4);
 
 		//
 		// Draw fullscreen quad with texture of blurred scene on it.
@@ -453,7 +458,7 @@ private:
 			.gTexTransform = d3dHelper::Identity4x4,
 		};
 		md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
-		auto srvs = std::array{ mBlur.GetBlurredOutput() };
+		auto srvs = std::array{ mOffscreenSRV.get() };
 		md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srvs.size()), srvs.data());
 
 		auto vsConstantBuffers = std::array{ mPerObject.get() };
@@ -462,6 +467,9 @@ private:
 		md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstantBuffers.size()), psConstantBuffers.data());
 
 		md3dImmediateContext->DrawIndexed(6, 0, 0);
+
+		auto nullSRVs = std::array<D3D11::ID3D11ShaderResourceView*, 1>{ nullptr };
+		md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(nullSRVs.size()), nullSRVs.data());
 	}
 	auto GetHillHeight(float x, float z)const -> float
 	{
@@ -713,11 +721,19 @@ private:
 			auto vertBlurShaderBytecode = ComPtr<D3D::ID3DBlob>{};
 			HR(D3D::D3DReadFileToBlob(L"FX/Blur_HorzBlurCS.cso", &horzBlurShaderBytecode), "Failed to read compute shader file.");
 			HR(D3D::D3DReadFileToBlob(L"FX/Blur_VertBlurCS.cso", &vertBlurShaderBytecode), "Failed to read compute shader file.");
-			md3dDevice->CreateComputeShader(horzBlurShaderBytecode->GetBufferPointer(), horzBlurShaderBytecode->GetBufferSize(), 0, &mHorzBlurCS);
-			md3dDevice->CreateComputeShader(vertBlurShaderBytecode->GetBufferPointer(), vertBlurShaderBytecode->GetBufferSize(), 0, &mVertBlurCS);
+			HR(md3dDevice->CreateComputeShader(
+				horzBlurShaderBytecode->GetBufferPointer(),
+				horzBlurShaderBytecode->GetBufferSize(),
+				nullptr,
+				&mHorzBlurCS),
+				"Failed to create horizontal blur compute shader.");
+			HR(md3dDevice->CreateComputeShader(
+				vertBlurShaderBytecode->GetBufferPointer(),
+				vertBlurShaderBytecode->GetBufferSize(),
+				nullptr,
+				&mVertBlurCS),
+				"Failed to create vertical blur compute shader.");
 		}
-		// TODO
-		//
 
 		// Build layouts
 		BuildInputLayout(vertexShaderBytecode.get());
