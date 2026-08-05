@@ -48,20 +48,374 @@ struct PerObjectConstants
 export class BlurApp : public D3DApp
 {
 public:
-	BlurApp(Win32::HINSTANCE hInstance);
+	BlurApp(Win32::HINSTANCE hInstance)
+		: D3DApp(hInstance)
+	{
+		mMainWndCaption = L"Blur Demo";
+		mEnable4xMsaa = false;
 
-	void Init()override;
-	void OnResize()override;
-	void UpdateScene(float dt)override;
-	void DrawScene()override;
+		mLastMousePos.x = 0;
+		mLastMousePos.y = 0;
 
-	void OnMouseDown(Win32::WPARAM btnState, int x, int y)override;
-	void OnMouseUp(Win32::WPARAM btnState, int x, int y)override;
-	void OnMouseMove(Win32::WPARAM btnState, int x, int y)override;
+		DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
+		DirectX::XMStoreFloat4x4(&mLandWorld, I);
+		DirectX::XMStoreFloat4x4(&mWavesWorld, I);
+		DirectX::XMStoreFloat4x4(&mView, I);
+		DirectX::XMStoreFloat4x4(&mProj, I);
+
+		DirectX::XMMATRIX boxScale = DirectX::XMMatrixScaling(15.0f, 15.0f, 15.0f);
+		DirectX::XMMATRIX boxOffset = DirectX::XMMatrixTranslation(8.0f, 5.0f, -15.0f);
+		DirectX::XMStoreFloat4x4(&mBoxWorld, boxScale * boxOffset);
+
+		DirectX::XMMATRIX grassTexScale = DirectX::XMMatrixScaling(5.0f, 5.0f, 0.0f);
+		DirectX::XMStoreFloat4x4(&mGrassTexTransform, grassTexScale);
+
+		mDirLights[0].Ambient = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+		mDirLights[0].Diffuse = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+		mDirLights[0].Specular = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+		mDirLights[0].Direction = DirectX::XMFLOAT3(0.57735f, -0.57735f, 0.57735f);
+
+		mDirLights[1].Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		mDirLights[1].Diffuse = DirectX::XMFLOAT4(0.20f, 0.20f, 0.20f, 1.0f);
+		mDirLights[1].Specular = DirectX::XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
+		mDirLights[1].Direction = DirectX::XMFLOAT3(-0.57735f, -0.57735f, 0.57735f);
+
+		mDirLights[2].Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		mDirLights[2].Diffuse = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+		mDirLights[2].Specular = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		mDirLights[2].Direction = DirectX::XMFLOAT3(0.0f, -0.707f, -0.707f);
+
+		mLandMat.Ambient = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+		mLandMat.Diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		mLandMat.Specular = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 16.0f);
+
+		mWavesMat.Ambient = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+		mWavesMat.Diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 0.5f);
+		mWavesMat.Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 32.0f);
+
+		mBoxMat.Ambient = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+		mBoxMat.Diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+		mBoxMat.Specular = DirectX::XMFLOAT4(0.4f, 0.4f, 0.4f, 16.0f);
+	}
+
+	void Init()override
+	{
+		D3DApp::Init();
+
+		HR(DirectX::CreateDDSTextureFromFile(md3dDevice.get(), L"Textures/grass.dds", nullptr, &mGrassMapSRV));
+		HR(DirectX::CreateDDSTextureFromFile(md3dDevice.get(), L"Textures/water2.dds", nullptr, &mWavesMapSRV));
+		HR(DirectX::CreateDDSTextureFromFile(md3dDevice.get(), L"Textures/WireFence.dds", nullptr, &mCrateSRV));
+
+		mWaves.Init(160, 160, 1.0f, 0.03f, 5.0f, 0.3f);
+
+		BuildLandGeometryBuffers();
+		BuildWaveGeometryBuffers();
+		BuildCrateGeometryBuffers();
+		BuildScreenQuadGeometryBuffers();
+		BuildOffscreenViews();
+		BuildShaders();
+	}
+
+	void OnResize()override
+	{
+		D3DApp::OnResize();
+		// Recreate the resources that depend on the client area size.
+		BuildOffscreenViews();
+		mBlur.Init(md3dDevice.get(), mClientWidth, mClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM);
+		DirectX::XMMATRIX P = DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+		DirectX::XMStoreFloat4x4(&mProj, P);
+	}
+
+	void UpdateScene(float dt)override
+	{
+		// Convert Spherical to Cartesian coordinates.
+		float x = mRadius * std::sinf(mPhi) * std::cosf(mTheta);
+		float z = mRadius * std::sinf(mPhi) * std::sinf(mTheta);
+		float y = mRadius * std::cosf(mPhi);
+
+		mEyePosW = DirectX::XMFLOAT3(x, y, z);
+
+		// Build the view matrix.
+		DirectX::XMVECTOR pos = DirectX::XMVectorSet(x, y, z, 1.0f);
+		DirectX::XMVECTOR target = DirectX::XMVectorZero();
+		DirectX::XMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+		DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(pos, target, up);
+		DirectX::XMStoreFloat4x4(&mView, V);
+
+		//
+		// Every quarter second, generate a random wave.
+		//
+		static auto t_base = 0.0f;
+		if ((mTimer.TotalTime() - t_base) >= 0.1f)
+		{
+			t_base += 0.1f;
+			auto i = static_cast<std::uint32_t>(5 + std::rand() % (mWaves.RowCount() - 10));
+			auto j = static_cast<std::uint32_t>(5 + std::rand() % (mWaves.ColumnCount() - 10));
+			auto r = MathHelper::RandF(0.5f, 1.0f);
+			mWaves.Disturb(i, j, r);
+		}
+
+		mWaves.Update(dt);
+
+		//
+		// Update the wave vertex buffer with the new solution.
+		//
+
+		D3D11::D3D11_MAPPED_SUBRESOURCE mappedData;
+		HR(md3dImmediateContext->Map(mWavesVB.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
+
+		Basic32* v = reinterpret_cast<Basic32*>(mappedData.pData);
+		for (auto i = 0u; i < mWaves.VertexCount(); ++i)
+		{
+			v[i].Pos = mWaves[i];
+			v[i].Normal = mWaves.Normal(i);
+
+			// Derive tex-coords in [0,1] from position.
+			v[i].Tex.x = 0.5f + mWaves[i].x / mWaves.Width();
+			v[i].Tex.y = 0.5f - mWaves[i].z / mWaves.Depth();
+		}
+
+		md3dImmediateContext->Unmap(mWavesVB.get(), 0);
+
+		//
+		// Animate water texture coordinates.
+		//
+
+		// Tile water texture.
+		DirectX::XMMATRIX wavesScale = DirectX::XMMatrixScaling(5.0f, 5.0f, 0.0f);
+
+		// Translate texture over time.
+		mWaterTexOffset.y += 0.05f * dt;
+		mWaterTexOffset.x += 0.1f * dt;
+		DirectX::XMMATRIX wavesOffset = DirectX::XMMatrixTranslation(mWaterTexOffset.x, mWaterTexOffset.y, 0.0f);
+
+		// Combine scale and translation.
+		DirectX::XMStoreFloat4x4(&mWaterTexTransform, wavesScale * wavesOffset);
+
+		//
+		// Switch the render mode based in key input.
+		//
+		if (Win32::GetAsyncKeyState('1') & 0x8000)
+			mRenderOptions = RenderOptions::Lighting;
+		if (Win32::GetAsyncKeyState('2') & 0x8000)
+			mRenderOptions = RenderOptions::Textures;
+		if (Win32::GetAsyncKeyState('3') & 0x8000)
+			mRenderOptions = RenderOptions::TexturesAndFog;
+	}
+
+	void DrawScene()override
+	{
+		// Render to our offscreen texture.  Note that we can use the same depth/stencil buffer
+		// we normally use since our offscreen texture matches the dimensions.  
+
+		D3D11::ID3D11RenderTargetView* renderTargets[1] = { mOffscreenRTV.get()};
+		md3dImmediateContext->OMSetRenderTargets(1, renderTargets, mDepthStencilView.get());
+
+		md3dImmediateContext->ClearRenderTargetView(mOffscreenRTV.get(), reinterpret_cast<const float*>(&DirectX::Colors::Silver));
+		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
+
+		//
+		// Draw the scene to the offscreen texture
+		//
+
+		DrawWrapper();
+
+		//
+		// Restore the back buffer.  The offscreen render target will serve as an input into
+		// the compute shader for blurring, so we must unbind it from the OM stage before we
+		// can use it as an input into the compute shader.
+		//
+		renderTargets[0] = mRenderTargetView.get();
+		md3dImmediateContext->OMSetRenderTargets(1, renderTargets, mDepthStencilView.get());
+
+		//mBlur.SetGaussianWeights(4.0f);
+		mBlur.BlurInPlace(md3dImmediateContext.get(), mOffscreenSRV.get(), mOffscreenUAV.get(), 4);
+
+		//
+		// Draw fullscreen quad with texture of blurred scene on it.
+		//
+
+		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView.get(), reinterpret_cast<const float*>(&DirectX::Colors::Silver));
+		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
+
+		DrawScreenQuad();
+
+		HR(mSwapChain->Present(0, 0));
+	}
+
+	void OnMouseDown(Win32::WPARAM btnState, int x, int y)override
+	{
+		mLastMousePos.x = x;
+		mLastMousePos.y = y;
+
+		Win32::SetCapture(mhMainWnd);
+	}
+
+	void OnMouseUp(Win32::WPARAM btnState, int x, int y)override
+	{
+		Win32::ReleaseCapture();
+	}
+
+	void OnMouseMove(Win32::WPARAM btnState, int x, int y)override
+	{
+		if ((btnState & Win32::MK::LButton) != 0)
+		{
+			// Make each pixel correspond to a quarter of a degree.
+			float dx = DirectX::XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
+			float dy = DirectX::XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
+
+			// Update angles based on input to orbit camera around box.
+			mTheta += dx;
+			mPhi += dy;
+
+			// Restrict the angle mPhi.
+			mPhi = std::clamp(mPhi, 0.1f, MathHelper::Pi - 0.1f);
+		}
+		else if ((btnState & Win32::MK::RButton) != 0)
+		{
+			// Make each pixel correspond to 0.01 unit in the scene.
+			float dx = 0.1f * static_cast<float>(x - mLastMousePos.x);
+			float dy = 0.1f * static_cast<float>(y - mLastMousePos.y);
+
+			// Update the camera radius based on input.
+			mRadius += dx - dy;
+
+			// Restrict the radius.
+			mRadius = std::clamp(mRadius, 20.0f, 500.0f);
+		}
+
+		mLastMousePos = { x, y };
+	}
 
 private:
-	void UpdateWaves();
-	void DrawWrapper();
+	void DrawWrapper()
+	{
+		//md3dImmediateContext->IASetInputLayout(InputLayouts::Basic32);
+		//md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		//float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+		//UINT stride = sizeof(Vertex::Basic32);
+		//UINT offset = 0;
+
+		//XMMATRIX view = XMLoadFloat4x4(&mView);
+		//XMMATRIX proj = XMLoadFloat4x4(&mProj);
+		//XMMATRIX viewProj = view * proj;
+
+		//// Set per frame constants.
+		//Effects::BasicFX->SetDirLights(mDirLights);
+		//Effects::BasicFX->SetEyePosW(mEyePosW);
+		//Effects::BasicFX->SetFogColor(Colors::Silver);
+		//Effects::BasicFX->SetFogStart(15.0f);
+		//Effects::BasicFX->SetFogRange(175.0f);
+
+		//ID3DX11EffectTechnique* boxTech;
+		//ID3DX11EffectTechnique* landAndWavesTech;
+
+		//switch (mRenderOptions)
+		//{
+		//case RenderOptions::Lighting:
+		//	boxTech = Effects::BasicFX->Light3Tech;
+		//	landAndWavesTech = Effects::BasicFX->Light3Tech;
+		//	break;
+		//case RenderOptions::Textures:
+		//	boxTech = Effects::BasicFX->Light3TexAlphaClipTech;
+		//	landAndWavesTech = Effects::BasicFX->Light3TexTech;
+		//	break;
+		//case RenderOptions::TexturesAndFog:
+		//	boxTech = Effects::BasicFX->Light3TexAlphaClipFogTech;
+		//	landAndWavesTech = Effects::BasicFX->Light3TexFogTech;
+		//	break;
+		//}
+
+		//D3DX11_TECHNIQUE_DESC techDesc;
+
+		////
+		//// Draw the box with alpha clipping.
+		//// 
+
+		//boxTech->GetDesc(&techDesc);
+		//for (UINT p = 0; p < techDesc.Passes; ++p)
+		//{
+		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mBoxVB, &stride, &offset);
+		//	md3dImmediateContext->IASetIndexBuffer(mBoxIB, DXGI_FORMAT_R32_UINT, 0);
+
+		//	// Set per object constants.
+		//	XMMATRIX world = XMLoadFloat4x4(&mBoxWorld);
+		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
+		//	XMMATRIX worldViewProj = world * view * proj;
+
+		//	Effects::BasicFX->SetWorld(world);
+		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
+		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
+		//	Effects::BasicFX->SetTexTransform(XMMatrixIdentity());
+		//	Effects::BasicFX->SetMaterial(mBoxMat);
+		//	Effects::BasicFX->SetDiffuseMap(mCrateSRV);
+
+		//	md3dImmediateContext->RSSetState(RenderStates::NoCullRS);
+		//	boxTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
+		//	md3dImmediateContext->DrawIndexed(36, 0, 0);
+
+		//	// Restore default render state.
+		//	md3dImmediateContext->RSSetState(0);
+		//}
+
+		////
+		//// Draw the hills and water with texture and fog (no alpha clipping needed).
+		////
+
+		//landAndWavesTech->GetDesc(&techDesc);
+		//for (UINT p = 0; p < techDesc.Passes; ++p)
+		//{
+		//	//
+		//	// Draw the hills.
+		//	//
+		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mLandVB, &stride, &offset);
+		//	md3dImmediateContext->IASetIndexBuffer(mLandIB, DXGI_FORMAT_R32_UINT, 0);
+
+		//	// Set per object constants.
+		//	XMMATRIX world = XMLoadFloat4x4(&mLandWorld);
+		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
+		//	XMMATRIX worldViewProj = world * view * proj;
+
+		//	Effects::BasicFX->SetWorld(world);
+		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
+		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
+		//	Effects::BasicFX->SetTexTransform(XMLoadFloat4x4(&mGrassTexTransform));
+		//	Effects::BasicFX->SetMaterial(mLandMat);
+		//	Effects::BasicFX->SetDiffuseMap(mGrassMapSRV);
+
+		//	landAndWavesTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
+		//	md3dImmediateContext->DrawIndexed(mLandIndexCount, 0, 0);
+
+		//	//
+		//	// Draw the waves.
+		//	//
+		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mWavesVB, &stride, &offset);
+		//	md3dImmediateContext->IASetIndexBuffer(mWavesIB, DXGI_FORMAT_R32_UINT, 0);
+
+		//	// Set per object constants.
+		//	world = XMLoadFloat4x4(&mWavesWorld);
+		//	worldInvTranspose = MathHelper::InverseTranspose(world);
+		//	worldViewProj = world * view * proj;
+
+		//	Effects::BasicFX->SetWorld(world);
+		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
+		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
+		//	Effects::BasicFX->SetTexTransform(XMLoadFloat4x4(&mWaterTexTransform));
+		//	Effects::BasicFX->SetMaterial(mWavesMat);
+		//	Effects::BasicFX->SetDiffuseMap(mWavesMapSRV);
+
+		//	md3dImmediateContext->OMSetBlendState(RenderStates::TransparentBS, blendFactor, 0xffffffff);
+		//	landAndWavesTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
+		//	md3dImmediateContext->DrawIndexed(3 * mWaves.TriangleCount(), 0, 0);
+
+		//	// Restore default blend state
+		//	md3dImmediateContext->OMSetBlendState(0, blendFactor, 0xffffffff);
+		//}
+	}
+
 	void DrawScreenQuad()
 	{
 		md3dImmediateContext->IASetInputLayout(mBasic32.get());
