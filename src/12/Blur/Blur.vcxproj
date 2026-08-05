@@ -157,6 +157,7 @@
     <ClCompile Include="blurfilter.ixx" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="renderstates.ixx" />
+    <ClCompile Include="waves.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
