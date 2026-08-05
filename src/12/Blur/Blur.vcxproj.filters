@@ -21,5 +21,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
+    <None Include="FX\LightHelper.fx" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="FX\Basic.fx" />
+    <CustomBuild Include="FX\Blur.fx" />
   </ItemGroup>
 </Project>
