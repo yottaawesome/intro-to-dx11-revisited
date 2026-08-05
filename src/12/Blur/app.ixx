@@ -96,6 +96,8 @@ public:
 		mBoxMat.Ambient = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
 		mBoxMat.Diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 		mBoxMat.Specular = DirectX::XMFLOAT4(0.4f, 0.4f, 0.4f, 16.0f);
+
+		Init();
 	}
 
 	void Init()override
@@ -114,6 +116,8 @@ public:
 		BuildScreenQuadGeometryBuffers();
 		BuildOffscreenViews();
 		BuildShaders();
+
+		mRenderStates = { md3dDevice.get() };
 	}
 
 	void OnResize()override
@@ -211,6 +215,8 @@ public:
 
 		D3D11::ID3D11RenderTargetView* renderTargets[1] = { mOffscreenRTV.get()};
 		md3dImmediateContext->OMSetRenderTargets(1, renderTargets, mDepthStencilView.get());
+		md3dImmediateContext->VSSetShader(mColorVS.get(), nullptr, 0);
+		md3dImmediateContext->PSSetShader(mColorPS.get(), nullptr, 0);
 
 		md3dImmediateContext->ClearRenderTargetView(mOffscreenRTV.get(), reinterpret_cast<const float*>(&DirectX::Colors::Silver));
 		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
@@ -291,103 +297,104 @@ public:
 private:
 	void DrawWrapper()
 	{
-		//md3dImmediateContext->IASetInputLayout(InputLayouts::Basic32);
-		//md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		md3dImmediateContext->IASetInputLayout(mBasic32.get());
+		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		//float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		auto blendFactor = std::array{ 0.0f, 0.0f, 0.0f, 0.0f };
 
-		//UINT stride = sizeof(Vertex::Basic32);
-		//UINT offset = 0;
+		auto stride = static_cast<std::uint32_t>(sizeof(Basic32));
+		auto offset = 0u;
 
-		//XMMATRIX view = XMLoadFloat4x4(&mView);
-		//XMMATRIX proj = XMLoadFloat4x4(&mProj);
-		//XMMATRIX viewProj = view * proj;
+		DirectX::XMMATRIX view = DirectX::XMLoadFloat4x4(&mView);
+		DirectX::XMMATRIX proj = DirectX::XMLoadFloat4x4(&mProj);
+		DirectX::XMMATRIX viewProj = view * proj;
 
-		//// Set per frame constants.
-		//Effects::BasicFX->SetDirLights(mDirLights);
-		//Effects::BasicFX->SetEyePosW(mEyePosW);
-		//Effects::BasicFX->SetFogColor(Colors::Silver);
-		//Effects::BasicFX->SetFogStart(15.0f);
-		//Effects::BasicFX->SetFogRange(175.0f);
+		// Set per frame constants.
+		auto perframeConstants = PerFrameConstants{
+			.gEyePosW = mEyePosW,
+			.gFogStart = 15.0f,
+			.gFogRange = 175.0f,
+			.gLightCount = mNumLights,
+			.gUseTexture = mRenderOptions == RenderOptions::Textures or mRenderOptions == RenderOptions::TexturesAndFog,
+			.gAlphaClip = mRenderOptions == RenderOptions::Textures or mRenderOptions == RenderOptions::TexturesAndFog,
+			.gFogEnabled = mRenderOptions == RenderOptions::TexturesAndFog,
+			.gPadding = DirectX::XMFLOAT3{},
+			.gFogColor = DirectX::XMFLOAT4{DirectX::Colors::Silver}
+		};
+		std::copy(std::begin(mDirLights), std::end(mDirLights), std::begin(perframeConstants.gDirLights));
+		md3dImmediateContext->UpdateSubresource(mPerFrame.get(), 0, nullptr, &perframeConstants, 0, 0);
 
-		//ID3DX11EffectTechnique* boxTech;
-		//ID3DX11EffectTechnique* landAndWavesTech;
-
-		//switch (mRenderOptions)
-		//{
-		//case RenderOptions::Lighting:
-		//	boxTech = Effects::BasicFX->Light3Tech;
-		//	landAndWavesTech = Effects::BasicFX->Light3Tech;
-		//	break;
-		//case RenderOptions::Textures:
-		//	boxTech = Effects::BasicFX->Light3TexAlphaClipTech;
-		//	landAndWavesTech = Effects::BasicFX->Light3TexTech;
-		//	break;
-		//case RenderOptions::TexturesAndFog:
-		//	boxTech = Effects::BasicFX->Light3TexAlphaClipFogTech;
-		//	landAndWavesTech = Effects::BasicFX->Light3TexFogTech;
-		//	break;
-		//}
-
-		//D3DX11_TECHNIQUE_DESC techDesc;
-
-		////
-		//// Draw the box with alpha clipping.
-		//// 
-
-		//boxTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mBoxVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mBoxIB, DXGI_FORMAT_R32_UINT, 0);
+		//
+		// Draw the box with alpha clipping.
+		// 
+		md3dImmediateContext->IASetVertexBuffers(0, 1, mBoxVB.GetAddressOf(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mBoxIB.get(), DXGI_FORMAT_R32_UINT, 0);
+		md3dImmediateContext->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
 
 		//	// Set per object constants.
-		//	XMMATRIX world = XMLoadFloat4x4(&mBoxWorld);
-		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	XMMATRIX worldViewProj = world * view * proj;
+		DirectX::XMMATRIX world = XMLoadFloat4x4(&mBoxWorld);
+		DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
+		DirectX::XMMATRIX worldViewProj = world * viewProj;
+		auto perObjectConstants = PerObjectConstants{
+			.gMaterial = mBoxMat,
+		};
+		DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+		DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+		DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+		DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
+		auto boxSRVs = std::array{mCrateSRV.get()};
+		md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
+		md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(boxSRVs.size()), boxSRVs.data());
+		auto boxConstantBuffersVS = std::array{ mPerObject.get() };
+		md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(boxConstantBuffersVS.size()), boxConstantBuffersVS.data());
+		auto boxConstantBuffersPS = std::array{ mPerFrame.get(), mPerObject.get() };
+		md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(boxConstantBuffersPS.size()), boxConstantBuffersPS.data());
 
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetTexTransform(XMMatrixIdentity());
-		//	Effects::BasicFX->SetMaterial(mBoxMat);
-		//	Effects::BasicFX->SetDiffuseMap(mCrateSRV);
+		md3dImmediateContext->RSSetState(mRenderStates.NoCullRS.get());
+		md3dImmediateContext->DrawIndexed(36, 0, 0);
 
-		//	md3dImmediateContext->RSSetState(RenderStates::NoCullRS);
-		//	boxTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(36, 0, 0);
+		// Restore default render state.
+		md3dImmediateContext->RSSetState(0);
 
-		//	// Restore default render state.
-		//	md3dImmediateContext->RSSetState(0);
-		//}
+		//
+		// Draw the hills and water with texture and fog (no alpha clipping needed).
+		//
 
-		////
-		//// Draw the hills and water with texture and fog (no alpha clipping needed).
-		////
+		//
+		// Draw the hills.
+		//
+		md3dImmediateContext->IASetVertexBuffers(0, 1, mLandVB.GetAddressOf(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mLandIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		//landAndWavesTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	//
-		//	// Draw the hills.
-		//	//
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mLandVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mLandIB, DXGI_FORMAT_R32_UINT, 0);
+		// Set per object constants.
+		{
+			DirectX::XMMATRIX world = XMLoadFloat4x4(&mLandWorld);
+			DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
+			DirectX::XMMATRIX worldViewProj = world * view * proj;
 
-		//	// Set per object constants.
-		//	XMMATRIX world = XMLoadFloat4x4(&mLandWorld);
-		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	XMMATRIX worldViewProj = world * view * proj;
+			//	Effects::BasicFX->SetWorld(world);
+			//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
+			//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
+			//	Effects::BasicFX->SetTexTransform(XMLoadFloat4x4(&mGrassTexTransform));
+			//	Effects::BasicFX->SetMaterial(mLandMat);
+			//	Effects::BasicFX->SetDiffuseMap(mGrassMapSRV);
+			auto landPerObject = PerObjectConstants{
+				.gMaterial = mLandMat,
+			};
+			DirectX::XMStoreFloat4x4(&landPerObject.gWorld, world);
+			DirectX::XMStoreFloat4x4(&landPerObject.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&landPerObject.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&landPerObject.gTexTransform, DirectX::XMLoadFloat4x4(&mGrassTexTransform));
+			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &landPerObject, 0, 0);
+			auto landSRVs = std::array{ mGrassMapSRV.get() };
+			md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(landSRVs.size()), landSRVs.data());
+			auto landConstantBuffersVS = std::array{ mPerObject.get() };
+			auto landConstantBuffersPS = std::array{ mPerFrame.get(), mPerObject.get() };
+			md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(landConstantBuffersVS.size()), landConstantBuffersVS.data());
+			md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(landConstantBuffersPS.size()), landConstantBuffersPS.data());
 
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetTexTransform(XMLoadFloat4x4(&mGrassTexTransform));
-		//	Effects::BasicFX->SetMaterial(mLandMat);
-		//	Effects::BasicFX->SetDiffuseMap(mGrassMapSRV);
-
-		//	landAndWavesTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mLandIndexCount, 0, 0);
+			md3dImmediateContext->DrawIndexed(mLandIndexCount, 0, 0);
+		}
 
 		//	//
 		//	// Draw the waves.
@@ -408,12 +415,10 @@ private:
 		//	Effects::BasicFX->SetDiffuseMap(mWavesMapSRV);
 
 		//	md3dImmediateContext->OMSetBlendState(RenderStates::TransparentBS, blendFactor, 0xffffffff);
-		//	landAndWavesTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
 		//	md3dImmediateContext->DrawIndexed(3 * mWaves.TriangleCount(), 0, 0);
 
-		//	// Restore default blend state
-		//	md3dImmediateContext->OMSetBlendState(0, blendFactor, 0xffffffff);
-		//}
+		// Restore default blend state
+		md3dImmediateContext->OMSetBlendState(0, blendFactor.data(), 0xffffffff);
 	}
 
 	void DrawScreenQuad()
@@ -692,16 +697,25 @@ private:
 	{
 		// basic32 shaders
 		auto vertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		HR(D3D::D3DReadFileToBlob(L"FX/Basic_VS.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
-		auto hr = md3dDevice->CreateVertexShader(vertexShaderBytecode->GetBufferPointer(), vertexShaderBytecode->GetBufferSize(), 0, &mColorVS);
-		HR(hr, "Failed to create vertex shader.");
-		auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		HR(D3D::D3DReadFileToBlob(L"FX/Basic_PS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
-		HR(md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mColorPS), "Failed to create pixel shader.");
-		pixelShaderBytecode.reset();
+		{
+			HR(D3D::D3DReadFileToBlob(L"FX/Basic_VS.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
+			auto hr = md3dDevice->CreateVertexShader(vertexShaderBytecode->GetBufferPointer(), vertexShaderBytecode->GetBufferSize(), 0, &mColorVS);
+			HR(hr, "Failed to create vertex shader.");
+			auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
+			HR(D3D::D3DReadFileToBlob(L"FX/Basic_PS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
+			HR(md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mColorPS), "Failed to create pixel shader.");
+		}
 
 		//
 		// Compute Shader
+		{
+			auto horzBlurShaderBytecode = ComPtr<D3D::ID3DBlob>{};
+			auto vertBlurShaderBytecode = ComPtr<D3D::ID3DBlob>{};
+			HR(D3D::D3DReadFileToBlob(L"FX/Blur_HorzBlurCS.cso", &horzBlurShaderBytecode), "Failed to read compute shader file.");
+			HR(D3D::D3DReadFileToBlob(L"FX/Blur_VertBlurCS.cso", &vertBlurShaderBytecode), "Failed to read compute shader file.");
+			md3dDevice->CreateComputeShader(horzBlurShaderBytecode->GetBufferPointer(), horzBlurShaderBytecode->GetBufferSize(), 0, &mHorzBlurCS);
+			md3dDevice->CreateComputeShader(vertBlurShaderBytecode->GetBufferPointer(), vertBlurShaderBytecode->GetBufferSize(), 0, &mVertBlurCS);
+		}
 		// TODO
 		//
 
@@ -798,6 +812,8 @@ private:
 	ComPtr<D3D11::ID3D11InputLayout> mBasic32;
 	ComPtr<D3D11::ID3D11VertexShader> mColorVS;
 	ComPtr<D3D11::ID3D11PixelShader> mColorPS;
+	ComPtr<D3D11::ID3D11ComputeShader> mHorzBlurCS;
+	ComPtr<D3D11::ID3D11ComputeShader> mVertBlurCS;
 
 	ComPtr<D3D11::ID3D11ShaderResourceView> mGrassMapSRV;
 	ComPtr<D3D11::ID3D11ShaderResourceView> mWavesMapSRV;
@@ -811,6 +827,7 @@ private:
 	ComPtr<D3D11::ID3D11SamplerState> mSamplerState;
 
 	BlurFilter mBlur;
+	RenderStates mRenderStates;
 	Waves mWaves;
 
 	DirectionalLight mDirLights[3];
@@ -839,6 +856,7 @@ private:
 	float mTheta = 1.3f * MathHelper::Pi;
 	float mPhi = 0.4f * MathHelper::Pi;
 	float mRadius = 80.0f;
+	int mNumLights = 3;
 
 	Win32::POINT mLastMousePos{};
 };

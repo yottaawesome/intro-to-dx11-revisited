@@ -407,6 +407,8 @@ export namespace D3D11
 		::D3D11_SAMPLER_DESC,
 		::ID3D11SamplerState,
 		::ID3D11GeometryShader,
+		::ID3D11ComputeShader,
+		::ID3D11HullShader,
 		::D3D11CreateDevice
 		;
 }
