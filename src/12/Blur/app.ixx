@@ -709,11 +709,11 @@ private:
 		// basic32 shaders
 		auto vertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
 		{
-			HR(D3D::D3DReadFileToBlob(L"FX/Basic_VS.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
+			HR(D3D::D3DReadFileToBlob(L"Shaders/Basic_VS.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
 			auto hr = md3dDevice->CreateVertexShader(vertexShaderBytecode->GetBufferPointer(), vertexShaderBytecode->GetBufferSize(), 0, &mColorVS);
 			HR(hr, "Failed to create vertex shader.");
 			auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-			HR(D3D::D3DReadFileToBlob(L"FX/Basic_PS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
+			HR(D3D::D3DReadFileToBlob(L"Shaders/Basic_PS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
 			HR(md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mColorPS), "Failed to create pixel shader.");
 		}
 
@@ -722,8 +722,8 @@ private:
 		{
 			auto horzBlurShaderBytecode = ComPtr<D3D::ID3DBlob>{};
 			auto vertBlurShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-			HR(D3D::D3DReadFileToBlob(L"FX/Blur_HorzBlurCS.cso", &horzBlurShaderBytecode), "Failed to read compute shader file.");
-			HR(D3D::D3DReadFileToBlob(L"FX/Blur_VertBlurCS.cso", &vertBlurShaderBytecode), "Failed to read compute shader file.");
+			HR(D3D::D3DReadFileToBlob(L"Shaders/Blur_HorzBlurCS.cso", &horzBlurShaderBytecode), "Failed to read compute shader file.");
+			HR(D3D::D3DReadFileToBlob(L"Shaders/Blur_VertBlurCS.cso", &vertBlurShaderBytecode), "Failed to read compute shader file.");
 			HR(md3dDevice->CreateComputeShader(
 				horzBlurShaderBytecode->GetBufferPointer(),
 				horzBlurShaderBytecode->GetBufferSize(),

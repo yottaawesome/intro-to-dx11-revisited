@@ -35,11 +35,15 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\Basic.hlsli" />
+    <None Include="Shaders\Blur.hlsli" />
+    <None Include="Shaders\LightHelper.hlsli" />
     <None Include="vcpkg.json" />
-    <None Include="FX\LightHelper.fx" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="FX\Basic.fx" />
-    <CustomBuild Include="FX\Blur.fx" />
+    <FxCompile Include="Shaders\Basic_PS.hlsl" />
+    <FxCompile Include="Shaders\Basic_VS.hlsl" />
+    <FxCompile Include="Shaders\Blur_HorzBlurCS.hlsl" />
+    <FxCompile Include="Shaders\Blur_VertBlurCS.hlsl" />
   </ItemGroup>
 </Project>

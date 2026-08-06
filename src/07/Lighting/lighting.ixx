@@ -404,7 +404,7 @@ private:
 	void BuildShaders()
 	{
 		auto vertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		HR(D3D::D3DReadFileToBlob(L"FX/Lighting_VS.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
+		HR(D3D::D3DReadFileToBlob(L"Shaders/Lighting_VS.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
 
 		auto hr = md3dDevice->CreateVertexShader(vertexShaderBytecode->GetBufferPointer(),
 			vertexShaderBytecode->GetBufferSize(), 0, &mColorVS);
@@ -414,7 +414,7 @@ private:
 		vertexShaderBytecode.reset();
 
 		auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		HR(D3D::D3DReadFileToBlob(L"FX/Lighting_PS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
+		HR(D3D::D3DReadFileToBlob(L"Shaders/Lighting_PS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
 
 		HR(md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mColorPS), "Failed to create pixel shader.");
 		pixelShaderBytecode.reset();

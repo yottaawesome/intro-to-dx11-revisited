@@ -169,18 +169,24 @@
     <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="FX\Basic.fx">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fxc /nologo /Od /Zi /E VS /T vs_5_0 /Fo "%(RelativeDir)\%(Filename)_VS.cso" "%(FullPath)" &amp;&amp; fxc /nologo /Od /Zi /E PS /T ps_5_0 /Fo "%(RelativeDir)\%(Filename)_PS.cso" "%(FullPath)"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">fxc compile for debug: %(FullPath)</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)\%(Filename)_VS.cso;%(RelativeDir)\%(Filename)_PS.cso</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fxc /nologo /O3 /E VS /T vs_5_0 /Fo "%(RelativeDir)\%(Filename)_VS.cso" "%(FullPath)" &amp;&amp; fxc /nologo /O3 /E PS /T ps_5_0 /Fo "%(RelativeDir)\%(Filename)_PS.cso" "%(FullPath)"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">fxc compile for release: %(FullPath)</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)\%(Filename)_VS.cso;%(RelativeDir)\%(Filename)_PS.cso</Outputs>
-    </CustomBuild>
-    <None Include="FX\LightHelper.fx">
-      <FileType>Document</FileType>
-    </None>
+    <FxCompile Include="Shaders\Basic_PS.hlsl">
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\Basic_VS.hlsl">
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <None Include="Shaders\Basic.hlsli" />
+    <None Include="Shaders\LightHelper.hlsli" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

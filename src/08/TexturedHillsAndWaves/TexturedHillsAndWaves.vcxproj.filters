@@ -29,10 +29,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="FX\LightHelper.fx" />
+    <None Include="Shaders\Basic.hlsli" />
+    <None Include="Shaders\LightHelper.hlsli" />
     <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="FX\Basic.fx" />
+    <FxCompile Include="Shaders\Basic_PS.hlsl" />
+    <FxCompile Include="Shaders\Basic_VS.hlsl" />
   </ItemGroup>
 </Project>

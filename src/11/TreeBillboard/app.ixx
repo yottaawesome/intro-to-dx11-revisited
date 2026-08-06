@@ -686,11 +686,11 @@ private:
 	{
 		// basic32 shaders
 		auto vertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		HR(D3D::D3DReadFileToBlob(L"FX/Basic_VS.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
+		HR(D3D::D3DReadFileToBlob(L"Shaders/Basic_VS.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
 		auto hr = md3dDevice->CreateVertexShader(vertexShaderBytecode->GetBufferPointer(), vertexShaderBytecode->GetBufferSize(), 0, &mColorVS);
 		HR(hr, "Failed to create vertex shader.");
 		auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		HR(D3D::D3DReadFileToBlob(L"FX/Basic_PS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
+		HR(D3D::D3DReadFileToBlob(L"Shaders/Basic_PS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
 		HR(md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mColorPS), "Failed to create pixel shader.");
 		pixelShaderBytecode.reset();
 
@@ -698,17 +698,17 @@ private:
 		// Tree point sprite shaders
 		// Vertex Shader
 		auto treeVertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		HR(D3D::D3DReadFileToBlob(L"FX/TreeSprite_VS.cso", &treeVertexShaderBytecode), "Failed to read tree vertex shader file.");
+		HR(D3D::D3DReadFileToBlob(L"Shaders/TreeSprite_VS.cso", &treeVertexShaderBytecode), "Failed to read tree vertex shader file.");
 		hr = md3dDevice->CreateVertexShader(treeVertexShaderBytecode->GetBufferPointer(), treeVertexShaderBytecode->GetBufferSize(), 0, &mTreeVS);
 		HR(hr, "Failed to create vertex shader.");
 		// Pixel Shader
 		auto treePixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		HR(D3D::D3DReadFileToBlob(L"FX/TreeSprite_PS.cso", &treePixelShaderBytecode), "Failed to read tree pixel shader file.");
+		HR(D3D::D3DReadFileToBlob(L"Shaders/TreeSprite_PS.cso", &treePixelShaderBytecode), "Failed to read tree pixel shader file.");
 		HR(md3dDevice->CreatePixelShader(treePixelShaderBytecode->GetBufferPointer(), treePixelShaderBytecode->GetBufferSize(), 0, &mTreePS), "Failed to create pixel shader.");
 		treePixelShaderBytecode.reset();
 		// Geometry Shader
 		auto treeGeometryShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		HR(D3D::D3DReadFileToBlob(L"FX/TreeSprite_GS.cso", &treeGeometryShaderBytecode), "Failed to read tree geometry shader file.");
+		HR(D3D::D3DReadFileToBlob(L"Shaders/TreeSprite_GS.cso", &treeGeometryShaderBytecode), "Failed to read tree geometry shader file.");
 		HR(md3dDevice->CreateGeometryShader(treeGeometryShaderBytecode->GetBufferPointer(), treeGeometryShaderBytecode->GetBufferSize(), 0, &mTreeGS), "Failed to create geometry shader.");
 
 		// Build layouts

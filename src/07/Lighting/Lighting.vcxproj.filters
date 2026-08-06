@@ -26,10 +26,12 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="FX\Lighting.fx" />
+    <None Include="Shaders\LightHelper.hlsli" />
+    <None Include="Shaders\Lighting.hlsli" />
+    <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="FX\LightHelper.fx" />
-    <None Include="vcpkg.json" />
+    <FxCompile Include="Shaders\Lighting_PS.hlsl" />
+    <FxCompile Include="Shaders\Lighting_VS.hlsl" />
   </ItemGroup>
 </Project>

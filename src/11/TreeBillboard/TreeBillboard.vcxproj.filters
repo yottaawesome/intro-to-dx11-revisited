@@ -32,11 +32,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\Basic.hlsli" />
+    <None Include="Shaders\LightHelper.hlsli" />
+    <None Include="Shaders\TreeSprite.hlsli" />
     <None Include="vcpkg.json" />
-    <None Include="FX\LightHelper.fx" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="FX\Basic.fx" />
-    <CustomBuild Include="FX\TreeSprite.fx" />
+    <FxCompile Include="Shaders\Basic_PS.hlsl" />
+    <FxCompile Include="Shaders\Basic_VS.hlsl" />
+    <FxCompile Include="Shaders\TreeSprite_GS.hlsl" />
+    <FxCompile Include="Shaders\TreeSprite_PS.hlsl" />
+    <FxCompile Include="Shaders\TreeSprite_VS.hlsl" />
   </ItemGroup>
 </Project>
