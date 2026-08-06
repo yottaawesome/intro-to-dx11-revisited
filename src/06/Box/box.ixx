@@ -220,7 +220,7 @@ private:
 	void BuildShaders()
 	{
 		auto vertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		auto hr = D3D::D3DReadFileToBlob(L"FX/color_VS.cso", &vertexShaderBytecode);
+		auto hr = D3D::D3DReadFileToBlob(L"Shaders/color_VS.cso", &vertexShaderBytecode);
 		if (Win32::Failed(hr))
 			throw std::runtime_error{ "Failed to read vertex shader file." };
 
@@ -233,7 +233,7 @@ private:
 		vertexShaderBytecode.reset();
 
 		auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		hr = D3D::D3DReadFileToBlob(L"FX/color_PS.cso", &pixelShaderBytecode);
+		hr = D3D::D3DReadFileToBlob(L"Shaders/color_PS.cso", &pixelShaderBytecode);
 		if (Win32::Failed(hr))
 			throw std::runtime_error{ "Failed to read pixel shader file." };
 

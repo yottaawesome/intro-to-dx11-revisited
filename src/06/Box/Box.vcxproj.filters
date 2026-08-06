@@ -27,15 +27,15 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="FX\color_PS.hlsl">
+    <FxCompile Include="Shaders\color_PS.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
-    <FxCompile Include="FX\color_VS.hlsl">
+    <FxCompile Include="Shaders\color_VS.hlsl">
       <Filter>Shader Files</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="FX\color.hlsli">
+    <None Include="Shaders\color.hlsli">
       <Filter>Shader Files</Filter>
     </None>
     <None Include="vcpkg.json" />
