@@ -173,7 +173,7 @@ private:
 
 		auto vbd = D3D11::D3D11_BUFFER_DESC{
 			.ByteWidth = static_cast<std::uint32_t>(sizeof(Vertex) * grid.Vertices.size()),
-			.Usage = D3D11_USAGE_IMMUTABLE,
+			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_IMMUTABLE,
 			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER,
 			.CPUAccessFlags = 0,
 			.MiscFlags = 0,
@@ -186,8 +186,8 @@ private:
 		//
 		auto ibd = D3D11::D3D11_BUFFER_DESC{
 			.ByteWidth = static_cast<std::uint32_t>(sizeof(std::uint32_t) * mGridIndexCount),
-			.Usage = D3D11_USAGE_IMMUTABLE,
-			.BindFlags = D3D11_BIND_INDEX_BUFFER,
+			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_IMMUTABLE,
+			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_INDEX_BUFFER,
 			.CPUAccessFlags = 0,
 			.MiscFlags = 0,
 		};
