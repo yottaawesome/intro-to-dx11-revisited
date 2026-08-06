@@ -668,6 +668,7 @@ private:
 		auto iinitData = D3D11::D3D11_SUBRESOURCE_DATA{ .pSysMem = &quad.Indices[0] };
 		HR(md3dDevice->CreateBuffer(&ibd, &iinitData, &mScreenQuadIB));
 	}
+
 	void BuildOffscreenViews()
 	{
 		// We call this function everytime the window is resized so that the render target is a quarter
