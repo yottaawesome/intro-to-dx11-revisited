@@ -139,9 +139,8 @@ private:
 	
 	void BuildGeometryBuffers()
 	{
-		GeometryGenerator::MeshData grid;
-
-		GeometryGenerator geoGen;
+		auto grid = GeometryGenerator::MeshData{};
+		auto geoGen = GeometryGenerator{};
 
 		geoGen.CreateGrid(160.0f, 160.0f, 50, 50, grid);
 
@@ -152,66 +151,47 @@ private:
 		// each vertex.  In addition, color the vertices based on their height so we have
 		// sandy looking beaches, grassy low hills, and snow mountain peaks.
 		//
-
-		std::vector<Vertex> vertices(grid.Vertices.size());
-		for (size_t i = 0; i < grid.Vertices.size(); ++i)
+		auto vertices = std::vector<Vertex>(grid.Vertices.size());
+		for (auto i = 0ull; i < grid.Vertices.size(); ++i)
 		{
-			DirectX::XMFLOAT3 p = grid.Vertices[i].Position;
-
+			auto p = DirectX::XMFLOAT3{grid.Vertices[i].Position};
 			p.y = GetHeight(p.x, p.z);
-
 			vertices[i].Pos = p;
 
 			// Color the vertex based on its height.
-			if (p.y < -10.0f)
-			{
-				// Sandy beach color.
+			if (p.y < -10.0f) // Sandy beach color.
 				vertices[i].Color = DirectX::XMFLOAT4(1.0f, 0.96f, 0.62f, 1.0f);
-			}
-			else if (p.y < 5.0f)
-			{
-				// Light yellow-green.
+			else if (p.y < 5.0f) // Light yellow-green.
 				vertices[i].Color = DirectX::XMFLOAT4(0.48f, 0.77f, 0.46f, 1.0f);
-			}
-			else if (p.y < 12.0f)
-			{
-				// Dark yellow-green.
+			else if (p.y < 12.0f) // Dark yellow-green.
 				vertices[i].Color = DirectX::XMFLOAT4(0.1f, 0.48f, 0.19f, 1.0f);
-			}
-			else if (p.y < 20.0f)
-			{
-				// Dark brown.
+			else if (p.y < 20.0f) // Dark brown.
 				vertices[i].Color = DirectX::XMFLOAT4(0.45f, 0.39f, 0.34f, 1.0f);
-			}
-			else
-			{
-				// White snow.
+			else // White snow.
 				vertices[i].Color = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-			}
 		}
 
-		D3D11::D3D11_BUFFER_DESC vbd;
-		vbd.Usage = D3D11_USAGE_IMMUTABLE;
-		vbd.ByteWidth = static_cast<std::uint32_t>(sizeof(Vertex) * grid.Vertices.size());
-		vbd.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER;
-		vbd.CPUAccessFlags = 0;
-		vbd.MiscFlags = 0;
-		D3D11::D3D11_SUBRESOURCE_DATA vinitData;
-		vinitData.pSysMem = &vertices[0];
+		auto vbd = D3D11::D3D11_BUFFER_DESC{
+			.ByteWidth = static_cast<std::uint32_t>(sizeof(Vertex) * grid.Vertices.size()),
+			.Usage = D3D11_USAGE_IMMUTABLE,
+			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER,
+			.CPUAccessFlags = 0,
+			.MiscFlags = 0,
+		};
+		auto vinitData = D3D11::D3D11_SUBRESOURCE_DATA{.pSysMem = &vertices[0]};
 		HR(md3dDevice->CreateBuffer(&vbd, &vinitData, &mVB));
 
 		//
 		// Pack the indices of all the meshes into one index buffer.
 		//
-
-		D3D11::D3D11_BUFFER_DESC ibd;
-		ibd.Usage = D3D11_USAGE_IMMUTABLE;
-		ibd.ByteWidth = sizeof(UINT) * mGridIndexCount;
-		ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		ibd.CPUAccessFlags = 0;
-		ibd.MiscFlags = 0;
-		D3D11_SUBRESOURCE_DATA iinitData;
-		iinitData.pSysMem = &grid.Indices[0];
+		auto ibd = D3D11::D3D11_BUFFER_DESC{
+			.ByteWidth = static_cast<std::uint32_t>(sizeof(std::uint32_t) * mGridIndexCount),
+			.Usage = D3D11_USAGE_IMMUTABLE,
+			.BindFlags = D3D11_BIND_INDEX_BUFFER,
+			.CPUAccessFlags = 0,
+			.MiscFlags = 0,
+		};
+		auto iinitData = D3D11::D3D11_SUBRESOURCE_DATA{.pSysMem = &grid.Indices[0]};
 		HR(md3dDevice->CreateBuffer(&ibd, &iinitData, &mIB));
 	}
 
