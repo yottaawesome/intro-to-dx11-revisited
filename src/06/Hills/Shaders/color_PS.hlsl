@@ -1,3 +1,9 @@
+//***************************************************************************************
+// color.fx by Frank Luna (C) 2011 All Rights Reserved.
+//
+// Transforms and colors geometry.
+//***************************************************************************************
+
 // Outputs the interpolated vertex color.
 
 #include "color.hlsli"
