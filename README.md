@@ -24,6 +24,7 @@ The effort is ongoing. The following projects are functional.
 * [10/Mirror](./src/10/Mirror)
 * [11/TreeBillboard](./src/11/TreeBillboard)
 * [12/Blur](./src/12/Blur)
+* [12/VecAdd](./src/12/VecAdd)
 
 ## Running log of changes
 
