@@ -166,14 +166,18 @@
     <FxCompile Include="Shaders\color_PS.hlsl">
       <ShaderType>Pixel</ShaderType>
       <ShaderModel>5.0</ShaderModel>
-      <EntryPointName>PS</EntryPointName>
-      <ObjectFileOutput>$(ProjectDir)FX\color_PS.cso</ObjectFileOutput>
+      <EntryPointName>main</EntryPointName>
+      <ObjectFileOutput>$(ProjectDir)Shaders\color_PS.cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)%(Filename).cso</ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="Shaders\color_VS.hlsl">
       <ShaderType>Vertex</ShaderType>
       <ShaderModel>5.0</ShaderModel>
-      <EntryPointName>VS</EntryPointName>
-      <ObjectFileOutput>$(ProjectDir)FX\color_VS.cso</ObjectFileOutput>
+      <EntryPointName>main</EntryPointName>
+      <ObjectFileOutput>$(ProjectDir)Shaders\color_VS.cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RelativeDir)%(Filename).cso</ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RelativeDir)%(Filename).cso</ObjectFileOutput>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
