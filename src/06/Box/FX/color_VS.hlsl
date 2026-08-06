@@ -1,0 +1,22 @@
+// Transforms geometry and passes vertex colors to the pixel shader.
+
+#include "color.hlsli"
+
+cbuffer cbPerObject
+{
+    row_major float4x4 gWorldViewProj;
+};
+
+struct VertexIn
+{
+    float3 PosL : POSITION;
+    float4 Color : COLOR;
+};
+
+VertexOut VS(VertexIn vin)
+{
+    VertexOut vout;
+    vout.PosH = mul(float4(vin.PosL, 1.0f), gWorldViewProj);
+    vout.Color = vin.Color;
+    return vout;
+}
