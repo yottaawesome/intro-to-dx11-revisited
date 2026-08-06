@@ -32,8 +32,7 @@ The effort is ongoing. The following projects are functional.
 * Converted the code to inline C++ modules, improving the code locality and removing the need for headers and their baggage.
 * Added a lightweight `ComPtr` wrapper for COM types. I did not use Microsoft's `WRL::ComPtr` class as I'm not a fan of its constructor semantics. My version also includes a `Uuid()` member, removing the need for the ugly `IID_PPV_ARGS` macro.
 * `InitMainWindow()` and `InitDirect3D()` now throw exceptions on errors, which also simplifies the code be removing the `bool` checks.
-* ShaderFX compilation has been replaced with `D3DReadFileToBlob()`, `CreateVertexShader()`, and `CreatePixelShader()`.
-* I'm working on converting the `.fx` shader files over to standard HLSL. I'm still investigating the feasibility of this and whether it's worthwhile, as DX11 is limited to Shader Model 5.0, which is unrecognised by the newer `DXCompiler`, which in turn means we're stuck on the older `D3DCompiler` when working with DX11.
+* The deprecated FX11 framework has been removed. All FX files are being migrated to standard HLSL files with Shader Model 5.0. To facilitate this, they've also been split up into individual files, so that they mesh better with Visual Studio's compilation properties.
 * Replaced the `Colors` namespace with `DirectX::Colors`.
 * Use of the `ZeroMemory` macro was replaced with simpler empty initialisers.
 * Functions have been updated to use trailing return type syntax.
