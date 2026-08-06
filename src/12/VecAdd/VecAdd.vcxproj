@@ -153,6 +153,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="renderstates.ixx" />
+    <ClCompile Include="app.ixx" />
+    <ClCompile Include="vecadd.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Basic.hlsli" />
