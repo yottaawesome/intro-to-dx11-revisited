@@ -70,19 +70,12 @@ public:
 		md3dImmediateContext->Dispatch((mNumElements + threadsPerGroup - 1) / threadsPerGroup, 1, 1);
 
 		auto nullSRVs = std::array<D3D11::ID3D11ShaderResourceView*, 2>{};
-		md3dImmediateContext->CSSetShaderResources(
-			0,
-			static_cast<std::uint32_t>(nullSRVs.size()),
-			nullSRVs.data());
+		md3dImmediateContext->CSSetShaderResources(0, static_cast<std::uint32_t>(nullSRVs.size()), nullSRVs.data());
 
 		// Unbind output from compute shader (we are going to use this output as an input in the next pass, 
 		// and a resource cannot be both an output and input at the same time.
 		auto nullUAVs = std::array<D3D11::ID3D11UnorderedAccessView*, 1>{};
-		md3dImmediateContext->CSSetUnorderedAccessViews(
-			0,
-			static_cast<std::uint32_t>(nullUAVs.size()),
-			nullUAVs.data(),
-			nullptr);
+		md3dImmediateContext->CSSetUnorderedAccessViews(0, static_cast<std::uint32_t>(nullUAVs.size()), nullUAVs.data(), nullptr);
 
 		// Disable compute shader.
 		md3dImmediateContext->CSSetShader(nullptr, nullptr, 0);
@@ -170,7 +163,6 @@ private:
 				.Flags = 0,
 			},
 		};
-
 		HR(md3dDevice->CreateShaderResourceView(bufferA.get(), &srvDesc, &mInputASRV));
 		HR(md3dDevice->CreateShaderResourceView(bufferB.get(), &srvDesc, &mInputBSRV));
 
@@ -183,7 +175,6 @@ private:
 				.Flags = 0,
 			},
 		};
-
 		HR(md3dDevice->CreateUnorderedAccessView(mOutputBuffer.get(), &uavDesc, &mOutputUAV));
 		// Views hold references to buffers, so we can release these.
 	}
