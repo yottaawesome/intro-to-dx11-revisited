@@ -109,7 +109,7 @@ private:
 	{
 		auto dataA = std::vector<Data>(mNumElements);
 		auto dataB = std::vector<Data>(mNumElements);
-		for (std::uint32_t i = 0; i < mNumElements; ++i)
+		for (auto i = 0u; i < mNumElements; ++i)
 		{
 			dataA[i].v1 = DirectX::XMFLOAT3(static_cast<float>(i), static_cast<float>(i), static_cast<float>(i));
 			dataA[i].v2 = DirectX::XMFLOAT2(static_cast<float>(i), 0.0f);
@@ -128,12 +128,10 @@ private:
 		};
 
 		auto vinitDataA = D3D11::D3D11_SUBRESOURCE_DATA{.pSysMem = &dataA[0]};
-
 		auto bufferA = ComPtr<D3D11::ID3D11Buffer>{};
 		HR(md3dDevice->CreateBuffer(&inputDesc, &vinitDataA, &bufferA));
 
 		auto vinitDataB = D3D11::D3D11_SUBRESOURCE_DATA{.pSysMem = &dataB[0]};
-
 		auto bufferB = ComPtr<D3D11::ID3D11Buffer>{};
 		HR(md3dDevice->CreateBuffer(&inputDesc, &vinitDataB, &bufferB));
 
