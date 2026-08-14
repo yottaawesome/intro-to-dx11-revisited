@@ -30,5 +30,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
+    <None Include="Shaders\common.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\vs.hlsl" />
+    <FxCompile Include="Shaders\ps.hlsl" />
+    <FxCompile Include="Shaders\hs.hlsl" />
+    <FxCompile Include="Shaders\domain.hlsl" />
   </ItemGroup>
 </Project>
