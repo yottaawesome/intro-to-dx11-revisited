@@ -26,6 +26,7 @@ The effort is ongoing. The following projects are functional.
 * [12/Blur](./src/12/Blur)
 * [12/VecAdd](./src/12/VecAdd)
 * [13/BasicTesselation](./src/13/BasicTesselation)
+* [13/BezierPatch](./src/13/BezierPatch)
 
 ## Running log of changes
 
@@ -47,6 +48,7 @@ The effort is ongoing. The following projects are functional.
 * Constructor value setting has been moved to inline initialisers, where possible.
 * FX-specific `SampleState` definitions in .fx files have been replaced with proper sampler definitions, set through the C++ side.
 * `DirectXTK` has been added as vcpkg dependency, specifically for DDS texture loading, replacing the old `D3DX11CreateShaderResourceViewFromFile()` calls with `DirectX::CreateDDSTextureFromFile()`.
+* The chapter 13 samples included shaders that were not actually used, and have been removed.
 
 ## License and copyright
 
