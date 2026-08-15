@@ -124,17 +124,17 @@ public:
 		HR(mSwapChain->Present(0, 0));
 	}
 
-	void OnMouseDown(Win32::WPARAM btnState, int x, int y)
+	void OnMouseDown(Win32::WPARAM btnState, int x, int y) override
 	{
 		mLastMousePos = { x, y };
 		Win32::SetCapture(mhMainWnd);
 	}
 
-	void OnMouseUp(Win32::WPARAM btnState, int x, int y)
+	void OnMouseUp(Win32::WPARAM btnState, int x, int y) override
 	{
 		Win32::ReleaseCapture();
 	}
-	void OnMouseMove(Win32::WPARAM btnState, int x, int y)
+	void OnMouseMove(Win32::WPARAM btnState, int x, int y) override
 	{
 		if ((btnState & Win32::MK::LButton) != 0)
 		{
