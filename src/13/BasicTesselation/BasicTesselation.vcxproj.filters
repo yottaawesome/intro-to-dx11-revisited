@@ -36,6 +36,6 @@
     <FxCompile Include="Shaders\vs.hlsl" />
     <FxCompile Include="Shaders\ps.hlsl" />
     <FxCompile Include="Shaders\hs.hlsl" />
-    <FxCompile Include="Shaders\domain.hlsl" />
+    <FxCompile Include="Shaders\ds.hlsl" />
   </ItemGroup>
 </Project>

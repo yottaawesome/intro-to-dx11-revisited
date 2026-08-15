@@ -1,12 +1,13 @@
-cbuffer cbPerFrame
+cbuffer cbPerFrame : register(b0)
 {
 	float3 gEyePosW;
+    float gPadding;
 };
 
-cbuffer cbPerObject
+cbuffer cbPerObject : register(b1)
 {
-	float4x4 gWorld;
-	float4x4 gWorldViewProj;
+	row_major float4x4 gWorld;
+	row_major float4x4 gWorldViewProj;
 };
 
 struct VertexIn
