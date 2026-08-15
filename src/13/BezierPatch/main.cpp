@@ -1,5 +1,6 @@
 import std;
 import shared;
+import bezierpatch;
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
@@ -8,8 +9,7 @@ auto wWinMain(Win32::HINSTANCE hInstance, Win32::HINSTANCE, Win32::LPWSTR, int) 
 try
 {
 	Win32::SetDebugBuildFlag(Win32::CrtAllocMemDf | Win32::CrtLeakCheckDf);
-	return 0;
-	//return BasicTesselationApp{ hInstance }.Run();
+	return BasicTessellation{ hInstance }.Run();
 }
 catch (const std::exception& e)
 {

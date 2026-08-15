@@ -1,7 +1,7 @@
 cbuffer cbPerFrame : register(b0)
 {
 	float3 gEyePosW;
-    float gPadding;
+	float gPadding;
 };
 
 cbuffer cbPerObject : register(b1)

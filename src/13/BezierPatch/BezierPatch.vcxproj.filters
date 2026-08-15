@@ -21,8 +21,22 @@
     <ClCompile Include="bezierpatch.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="renderstates.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="app.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
+    <None Include="Shaders\LightHelper.hlsli" />
+    <None Include="Shaders\Common.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\ds.hlsl" />
+    <FxCompile Include="Shaders\vs.hlsl" />
+    <FxCompile Include="Shaders\hs.hlsl" />
+    <FxCompile Include="Shaders\ps.hlsl" />
   </ItemGroup>
 </Project>
