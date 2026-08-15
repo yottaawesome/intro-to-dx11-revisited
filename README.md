@@ -26,6 +26,7 @@ The effort is ongoing. The following projects are functional.
 * [12/Blur](./src/12/Blur)
 * [12/VecAdd](./src/12/VecAdd)
 * [13/BasicTesselation](./src/13/BasicTesselation)
+* [13/BezierPatch](./src/13/BezierPatch)
 
 ## Running log of changes
 
