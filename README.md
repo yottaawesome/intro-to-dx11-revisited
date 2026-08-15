@@ -25,6 +25,7 @@ The effort is ongoing. The following projects are functional.
 * [11/TreeBillboard](./src/11/TreeBillboard)
 * [12/Blur](./src/12/Blur)
 * [12/VecAdd](./src/12/VecAdd)
+* [13/BasicTesselation](./src/13/BasicTesselation)
 
 ## Running log of changes
 
