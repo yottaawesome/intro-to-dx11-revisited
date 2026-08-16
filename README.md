@@ -2,7 +2,11 @@
 
 ## Introduction 
 
-Revisiting and updating the source code of [Frank D. Luna's](https://www.d3dcoder.net/default.htm) excellent [_Introduction to 3D Game Programming with DirectX 11_](https://www.d3dcoder.net/d3d11.htm). This is very much in the same spirit as my [DX12 one](https://github.com/yottaawesome/intro-to-dx12-2nd-edition-revisited/tree/main), but somewhat more extensive due to the original source code relying on deprecated and unavailable (or not easily available) technologies that prevent compilation "out of the box". As with my DX12 one, the primary aim (beyond making it compile) is again to make the source code easier to understand by updating it with modern C++ approaches. You'll still need the original book to understand what's going on in each sample.
+Revisiting and updating the source code of [Frank D. Luna's](https://www.d3dcoder.net/default.htm) excellent [_Introduction to 3D Game Programming with DirectX 11_](https://www.d3dcoder.net/d3d11.htm). This is very much in the same spirit as my [DX12 one](https://github.com/yottaawesome/intro-to-dx12-2nd-edition-revisited/tree/main), but this repo also aims for the complete removal of the deprecated FX11 framework (abandoned by Microsoft) and the conversion of the FX files into standard Shader Model 5 HLSL files, thus allowing the samples to be compiled on a modern Visual Studio setup with nothing more than vcpkg required. You'll still need the original book to understand what's going on in each sample.
+
+## Is it worth investing in the book and learning DirectX 11 instead of just jumping to DirectX 12?
+
+While it's true Microsoft is no longer actively developing DirectX 11, many games are still written in it, and Microsoft won't be deprecating DX11 anytime soon. Being a higher level API, learning DX11 allows you to learn the core concepts of graphics rendering without worrying about the low level bookkeeping that's forced on you in lower level APIs like DirectX 12 and Vulkan. This is particularly useful if you're a novice to graphics programming.
 
 ## Status
 
