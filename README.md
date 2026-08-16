@@ -6,7 +6,7 @@ Revisiting and updating the source code of [Frank D. Luna's](https://www.d3dcode
 
 ## Is it worth investing in the book and learning DirectX 11 instead of just jumping to DirectX 12?
 
-While it's true Microsoft is no longer actively developing DirectX 11, many games are still written in it, and Microsoft won't be deprecating DX11 anytime soon. Being a higher level API, learning DX11 allows you to learn the core concepts of graphics rendering without worrying about the low level bookkeeping that's forced on you in lower level APIs like DirectX 12 and Vulkan. This is particularly useful if you're a novice to graphics programming.
+While it's true Microsoft is no longer actively developing DirectX 11, many games are still written in it, and Microsoft won't be deprecating DX11 anytime soon. Being a higher level API, learning DX11 allows you to learn the core concepts of graphics rendering without worrying about the low level bookkeeping that's forced on you in lower level APIs like DirectX 12 and Vulkan. This is particularly useful if you're a novice to graphics programming (more experienced developers coming from other APIs like Vulkan and Metal can probably just skip straight to DX12).
 
 ## Status
 
