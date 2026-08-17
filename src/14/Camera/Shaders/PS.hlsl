@@ -55,7 +55,7 @@ float4 main(VertexOut pin) : SV_Target
 
 		// Sum the light contribution from each light source.  
 		[unroll]
-		for(int i = 0; i < gLightCount; ++i)
+		for(uint i = 0; i < gLightCount; ++i)
 		{
 			float4 A, D, S;
 			ComputeDirectionalLight(gMaterial, gDirLights[i], pin.NormalW, toEye, 
