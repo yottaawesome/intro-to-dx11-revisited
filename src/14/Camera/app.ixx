@@ -12,25 +12,25 @@ struct Vertex
 
 struct PerFrameConstants
 {
-    DirectionalLight gDirLights[3];
+	DirectionalLight gDirLights[3];
 	DirectX::XMFLOAT3 gEyePosW;
-    float gFogStart;
-    float gFogRange;
+	float gFogStart;
+	float gFogRange;
 	unsigned int gLightCount;
 	unsigned int gUseTexture;
 	unsigned int gAlphaClip;
 	unsigned int gFogEnabled;
-    DirectX::XMFLOAT3 gPadding;
-    DirectX::XMFLOAT4 gFogColor;
+	DirectX::XMFLOAT3 gPadding;
+	DirectX::XMFLOAT4 gFogColor;
 };
 
 struct PerObjectConstants
 {
-    DirectX::XMFLOAT4X4 gWorld;
-    DirectX::XMFLOAT4X4 gWorldInvTranspose;
-    DirectX::XMFLOAT4X4 gWorldViewProj;
-    DirectX::XMFLOAT4X4 gTexTransform;
-    Material gMaterial;
+	DirectX::XMFLOAT4X4 gWorld;
+	DirectX::XMFLOAT4X4 gWorldInvTranspose;
+	DirectX::XMFLOAT4X4 gWorldViewProj;
+	DirectX::XMFLOAT4X4 gTexTransform;
+	Material gMaterial;
 };
 
 export class CameraApp : public D3DApp
@@ -222,50 +222,43 @@ public:
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
 			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
-			auto perObjectConstantBuffersVS = std::array{ mPerObject.get() };
-			md3dImmediateContext->VSSetConstantBuffers(1, static_cast<std::uint32_t>(perObjectConstantBuffersVS.size()), perObjectConstantBuffersVS.data());
-			auto perObjectConstantBuffersPS = std::array{ mPerFrame.get(), mPerObject.get() };
-			md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(perObjectConstantBuffersPS.size()), perObjectConstantBuffersPS.data());
 			md3dImmediateContext->PSSetShaderResources(0, 1, mStoneTexSRV.GetAddressOf());
 			md3dImmediateContext->DrawIndexed(mBoxIndexCount, mBoxIndexOffset, mBoxVertexOffset);
 		}
 
 		// Draw the cylinders.
-		//	for (int i = 0; i < 10; ++i)
-		//	{
-		//		world = XMLoadFloat4x4(&mCylWorld[i]);
-		//		worldInvTranspose = MathHelper::InverseTranspose(world);
-		//		worldViewProj = world * view * proj;
+		for (int i = 0; i < 10; ++i)
+		{
+			auto perObjectConstants = PerObjectConstants{ .gMaterial = mCylinderMat };
+			auto world = DirectX::XMMATRIX{ XMLoadFloat4x4(&mCylWorld[i]) };
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
+			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
+			md3dImmediateContext->PSSetShaderResources(0, 1, mBrickTexSRV.GetAddressOf());
 
-		//		Effects::BasicFX->SetWorld(world);
-		//		Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//		Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//		Effects::BasicFX->SetTexTransform(XMMatrixIdentity());
-		//		Effects::BasicFX->SetMaterial(mCylinderMat);
-		//		Effects::BasicFX->SetDiffuseMap(mBrickTexSRV);
+			md3dImmediateContext->DrawIndexed(mCylinderIndexCount, mCylinderIndexOffset, mCylinderVertexOffset);
+		}
 
-		//		activeTexTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//		md3dImmediateContext->DrawIndexed(mCylinderIndexCount, mCylinderIndexOffset, mCylinderVertexOffset);
-		//	}
+		// Draw the spheres.
+		for (int i = 0; i < 10; ++i)
+		{
+	//		world = XMLoadFloat4x4(&mSphereWorld[i]);
+	//		worldInvTranspose = MathHelper::InverseTranspose(world);
+	//		worldViewProj = world * view * proj;
 
-		//	// Draw the spheres.
-		//	for (int i = 0; i < 10; ++i)
-		//	{
-		//		world = XMLoadFloat4x4(&mSphereWorld[i]);
-		//		worldInvTranspose = MathHelper::InverseTranspose(world);
-		//		worldViewProj = world * view * proj;
+	//		Effects::BasicFX->SetWorld(world);
+	//		Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
+	//		Effects::BasicFX->SetWorldViewProj(worldViewProj);
+	//		Effects::BasicFX->SetTexTransform(XMMatrixIdentity());
+	//		Effects::BasicFX->SetMaterial(mSphereMat);
+	//		Effects::BasicFX->SetDiffuseMap(mStoneTexSRV);
 
-		//		Effects::BasicFX->SetWorld(world);
-		//		Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//		Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//		Effects::BasicFX->SetTexTransform(XMMatrixIdentity());
-		//		Effects::BasicFX->SetMaterial(mSphereMat);
-		//		Effects::BasicFX->SetDiffuseMap(mStoneTexSRV);
-
-		//		activeTexTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//		md3dImmediateContext->DrawIndexed(mSphereIndexCount, mSphereIndexOffset, mSphereVertexOffset);
-		//	}
-		//}
+			//md3dImmediateContext->DrawIndexed(mSphereIndexCount, mSphereIndexOffset, mSphereVertexOffset);
+		}
 
 		//activeSkullTech->GetDesc(&techDesc);
 		//for (UINT p = 0; p < techDesc.Passes; ++p)
