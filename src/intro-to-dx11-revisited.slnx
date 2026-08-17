@@ -44,5 +44,8 @@
     <Project Path="13/BasicTesselation/BasicTesselation.vcxproj" Id="ba4e1c3f-a436-4a7b-bc48-eb2e13fe9083" />
     <Project Path="13/BezierPatch/BezierPatch.vcxproj" Id="ee8c7e2b-2658-4f6c-ab94-cce52639f2c8" />
   </Folder>
+  <Folder Name="/14 - Building a First Person Camera/">
+    <Project Path="14/Camera/Camera.vcxproj" Id="95caa21a-0cc9-46a6-bbf6-7efbd042d602" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
