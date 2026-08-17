@@ -8,3 +8,4 @@ export import :build;
 export import :comptr;
 export import :geometrygenerator;
 export import :lighthelper;
+export import :camera;

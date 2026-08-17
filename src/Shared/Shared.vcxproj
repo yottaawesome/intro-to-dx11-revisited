@@ -167,6 +167,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="build.ixx" />
+    <ClCompile Include="camera.ixx" />
     <ClCompile Include="comptr.ixx" />
     <ClCompile Include="d3dapp.ixx" />
     <ClCompile Include="d3dutil.ixx" />
