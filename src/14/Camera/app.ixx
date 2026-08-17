@@ -230,7 +230,7 @@ public:
 		for (int i = 0; i < 10; ++i)
 		{
 			auto perObjectConstants = PerObjectConstants{ .gMaterial = mCylinderMat };
-			auto world = DirectX::XMMATRIX{ XMLoadFloat4x4(&mCylWorld[i]) };
+			auto world = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mCylWorld[i]) };
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
 			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
@@ -246,18 +246,18 @@ public:
 		// Draw the spheres.
 		for (int i = 0; i < 10; ++i)
 		{
-	//		world = XMLoadFloat4x4(&mSphereWorld[i]);
-	//		worldInvTranspose = MathHelper::InverseTranspose(world);
-	//		worldViewProj = world * view * proj;
+			auto perObjectConstants = PerObjectConstants{ .gMaterial = mSphereMat };
+			auto world = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mSphereWorld[i]) };
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
+			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
+			md3dImmediateContext->PSSetShaderResources(0, 1, mStoneTexSRV.GetAddressOf());
 
-	//		Effects::BasicFX->SetWorld(world);
-	//		Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-	//		Effects::BasicFX->SetWorldViewProj(worldViewProj);
-	//		Effects::BasicFX->SetTexTransform(XMMatrixIdentity());
-	//		Effects::BasicFX->SetMaterial(mSphereMat);
-	//		Effects::BasicFX->SetDiffuseMap(mStoneTexSRV);
-
-			//md3dImmediateContext->DrawIndexed(mSphereIndexCount, mSphereIndexOffset, mSphereVertexOffset);
+			md3dImmediateContext->DrawIndexed(mSphereIndexCount, mSphereIndexOffset, mSphereVertexOffset);
 		}
 
 		//activeSkullTech->GetDesc(&techDesc);
