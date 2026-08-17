@@ -31,6 +31,7 @@ The effort is ongoing. The following projects are functional.
 * [12/VecAdd](./src/12/VecAdd)
 * [13/BasicTesselation](./src/13/BasicTesselation)
 * [13/BezierPatch](./src/13/BezierPatch)
+* [14/Camera](./src/14/Camera)
 
 ## Running log of changes
 
