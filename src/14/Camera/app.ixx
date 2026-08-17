@@ -260,26 +260,32 @@ public:
 			md3dImmediateContext->DrawIndexed(mSphereIndexCount, mSphereIndexOffset, mSphereVertexOffset);
 		}
 
-		//activeSkullTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	// Draw the skull.
+		// Draw the skull.
+		{
+			md3dImmediateContext->IASetVertexBuffers(0, 1, mSkullVB.GetAddressOf(), &stride, &offset);
+			md3dImmediateContext->IASetIndexBuffer(mSkullIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mSkullVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mSkullIB, DXGI_FORMAT_R32_UINT, 0);
+			auto world = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mSkullWorld) };
+			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
+			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
 
-		//	XMMATRIX world = XMLoadFloat4x4(&mSkullWorld);
-		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	XMMATRIX worldViewProj = world * view * proj;
+			// The skull is untextured, so update the per frame constanst to disable
+			// the texture, and remove the shader resource view.
+			perFrameConstants.gUseTexture = 0;
+			md3dImmediateContext->UpdateSubresource(mPerFrame.get(), 0, nullptr, &perFrameConstants, 0, 0);
+			auto nullSrv = std::array<D3D11::ID3D11ShaderResourceView*, 1>{};
+			md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(nullSrv.size()), nullSrv.data());
 
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetMaterial(mSkullMat);
+			auto perObjectConstants = PerObjectConstants{
+				.gMaterial = mSkullMat
+			};
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
 
-		//	activeSkullTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
-		//}
+			md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
+		}
 
 		HR(mSwapChain->Present(0, 0));
 	}
