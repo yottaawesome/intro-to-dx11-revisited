@@ -47,5 +47,8 @@
   <Folder Name="/14 - Building a First Person Camera/">
     <Project Path="14/Camera/Camera.vcxproj" Id="95caa21a-0cc9-46a6-bbf6-7efbd042d602" />
   </Folder>
+  <Folder Name="/15 - Instancing and Frustum Culling/">
+    <Project Path="15/InstancingAndCulling/InstancingAndCulling.vcxproj" Id="1457e9dc-fb52-4887-9622-e149daea4a20" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
