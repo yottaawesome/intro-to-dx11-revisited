@@ -234,6 +234,7 @@ export namespace DirectX
 		::DirectX::XMVECTOR,
 		::DirectX::BoundingBox, // replaces XNA::AxisAlignedBox
 		::DirectX::BoundingFrustum, // replaces XNA::Frustum
+		::DirectX::XMMatrixDecompose,
 		::DirectX::XMLoadFloat3,
 		::DirectX::XMLoadFloat4x4,
 		::DirectX::XMVectorSet,

@@ -49,8 +49,146 @@ public:
 
 	void Init() override;
 	void OnResize() override;
-	void UpdateScene(float dt) override;
-	void DrawScene() override;
+
+	void UpdateScene(float dt) override
+	{
+		//
+		// Control the camera.
+		//
+		if (Win32::GetAsyncKeyState('W') & 0x8000)
+			mCam.Walk(10.0f * dt);
+
+		if (Win32::GetAsyncKeyState('S') & 0x8000)
+			mCam.Walk(-10.0f * dt);
+
+		if (Win32::GetAsyncKeyState('A') & 0x8000)
+			mCam.Strafe(-10.0f * dt);
+
+		if (Win32::GetAsyncKeyState('D') & 0x8000)
+			mCam.Strafe(10.0f * dt);
+
+		if (Win32::GetAsyncKeyState('1') & 0x8000)
+			mFrustumCullingEnabled = true;
+
+		if (Win32::GetAsyncKeyState('2') & 0x8000)
+			mFrustumCullingEnabled = false;
+
+		//
+		// Perform frustum culling.
+		//
+
+		mCam.UpdateViewMatrix();
+		mVisibleObjectCount = 0;
+
+		if (mFrustumCullingEnabled)
+		{
+			DirectX::XMVECTOR detView = DirectX::XMMatrixDeterminant(mCam.View());
+			DirectX::XMMATRIX invView = DirectX::XMMatrixInverse(&detView, mCam.View());
+
+			D3D11::D3D11_MAPPED_SUBRESOURCE mappedData;
+			md3dImmediateContext->Map(mInstancedBuffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
+
+			InstancedData* dataView = reinterpret_cast<InstancedData*>(mappedData.pData);
+
+			for (auto i = 0u; i < mInstancedData.size(); ++i)
+			{
+				DirectX::XMMATRIX W = DirectX::XMLoadFloat4x4(&mInstancedData[i].World);
+				auto detW = DirectX::XMMatrixDeterminant(W);
+				DirectX::XMMATRIX invWorld = DirectX::XMMatrixInverse(&detW, W);
+
+				// View space to the object's local space.
+				DirectX::XMMATRIX toLocal = DirectX::XMMatrixMultiply(invView, invWorld);
+
+				// Decompose the matrix into its individual parts.
+				DirectX::XMVECTOR scale;
+				DirectX::XMVECTOR rotQuat;
+				DirectX::XMVECTOR translation;
+				DirectX::XMMatrixDecompose(&scale, &rotQuat, &translation, toLocal);
+
+				// Transform the camera frustum from view space to the object's local space.
+				DirectX::BoundingFrustum localspaceFrustum;
+				DirectX::TransformFrustum(&localspaceFrustum, &mCamFrustum, DirectX::XMVectorGetX(scale), rotQuat, translation);
+
+				// Perform the box/frustum intersection test in local space.
+				if (DirectX::IntersectAxisAlignedBoxFrustum(&mSkullBox, &localspaceFrustum) != 0)
+				{
+					// Write the instance data to dynamic VB of the visible objects.
+					dataView[mVisibleObjectCount++] = mInstancedData[i];
+				}
+			}
+
+			md3dImmediateContext->Unmap(mInstancedBuffer.get(), 0);
+		}
+		else // No culling enabled, draw all objects.
+		{
+			D3D11::D3D11_MAPPED_SUBRESOURCE mappedData;
+			md3dImmediateContext->Map(mInstancedBuffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
+
+			InstancedData* dataView = reinterpret_cast<InstancedData*>(mappedData.pData);
+
+			for (auto i = 0u; i < mInstancedData.size(); ++i)
+			{
+				dataView[mVisibleObjectCount++] = mInstancedData[i];
+			}
+
+			md3dImmediateContext->Unmap(mInstancedBuffer.get(), 0);
+		}
+
+		std::wostringstream outs;
+		outs.precision(6);
+		outs << L"Instancing and Culling Demo" <<
+			L"    " << mVisibleObjectCount <<
+			L" objects visible out of " << mInstancedData.size();
+		mMainWndCaption = outs.str();
+	}
+
+	void DrawScene() override
+	{
+		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView.get(), reinterpret_cast<const float*>(&DirectX::Colors::Silver));
+		md3dImmediateContext->ClearDepthStencilView(
+			mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL}, 1.0f, 0);
+
+		md3dImmediateContext->IASetInputLayout(mInputLayout.get());
+		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+		std::uint32_t stride[2] = { sizeof(Vertex), sizeof(InstancedData) };
+		std::uint32_t offset[2] = { 0,0 };
+
+		D3D11::ID3D11Buffer* vbs[2] = { mSkullVB.get(), mInstancedBuffer.get()};
+
+		DirectX::XMMATRIX view = mCam.View();
+		DirectX::XMMATRIX proj = mCam.Proj();
+		DirectX::XMMATRIX viewProj = mCam.ViewProj();
+
+		// Set per frame constants.
+		//Effects::InstancedBasicFX->SetDirLights(mDirLights);
+		//Effects::InstancedBasicFX->SetEyePosW(mCam.GetPosition());
+
+		//ID3DX11EffectTechnique* activeTech = Effects::InstancedBasicFX->Light3Tech;
+
+		//D3DX11_TECHNIQUE_DESC techDesc;
+		//activeTech->GetDesc(&techDesc);
+		//for (UINT p = 0; p < techDesc.Passes; ++p)
+		//{
+		//	// Draw the skull.
+
+		//	md3dImmediateContext->IASetVertexBuffers(0, 2, vbs, stride, offset);
+		//	md3dImmediateContext->IASetIndexBuffer(mSkullIB, DXGI_FORMAT_R32_UINT, 0);
+
+		//	XMMATRIX world = XMLoadFloat4x4(&mSkullWorld);
+		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
+
+		//	Effects::InstancedBasicFX->SetWorld(world);
+		//	Effects::InstancedBasicFX->SetWorldInvTranspose(worldInvTranspose);
+		//	Effects::InstancedBasicFX->SetViewProj(viewProj);
+		//	Effects::InstancedBasicFX->SetMaterial(mSkullMat);
+
+		//	activeTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
+		//	md3dImmediateContext->DrawIndexedInstanced(mSkullIndexCount, mVisibleObjectCount, 0, 0, 0);
+		//}
+
+		HR(mSwapChain->Present(0, 0));
+	}
 
 	void OnMouseDown(Win32::WPARAM btnState, int x, int y) override
 	{
