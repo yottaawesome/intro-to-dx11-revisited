@@ -3,7 +3,7 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Folder Name="/01 - Vecor Algebra/">
+  <Folder Name="/01 - Vector Algebra/">
     <Project Path="01/XMVECTOR/XMVECTOR.vcxproj" Id="fca12c10-bde0-480a-ad86-a4ce89fd8d93" />
   </Folder>
   <Folder Name="/02 - Matrix Algebra/">

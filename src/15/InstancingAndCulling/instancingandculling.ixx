@@ -9,9 +9,9 @@ struct PerFrameConstants
 	float FogStart;
 	float FogRange;
 	std::uint32_t LightCount;
-	bool UseTexture;
-	bool AlphaClip;
-	bool FogEnabled;
+	std::uint32_t UseTexture;
+	std::uint32_t AlphaClip;
+	std::uint32_t FogEnabled;
 	DirectX::XMFLOAT3 Padding;
 	DirectX::XMFLOAT4 FogColor;
 };
@@ -44,11 +44,57 @@ struct InstancedData
 export class InstancingAndCullingApp : public D3DApp
 {
 public:
-	InstancingAndCullingApp(Win32::HINSTANCE hInstance);
-	~InstancingAndCullingApp();
+	InstancingAndCullingApp(Win32::HINSTANCE hInstance)
+		: D3DApp(hInstance)
+	{
+		mMainWndCaption = L"Instancing and Culling Demo";
 
-	void Init() override;
-	void OnResize() override;
+		mCam.SetPosition(0.0f, 2.0f, -15.0f);
+
+		auto I = DirectX::XMMATRIX{ DirectX::XMMatrixIdentity() };
+		auto skullScale = DirectX::XMMATRIX{ DirectX::XMMatrixScaling(0.5f, 0.5f, 0.5f) };
+		auto skullOffset = DirectX::XMMATRIX{DirectX::XMMatrixTranslation(0.0f, 1.0f, 0.0f) };
+		DirectX::XMStoreFloat4x4(&mSkullWorld, DirectX::XMMatrixMultiply(skullScale, skullOffset));
+
+		mDirLights[0].Ambient = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+		mDirLights[0].Diffuse = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+		mDirLights[0].Specular = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
+		mDirLights[0].Direction = DirectX::XMFLOAT3(0.57735f, -0.57735f, 0.57735f);
+
+		mDirLights[1].Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		mDirLights[1].Diffuse = DirectX::XMFLOAT4(0.20f, 0.20f, 0.20f, 1.0f);
+		mDirLights[1].Specular = DirectX::XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
+		mDirLights[1].Direction = DirectX::XMFLOAT3(-0.57735f, -0.57735f, 0.57735f);
+
+		mDirLights[2].Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		mDirLights[2].Diffuse = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+		mDirLights[2].Specular = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		mDirLights[2].Direction = DirectX::XMFLOAT3(0.0f, -0.707f, -0.707f);
+
+		mSkullMat.Ambient = DirectX::XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
+		mSkullMat.Diffuse = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
+		mSkullMat.Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
+
+		Init();
+	}
+
+	void Init() override
+	{
+		D3DApp::Init();
+		BuildShaders();
+		BuildSkullGeometryBuffers();
+		BuildInstancedBuffer();
+	}
+
+	void OnResize() override
+	{
+		D3DApp::OnResize();
+
+		mCam.SetLens(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+
+		// Build the frustum from the projection matrix in view space.
+		DirectX::BoundingFrustum::CreateFromMatrix(mCamFrustum, mCam.Proj());
+	}
 
 	void UpdateScene(float dt) override
 	{
@@ -82,35 +128,35 @@ public:
 
 		if (mFrustumCullingEnabled)
 		{
-			DirectX::XMVECTOR detView = DirectX::XMMatrixDeterminant(mCam.View());
-			DirectX::XMMATRIX invView = DirectX::XMMatrixInverse(&detView, mCam.View());
+			auto detView = DirectX::XMVECTOR{ DirectX::XMMatrixDeterminant(mCam.View()) };
+			auto invView = DirectX::XMMATRIX{ DirectX::XMMatrixInverse(&detView, mCam.View()) };
 
-			D3D11::D3D11_MAPPED_SUBRESOURCE mappedData;
+			auto mappedData = D3D11::D3D11_MAPPED_SUBRESOURCE{};
 			md3dImmediateContext->Map(mInstancedBuffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
 
-			InstancedData* dataView = reinterpret_cast<InstancedData*>(mappedData.pData);
+			auto dataView = reinterpret_cast<InstancedData*>(mappedData.pData);
 
 			for (auto i = 0u; i < mInstancedData.size(); ++i)
 			{
-				DirectX::XMMATRIX W = DirectX::XMLoadFloat4x4(&mInstancedData[i].World);
-				auto detW = DirectX::XMMatrixDeterminant(W);
-				DirectX::XMMATRIX invWorld = DirectX::XMMatrixInverse(&detW, W);
+				auto W = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mInstancedData[i].World) };
+				auto detW = DirectX::XMVECTOR{ DirectX::XMMatrixDeterminant(W) };
+				auto invWorld = DirectX::XMMATRIX{ DirectX::XMMatrixInverse(&detW, W) };
 
 				// View space to the object's local space.
-				DirectX::XMMATRIX toLocal = DirectX::XMMatrixMultiply(invView, invWorld);
+				auto toLocal = DirectX::XMMatrixMultiply(invView, invWorld);
 
 				// Decompose the matrix into its individual parts.
-				DirectX::XMVECTOR scale;
-				DirectX::XMVECTOR rotQuat;
-				DirectX::XMVECTOR translation;
+				auto scale = DirectX::XMVECTOR{};
+				auto rotQuat = DirectX::XMVECTOR{};
+				auto translation = DirectX::XMVECTOR{};
 				DirectX::XMMatrixDecompose(&scale, &rotQuat, &translation, toLocal);
 
 				// Transform the camera frustum from view space to the object's local space.
-				DirectX::BoundingFrustum localspaceFrustum;
-				DirectX::TransformFrustum(&localspaceFrustum, &mCamFrustum, DirectX::XMVectorGetX(scale), rotQuat, translation);
+				auto localspaceFrustum = DirectX::BoundingFrustum{};
+				mCamFrustum.Transform(localspaceFrustum, DirectX::XMVectorGetX(scale), rotQuat, translation);
 
 				// Perform the box/frustum intersection test in local space.
-				if (DirectX::IntersectAxisAlignedBoxFrustum(&mSkullBox, &localspaceFrustum) != 0)
+				if (localspaceFrustum.Intersects(mSkullBox) != 0)
 				{
 					// Write the instance data to dynamic VB of the visible objects.
 					dataView[mVisibleObjectCount++] = mInstancedData[i];
@@ -121,24 +167,19 @@ public:
 		}
 		else // No culling enabled, draw all objects.
 		{
-			D3D11::D3D11_MAPPED_SUBRESOURCE mappedData;
+			auto mappedData = D3D11::D3D11_MAPPED_SUBRESOURCE{};
 			md3dImmediateContext->Map(mInstancedBuffer.get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData);
-
-			InstancedData* dataView = reinterpret_cast<InstancedData*>(mappedData.pData);
-
+			auto dataView = reinterpret_cast<InstancedData*>(mappedData.pData);
 			for (auto i = 0u; i < mInstancedData.size(); ++i)
 			{
 				dataView[mVisibleObjectCount++] = mInstancedData[i];
 			}
-
 			md3dImmediateContext->Unmap(mInstancedBuffer.get(), 0);
 		}
 
-		std::wostringstream outs;
+		auto outs = std::wostringstream{};
 		outs.precision(6);
-		outs << L"Instancing and Culling Demo" <<
-			L"    " << mVisibleObjectCount <<
-			L" objects visible out of " << mInstancedData.size();
+		outs << std::format(L"Instancing and Culling Demo: {} objects visible out of {}", mVisibleObjectCount, mInstancedData.size());
 		mMainWndCaption = outs.str();
 	}
 
@@ -150,42 +191,53 @@ public:
 
 		md3dImmediateContext->IASetInputLayout(mInputLayout.get());
 		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		md3dImmediateContext->VSSetShader(mVertexShader.get(), nullptr, 0);
+		md3dImmediateContext->PSSetShader(mPixelShader.get(), nullptr, 0);
 
-		std::uint32_t stride[2] = { sizeof(Vertex), sizeof(InstancedData) };
-		std::uint32_t offset[2] = { 0,0 };
+		auto stride = std::array<std::uint32_t, 2>{ sizeof(Vertex), sizeof(InstancedData) };
+		auto offset = std::array{ 0u, 0u };
 
-		D3D11::ID3D11Buffer* vbs[2] = { mSkullVB.get(), mInstancedBuffer.get()};
+		auto vbs = std::array{ mSkullVB.get(), mInstancedBuffer.get() };
 
-		DirectX::XMMATRIX view = mCam.View();
-		DirectX::XMMATRIX proj = mCam.Proj();
-		DirectX::XMMATRIX viewProj = mCam.ViewProj();
+		auto view = DirectX::XMMATRIX{mCam.View()};
+		auto proj = DirectX::XMMATRIX{mCam.Proj()};
+		auto viewProj = DirectX::XMMATRIX{mCam.ViewProj()};
 
 		// Set per frame constants.
-		//Effects::InstancedBasicFX->SetDirLights(mDirLights);
-		//Effects::InstancedBasicFX->SetEyePosW(mCam.GetPosition());
+		auto perFrameConstants = PerFrameConstants{
+			.FogStart = 15.0f,
+			.FogRange = 175.0f,
+			.LightCount = mLightCount,
+			.UseTexture = false,
+			.AlphaClip = false,
+			.FogEnabled = false,
+			.FogColor = DirectX::XMFLOAT4{ DirectX::Colors::Silver },
+		};
+		std::copy(std::begin(mDirLights), std::end(mDirLights), std::begin(perFrameConstants.DirLights));
+		perFrameConstants.EyePosW = mCam.GetPosition();
+		md3dImmediateContext->UpdateSubresource(mPerFrame.get(), 0, nullptr, &perFrameConstants, 0, 0);
 
-		//ID3DX11EffectTechnique* activeTech = Effects::InstancedBasicFX->Light3Tech;
+		// Draw the skull.
 
-		//D3DX11_TECHNIQUE_DESC techDesc;
-		//activeTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	// Draw the skull.
+		md3dImmediateContext->IASetVertexBuffers(0, static_cast<std::uint32_t>(stride.size()), vbs.data(), stride.data(), offset.data());
+		md3dImmediateContext->IASetIndexBuffer(mSkullIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		//	md3dImmediateContext->IASetVertexBuffers(0, 2, vbs, stride, offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mSkullIB, DXGI_FORMAT_R32_UINT, 0);
+		auto world = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mSkullWorld)};
+		auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
 
-		//	XMMATRIX world = XMLoadFloat4x4(&mSkullWorld);
-		//	XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
+		auto perObjectConstants = PerObjectConstants{
+			.Material = mSkullMat
+		};
+		DirectX::XMStoreFloat4x4(&perObjectConstants.World, world);
+		DirectX::XMStoreFloat4x4(&perObjectConstants.WorldInvTranspose, worldInvTranspose);
+		DirectX::XMStoreFloat4x4(&perObjectConstants.ViewProj, viewProj);
+		md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
 
-		//	Effects::InstancedBasicFX->SetWorld(world);
-		//	Effects::InstancedBasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::InstancedBasicFX->SetViewProj(viewProj);
-		//	Effects::InstancedBasicFX->SetMaterial(mSkullMat);
-
-		//	activeTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexedInstanced(mSkullIndexCount, mVisibleObjectCount, 0, 0, 0);
-		//}
+		auto vsConstants = std::array{ mPerObject.get() };
+		auto psConstants = std::array{ mPerFrame.get(), mPerObject.get() };
+		md3dImmediateContext->VSSetConstantBuffers(1, static_cast<std::uint32_t>(vsConstants.size()), vsConstants.data());
+		md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstants.size()), psConstants.data());
+		md3dImmediateContext->DrawIndexedInstanced(mSkullIndexCount, mVisibleObjectCount, 0, 0, 0);
 
 		HR(mSwapChain->Present(0, 0));
 	}
@@ -364,7 +416,7 @@ private:
 			.MiscFlags = 0,
 			.StructureByteStride = 0,
 		};
-		HR(md3dDevice->CreateBuffer(&perFrameDesc, 0, &mPerFrame), "Failed to create constant buffer.");
+		HR(md3dDevice->CreateBuffer(&perFrameDesc, 0, &mPerFrame), "Failed to create per frame constant buffer.");
 
 		auto perObjectDesc = D3D11::D3D11_BUFFER_DESC{
 			.ByteWidth = sizeof(PerObjectConstants),
@@ -374,7 +426,7 @@ private:
 			.MiscFlags = 0,
 			.StructureByteStride = 0,
 		};
-		HR(md3dDevice->CreateBuffer(&perObjectDesc, 0, &mPerObject), "Failed to create constant buffer.");
+		HR(md3dDevice->CreateBuffer(&perObjectDesc, 0, &mPerObject), "Failed to create per object constant buffer.");
 	}
 	void BuildInputLayout(D3D::ID3DBlob* vertexShaderBytecode)
 	{
@@ -476,20 +528,21 @@ private:
 	DirectX::BoundingBox mSkullBox;
 	DirectX::BoundingFrustum mCamFrustum;
 
-	std::uint32_t mVisibleObjectCount;
+	std::uint32_t mVisibleObjectCount = 0;
 
 	// Keep a system memory copy of the world matrices for culling.
 	std::vector<InstancedData> mInstancedData;
 
-	bool mFrustumCullingEnabled;
+	bool mFrustumCullingEnabled = true;
 
 	DirectionalLight mDirLights[3];
+	std::uint32_t mLightCount = 3;
 	Material mSkullMat;
 
 	// Define transformations from local spaces to world space.
 	DirectX::XMFLOAT4X4 mSkullWorld;
 
-	std::uint32_t mSkullIndexCount;
+	std::uint32_t mSkullIndexCount = 0;
 
 	Camera mCam;
 
