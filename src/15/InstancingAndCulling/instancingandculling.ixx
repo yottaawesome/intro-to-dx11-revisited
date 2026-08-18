@@ -25,14 +25,15 @@ struct PerObjectConstants
 	Material Material;
 };
 
-struct Vertex
+// The shader's VertexIn combines both input slots, but the CPU buffers remain
+// split like the original sample: mesh attributes are per-vertex in slot 0,
+// while World and Color are per-instance in slot 1. SV_InstanceID is generated
+// by the GPU and therefore has no corresponding CPU-side field.
+struct BasicVertex
 {
 	DirectX::XMFLOAT3 Pos;
 	DirectX::XMFLOAT3 Normal;
 	DirectX::XMFLOAT2 Tex;
-	DirectX::XMFLOAT4X4 World;
-	DirectX::XMFLOAT4 Color;
-	std::uint32_t InstanceId;
 };
 
 struct InstancedData
@@ -194,7 +195,7 @@ public:
 		md3dImmediateContext->VSSetShader(mVertexShader.get(), nullptr, 0);
 		md3dImmediateContext->PSSetShader(mPixelShader.get(), nullptr, 0);
 
-		auto stride = std::array<std::uint32_t, 2>{ sizeof(Vertex), sizeof(InstancedData) };
+		auto stride = std::array<std::uint32_t, 2>{ sizeof(BasicVertex), sizeof(InstancedData) };
 		auto offset = std::array{ 0u, 0u };
 
 		auto vbs = std::array{ mSkullVB.get(), mInstancedBuffer.get() };
@@ -289,7 +290,7 @@ private:
 
 		auto vMin = DirectX::XMLoadFloat3(&vMinf3);
 		auto vMax = DirectX::XMLoadFloat3(&vMaxf3);
-		auto vertices = std::vector<Vertex>(vcount);
+		auto vertices = std::vector<BasicVertex>(vcount);
 		for (auto i = 0u; i < vcount; ++i)
 		{
 			fin >> vertices[i].Pos.x >> vertices[i].Pos.y >> vertices[i].Pos.z;
@@ -318,7 +319,7 @@ private:
 		fin.close();
 
 		auto vbd = D3D11::D3D11_BUFFER_DESC{
-			.ByteWidth = sizeof(Vertex) * vcount,
+			.ByteWidth = sizeof(BasicVertex) * vcount,
 			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_IMMUTABLE,
 			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER,
 			.CPUAccessFlags = 0,
