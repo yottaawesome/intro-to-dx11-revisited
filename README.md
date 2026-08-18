@@ -32,6 +32,7 @@ The effort is ongoing. The following projects are functional.
 * [13/BasicTesselation](./src/13/BasicTesselation)
 * [13/BezierPatch](./src/13/BezierPatch)
 * [14/Camera](./src/14/Camera)
+* [15/InstancingAndCulling](./src/15/InstancingAndCulling)
 
 ## Running log of changes
 
