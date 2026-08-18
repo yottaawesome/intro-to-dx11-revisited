@@ -8,6 +8,7 @@ module;
 #include <Windows.h>
 #include <Windowsx.h>
 #include <DirectXMath.h>
+#include <DirectXCollision.h>
 #include <DirectXPackedVector.h>
 #include <d3d11.h>
 #include <crtdbg.h>
@@ -231,6 +232,8 @@ export namespace DirectX
 		::DirectX::XMFLOAT2,
 		::DirectX::XMFLOAT4X4,
 		::DirectX::XMVECTOR,
+		::DirectX::BoundingBox, // replaces XNA::AxisAlignedBox
+		::DirectX::BoundingFrustum, // replaces XNA::Frustum
 		::DirectX::XMLoadFloat3,
 		::DirectX::XMLoadFloat4x4,
 		::DirectX::XMVectorSet,
@@ -262,6 +265,8 @@ export namespace DirectX
 		::DirectX::XMVector3TransformNormal,
 		::DirectX::XMVector3Less,
 		::DirectX::XMVector3TransformCoord,
+		::DirectX::XMVectorMin,
+		::DirectX::XMVectorMax,
 		::DirectX::XMMatrixShadow,
 		::DirectX::XMMatrixRotationRollPitchYaw,
 		::DirectX::XMMatrixRotationY,
