@@ -34,7 +34,7 @@
     <None Include="Shaders\LightHelper.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\Basic_PS.hlsl" />
-    <FxCompile Include="Shaders\Basic_VS.hlsl" />
+    <FxCompile Include="Shaders\BasicPS.hlsl" />
+    <FxCompile Include="Shaders\BasicVS.hlsl" />
   </ItemGroup>
 </Project>

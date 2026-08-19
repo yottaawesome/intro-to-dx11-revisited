@@ -371,11 +371,11 @@ private:
 	{
 		{
 			auto vertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-			HR(D3D::D3DReadFileToBlob(L"Shaders/vs.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
+			HR(D3D::D3DReadFileToBlob(L"Shaders/BasicVS.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
 			auto hr = md3dDevice->CreateVertexShader(vertexShaderBytecode->GetBufferPointer(), vertexShaderBytecode->GetBufferSize(), 0, &mVertexShader);
 			HR(hr, "Failed to create vertex shader.");
 			auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-			HR(D3D::D3DReadFileToBlob(L"Shaders/ps.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
+			HR(D3D::D3DReadFileToBlob(L"Shaders/BasicPS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
 			HR(md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mPixelShader), "Failed to create pixel shader.");
 			BuildInputLayout(vertexShaderBytecode.get());
 		}
