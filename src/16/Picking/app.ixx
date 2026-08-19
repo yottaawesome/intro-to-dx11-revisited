@@ -466,9 +466,9 @@ private:
 	// Define transformations from local spaces to world space.
 	DirectX::XMFLOAT4X4 mMeshWorld;
 
-	std::uint32_t mMeshIndexCount;
+	std::uint32_t mMeshIndexCount = 0;
 
-	std::uint32_t mPickedTriangle;
+	std::uint32_t mPickedTriangle = std::numeric_limits<std::uint32_t>::max();
 
 	Camera mCam;
 
