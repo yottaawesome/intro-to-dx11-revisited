@@ -23,6 +23,7 @@ public:
 
 		DirectX::XMMATRIX WVP = DirectX::XMMatrixMultiply(T, camera.ViewProj());
 
+		// TODO: implement per frame constant buffer for sky effect
 		/*Effects::SkyFX->SetWorldViewProj(WVP);
 		Effects::SkyFX->SetCubeMap(mCubeMapSRV);*/
 
@@ -30,7 +31,8 @@ public:
 		auto offset = 0u;
 		dc->IASetVertexBuffers(0, 1, mVB.GetAddressOf(), &stride, &offset);
 		dc->IASetIndexBuffer(mIB.get(), DXGI_FORMAT_R16_UINT, 0);
-		//dc->IASetInputLayout(InputLayouts::Pos);
+		// TODO: implement handling  of different input layouts
+		//dc->IASetInputLayout(InputLayouts::Pos); 
 		dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		dc->DrawIndexed(mIndexCount, 0, 0);
 	}
