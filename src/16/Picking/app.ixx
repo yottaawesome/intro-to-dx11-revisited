@@ -333,34 +333,33 @@ private:
 		// Assume we have not picked anything yet, so init to -1.
 		mPickedTriangle = -1;
 		auto tmin = 0.0f;
-		if (mMeshBox.Intersects(rayOrigin, rayDir, tmin))
+		if (not mMeshBox.Intersects(rayOrigin, rayDir, tmin))
+			return;
+
+		// Find the nearest ray/triangle intersection.
+		tmin = MathHelper::Infinity;
+		for (auto i = 0u; i < mMeshIndices.size() / 3; ++i)
 		{
-			// Find the nearest ray/triangle intersection.
-			tmin = MathHelper::Infinity;
-			for (auto i = 0u; i < mMeshIndices.size() / 3; ++i)
+			// Indices for this triangle.
+			auto i0 = mMeshIndices[i * 3 + 0];
+			auto i1 = mMeshIndices[i * 3 + 1];
+			auto i2 = mMeshIndices[i * 3 + 2];
+
+			// Vertices for this triangle.
+			auto v0 = DirectX::XMVECTOR{ DirectX::XMLoadFloat3(&mMeshVertices[i0].Pos) };
+			auto v1 = DirectX::XMVECTOR{ DirectX::XMLoadFloat3(&mMeshVertices[i1].Pos) };
+			auto v2 = DirectX::XMVECTOR{ DirectX::XMLoadFloat3(&mMeshVertices[i2].Pos) };
+
+			// We have to iterate over all the triangles in order to find the nearest intersection.
+			auto t = 0.0f;
+			auto hit = DirectX::TriangleTests::Intersects(rayOrigin, rayDir, v0, v1, v2, t);
+			if (hit and t < tmin)
 			{
-				// Indices for this triangle.
-				auto i0 = mMeshIndices[i * 3 + 0];
-				auto i1 = mMeshIndices[i * 3 + 1];
-				auto i2 = mMeshIndices[i * 3 + 2];
-
-				// Vertices for this triangle.
-				auto v0 = DirectX::XMVECTOR{ DirectX::XMLoadFloat3(&mMeshVertices[i0].Pos) };
-				auto v1 = DirectX::XMVECTOR{ DirectX::XMLoadFloat3(&mMeshVertices[i1].Pos) };
-				auto v2 = DirectX::XMVECTOR{ DirectX::XMLoadFloat3(&mMeshVertices[i2].Pos) };
-
-				// We have to iterate over all the triangles in order to find the nearest intersection.
-				auto t = 0.0f;
-				auto hit = DirectX::TriangleTests::Intersects(rayOrigin, rayDir, v0, v1, v2, t);
-				if (hit and t < tmin)
-				{
-					// This is the new nearest picked triangle.
-					tmin = t;
-					mPickedTriangle = i;
-				}
+				// This is the new nearest picked triangle.
+				tmin = t;
+				mPickedTriangle = i;
 			}
 		}
-
 	}
 
 	void BuildShaders()

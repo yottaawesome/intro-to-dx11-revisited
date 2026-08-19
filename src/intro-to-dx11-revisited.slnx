@@ -53,5 +53,9 @@
   <Folder Name="/16 - Picking/">
     <Project Path="16/Picking/Picking.vcxproj" Id="3ff3f37a-5aee-4778-9ded-e387cddc2b20" />
   </Folder>
+  <Folder Name="/17 - CubeMapping/">
+    <Project Path="17/CubeMap/CubeMap.vcxproj" Id="c213b728-f2c0-4feb-a50b-652677e31edf" />
+    <Project Path="17/DynamicCubeMap/DynamicCubeMap.vcxproj" Id="df1d14d7-1fbc-4621-8ce3-07db9c2b80c4" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
