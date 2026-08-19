@@ -212,7 +212,8 @@ export
 	using 
 		::DirectX::operator*,
 		::DirectX::operator-,
-		::DirectX::operator+
+		::DirectX::operator+,
+		::DirectX::operator/
 		;
 }
 
@@ -286,6 +287,13 @@ export namespace DirectX
 		::DirectX::TEX_FILTER_FLAGS,
 		::DirectX::ScratchImage
 		;
+
+	namespace TriangleTests
+	{
+		using
+			::DirectX::TriangleTests::Intersects
+			;
+	}
 
 	constexpr auto TexThresholdDefault = ::DirectX::TEX_THRESHOLD_DEFAULT;
 

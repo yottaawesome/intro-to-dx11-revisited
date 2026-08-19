@@ -46,36 +46,8 @@ export class InstancingAndCullingApp : public D3DApp
 {
 public:
 	InstancingAndCullingApp(Win32::HINSTANCE hInstance)
-		: D3DApp(hInstance)
+		: D3DApp{ hInstance, L"Instancing and Culling Demo" }
 	{
-		mMainWndCaption = L"Instancing and Culling Demo";
-
-		mCam.SetPosition(0.0f, 2.0f, -15.0f);
-
-		auto I = DirectX::XMMATRIX{ DirectX::XMMatrixIdentity() };
-		auto skullScale = DirectX::XMMATRIX{ DirectX::XMMatrixScaling(0.5f, 0.5f, 0.5f) };
-		auto skullOffset = DirectX::XMMATRIX{DirectX::XMMatrixTranslation(0.0f, 1.0f, 0.0f) };
-		DirectX::XMStoreFloat4x4(&mSkullWorld, DirectX::XMMatrixMultiply(skullScale, skullOffset));
-
-		mDirLights[0].Ambient = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-		mDirLights[0].Diffuse = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-		mDirLights[0].Specular = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-		mDirLights[0].Direction = DirectX::XMFLOAT3(0.57735f, -0.57735f, 0.57735f);
-
-		mDirLights[1].Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-		mDirLights[1].Diffuse = DirectX::XMFLOAT4(0.20f, 0.20f, 0.20f, 1.0f);
-		mDirLights[1].Specular = DirectX::XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
-		mDirLights[1].Direction = DirectX::XMFLOAT3(-0.57735f, -0.57735f, 0.57735f);
-
-		mDirLights[2].Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-		mDirLights[2].Diffuse = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-		mDirLights[2].Specular = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-		mDirLights[2].Direction = DirectX::XMFLOAT3(0.0f, -0.707f, -0.707f);
-
-		mSkullMat.Ambient = DirectX::XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
-		mSkullMat.Diffuse = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-		mSkullMat.Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-
 		Init();
 	}
 
@@ -206,6 +178,7 @@ public:
 
 		// Set per frame constants.
 		auto perFrameConstants = PerFrameConstants{
+			.EyePosW = mCam.GetPosition(),
 			.FogStart = 15.0f,
 			.FogRange = 175.0f,
 			.LightCount = mLightCount,
@@ -215,7 +188,6 @@ public:
 			.FogColor = DirectX::XMFLOAT4{ DirectX::Colors::Silver },
 		};
 		std::copy(std::begin(mDirLights), std::end(mDirLights), std::begin(perFrameConstants.DirLights));
-		perFrameConstants.EyePosW = mCam.GetPosition();
 		md3dImmediateContext->UpdateSubresource(mPerFrame.get(), 0, nullptr, &perFrameConstants, 0, 0);
 
 		// Draw the skull.
@@ -536,16 +508,54 @@ private:
 
 	bool mFrustumCullingEnabled = true;
 
-	DirectionalLight mDirLights[3];
+	DirectionalLight mDirLights[3]{
+		{
+			.Ambient = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f),
+			.Diffuse = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f),
+			.Specular = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f),
+			.Direction = DirectX::XMFLOAT3(0.57735f, -0.57735f, 0.57735f)
+		},
+		{
+			.Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f),
+			.Diffuse = DirectX::XMFLOAT4(0.20f, 0.20f, 0.20f, 1.0f),
+			.Specular = DirectX::XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f),
+			.Direction = DirectX::XMFLOAT3(-0.57735f, -0.57735f, 0.57735f)
+		},
+		{
+			.Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f),
+			.Diffuse = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f),
+			.Specular = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f),
+			.Direction = DirectX::XMFLOAT3(0.0f, -0.707f, -0.707f)
+		}
+	};
+
 	std::uint32_t mLightCount = 3;
-	Material mSkullMat;
+	
+	Material mSkullMat{
+		.Ambient = DirectX::XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f),
+		.Diffuse = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f),
+		.Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f)
+	};
 
 	// Define transformations from local spaces to world space.
-	DirectX::XMFLOAT4X4 mSkullWorld;
-
 	std::uint32_t mSkullIndexCount = 0;
+	DirectX::XMFLOAT4X4 mSkullWorld =
+		[] -> DirectX::XMFLOAT4X4
+		{
+			auto skullWorld = DirectX::XMFLOAT4X4{};
+			auto skullScale = DirectX::XMMATRIX{ DirectX::XMMatrixScaling(0.5f, 0.5f, 0.5f) };
+			auto skullOffset = DirectX::XMMATRIX{ DirectX::XMMatrixTranslation(0.0f, 1.0f, 0.0f) };
+			DirectX::XMStoreFloat4x4(&skullWorld, DirectX::XMMatrixMultiply(skullScale, skullOffset));
+			return skullWorld;
+		}();
 
-	Camera mCam;
+	Camera mCam = 
+		[] -> Camera
+		{ 
+			auto c = Camera{}; 
+			c.SetPosition(0.0f, 2.0f, -15.0f); 
+			return c; 
+		}();
 
 	Win32::POINT mLastMousePos{};
 };

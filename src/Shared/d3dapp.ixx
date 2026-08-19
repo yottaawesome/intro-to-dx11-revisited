@@ -18,6 +18,15 @@ public:
 		gd3dApp = this;
 	}
 
+	D3DApp(Win32::HINSTANCE hInstance, std::wstring mainWndCaption)
+		: mhAppInst(hInstance), mMainWndCaption(std::move(mainWndCaption))
+	{
+		// Get a pointer to the application object so we can forward 
+		// Windows messages to the object's window procedure through
+		// the global window procedure.
+		gd3dApp = this;
+	}
+
 	virtual ~D3DApp()
 	{
 		mRenderTargetView.reset();

@@ -2,6 +2,8 @@ export module shared:mathhelper;
 import std;
 import :win32;
 
+export using bool32 = std::uint32_t;
+
 export class MathHelper
 {
 public:

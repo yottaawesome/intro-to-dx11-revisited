@@ -50,5 +50,8 @@
   <Folder Name="/15 - Instancing and Frustum Culling/">
     <Project Path="15/InstancingAndCulling/InstancingAndCulling.vcxproj" Id="1457e9dc-fb52-4887-9622-e149daea4a20" />
   </Folder>
+  <Folder Name="/16 - Picking/">
+    <Project Path="16/Picking/Picking.vcxproj" Id="3ff3f37a-5aee-4778-9ded-e387cddc2b20" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
