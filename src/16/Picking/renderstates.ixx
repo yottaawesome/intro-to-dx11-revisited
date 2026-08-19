@@ -65,11 +65,12 @@ struct RenderStates
 		//
 		// LessEqualDSS
 		//
-		D3D11_DEPTH_STENCIL_DESC lessEqualDesc;
-		lessEqualDesc.DepthEnable = true;
-		lessEqualDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-		lessEqualDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-		lessEqualDesc.StencilEnable = false;
+		auto lessEqualDesc = D3D11::D3D11_DEPTH_STENCIL_DESC{
+			.DepthEnable = true,
+			.DepthWriteMask = D3D11::D3D11_DEPTH_WRITE_MASK::D3D11_DEPTH_WRITE_MASK_ALL,
+			.DepthFunc = D3D11::D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS_EQUAL,
+			.StencilEnable = false
+		};
 
 		HR(device->CreateDepthStencilState(&lessEqualDesc, &LessEqualDSS));
 	}

@@ -74,7 +74,7 @@ public:
 	void Init() override
 	{
 		D3DApp::Init();
-		mRenderStates = { md3dDevice.get() };
+		mRenderStates.emplace(md3dDevice.get());
 		BuildShaders();
 		BuildMeshGeometryBuffers();
 	}
@@ -137,14 +137,14 @@ public:
 
 		// Draw the Mesh.
 		if (Win32::GetAsyncKeyState('1') & 0x8000)
-			md3dImmediateContext->RSSetState(mRenderStates.WireframeRS.get());
+			md3dImmediateContext->RSSetState(mRenderStates->WireframeRS.get());
 
 		md3dImmediateContext->IASetVertexBuffers(0, 1, mMeshVB.GetAddressOf(), &stride, &offset);
 		md3dImmediateContext->IASetIndexBuffer(mMeshIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		DirectX::XMMATRIX world = DirectX::XMLoadFloat4x4(&mMeshWorld);
-		DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		DirectX::XMMATRIX worldViewProj = world * viewProj;
+		auto world = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mMeshWorld) };
+		auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
+		auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
 
 		// Set per object constants.
 		auto perObject = PerObjectConstants{
@@ -173,7 +173,7 @@ public:
 			// Change depth test from < to <= so that if we draw the same triangle twice, it will still pass
 			// the depth test.  This is because we redraw the picked triangle with a different material
 			// to highlight it.  
-			md3dImmediateContext->OMSetDepthStencilState(mRenderStates.LessEqualDSS.get(), 0);
+			md3dImmediateContext->OMSetDepthStencilState(mRenderStates->LessEqualDSS.get(), 0);
 
 			perObject.Material = mPickedTriangleMat;
 			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObject, 0, 0);
@@ -451,7 +451,7 @@ private:
 	ComPtr<D3D11::ID3D11PixelShader> mPixelShader;
 	ComPtr<D3D11::ID3D11Buffer> mPerFrame;
 	ComPtr<D3D11::ID3D11Buffer> mPerObject;
-	RenderStates mRenderStates;
+	std::optional<RenderStates> mRenderStates;
 
 	// Keep system memory copies of the Mesh geometry for picking.
 	std::vector<BasicVertex> mMeshVertices;
