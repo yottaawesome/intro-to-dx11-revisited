@@ -1,6 +1,6 @@
 #include "LightHelper.hlsli"
 
-cbuffer cbPerFrame
+cbuffer cbPerFrame : register(b0)
 {
     DirectionalLight gDirLights[3];
     float3 gEyePosW;
@@ -15,7 +15,7 @@ cbuffer cbPerFrame
     float4 gFogColor;
 };
 
-cbuffer cbPerObject
+cbuffer cbPerObject : register(b1)
 {
     row_major float4x4 gWorld;
     row_major float4x4 gWorldInvTranspose;

@@ -117,6 +117,7 @@ public:
 
 		BuildShapeGeometryBuffers();
 		BuildSkullGeometryBuffers();
+		BuildShaders();
 	}
 
 	void OnResize() override
@@ -160,157 +161,152 @@ public:
 
 		md3dImmediateContext->IASetInputLayout(mInputLayout.get());
 		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		md3dImmediateContext->VSSetShader(mVertexShader.get(), nullptr, 0);
+		md3dImmediateContext->PSSetShader(mPixelShader.get(), nullptr, 0);
 
 		auto stride = static_cast<std::uint32_t>(sizeof(BasicVertex));
 		auto offset = 0u;
 
 		mCam.UpdateViewMatrix();
 
-		DirectX::XMMATRIX view = mCam.View();
-		DirectX::XMMATRIX proj = mCam.Proj();
-		DirectX::XMMATRIX viewProj = mCam.ViewProj();
-
-		float blendFactor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+		auto view = DirectX::XMMATRIX{ mCam.View() };
+		auto proj = DirectX::XMMATRIX{ mCam.Proj() };
+		auto viewProj = DirectX::XMMATRIX{ mCam.ViewProj() };
 
 		// Set per frame constants.
-		//Effects::BasicFX->SetDirLights(mDirLights);
-		//Effects::BasicFX->SetEyePosW(mCam.GetPosition());
-		//Effects::BasicFX->SetCubeMap(mSky->CubeMapSRV());
+		auto perFrameConstants = PerFrameConstants{
+			.gDirLights = { mDirLights[0], mDirLights[1], mDirLights[2] },
+			.gEyePosW = mCam.GetPosition(),
+			.gFogStart = 15.0f,
+			.gFogRange = 175.0f,
+			.gLightCount = mLightCount,
+			.gUseTexture = true,
+			.gAlphaClip = false,
+			.gFogEnabled = false,
+			.gReflectionEnabled = false,
+			.gPadding = DirectX::XMFLOAT2{},
+			.gFogColor = DirectX::XMFLOAT4(DirectX::Colors::Silver),
+		};
+		md3dImmediateContext->UpdateSubresource(mPerFrame.get(), 0, nullptr, &perFrameConstants, 0, 0);
 
-		//// Figure out which technique to use.  Skull does not have texture coordinates,
-		//// so we need a separate technique for it, and not every surface is reflective,
-		//// so don't pay for cubemap look up.
+		//
+		// Draw the grid, cylinders, and box without any cubemap reflection.
+		// 
+		md3dImmediateContext->IASetVertexBuffers(0, 1, mShapesVB.GetAddressOf(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mShapesIB.get(), DXGI_FORMAT_R32_UINT, 0);
+		md3dImmediateContext->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
 
-		//ID3DX11EffectTechnique* activeTexTech = Effects::BasicFX->Light1TexTech;
-		//ID3DX11EffectTechnique* activeReflectTech = Effects::BasicFX->Light1TexReflectTech;
-		//ID3DX11EffectTechnique* activeSkullTech = Effects::BasicFX->Light1ReflectTech;
-		//switch (mLightCount)
-		//{
-		//case 1:
-		//	activeTexTech = Effects::BasicFX->Light1TexTech;
-		//	activeReflectTech = Effects::BasicFX->Light1TexReflectTech;
-		//	activeSkullTech = Effects::BasicFX->Light1ReflectTech;
-		//	break;
-		//case 2:
-		//	activeTexTech = Effects::BasicFX->Light2TexTech;
-		//	activeReflectTech = Effects::BasicFX->Light2TexReflectTech;
-		//	activeSkullTech = Effects::BasicFX->Light2ReflectTech;
-		//	break;
-		//case 3:
-		//	activeTexTech = Effects::BasicFX->Light3TexTech;
-		//	activeReflectTech = Effects::BasicFX->Light3TexReflectTech;
-		//	activeSkullTech = Effects::BasicFX->Light3ReflectTech;
-		//	break;
-		//}
+		// Draw the grid.
+		{
+			auto world = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mGridWorld) };
+			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
+			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
 
-		//XMMATRIX world;
-		//XMMATRIX worldInvTranspose;
-		//XMMATRIX worldViewProj;
+			auto perObjectConstants = PerObjectConstants{
+				.gMaterial = mGridMat,
+			};
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixScaling(6.0f, 8.0f, 1.0f));
+			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
+			auto srv = std::array{ mFloorTexSRV.get(), mSky->CubeMapSRV() };
+			md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+			auto perObjectConstantBuffersVS = std::array{ mPerObject.get() };
+			auto perObjectConstantBuffersPS = std::array{ mPerFrame.get(), mPerObject.get() };
+			md3dImmediateContext->VSSetConstantBuffers(1, static_cast<std::uint32_t>(perObjectConstantBuffersVS.size()), perObjectConstantBuffersVS.data());
+			md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(perObjectConstantBuffersPS.size()), perObjectConstantBuffersPS.data());
+			md3dImmediateContext->DrawIndexed(mGridIndexCount, mGridIndexOffset, mGridVertexOffset);
+		}
 
-		////
-		//// Draw the grid, cylinders, and box without any cubemap reflection.
-		//// 
-		//D3DX11_TECHNIQUE_DESC techDesc;
-		//activeTexTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mShapesVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mShapesIB, DXGI_FORMAT_R32_UINT, 0);
+		// Draw the box.
+		{
+			auto world = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mBoxWorld) };
+			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
+			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
 
-		//	// Draw the grid.
-		//	world = XMLoadFloat4x4(&mGridWorld);
-		//	worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	worldViewProj = world * view * proj;
+			auto perObjectConstants = PerObjectConstants{
+				.gMaterial = mBoxMat,
+			};
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
+			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
+			auto srv = std::array{ mStoneTexSRV.get(), mSky->CubeMapSRV() };
+			md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+			md3dImmediateContext->DrawIndexed(mBoxIndexCount, mBoxIndexOffset, mBoxVertexOffset);
+		}
 
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetTexTransform(XMMatrixScaling(6.0f, 8.0f, 1.0f));
-		//	Effects::BasicFX->SetMaterial(mGridMat);
-		//	Effects::BasicFX->SetDiffuseMap(mFloorTexSRV);
+		//	Draw the cylinders.
+		for (int i = 0; i < 10; ++i)
+		{
+			auto world = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mCylWorld[i]) };
+			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
+			auto worldViewProj = DirectX::XMMATRIX{ world * view * proj };
+			auto perObjectConstants = PerObjectConstants{
+				.gMaterial = mCylinderMat,
+			};
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
+			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
+			auto srv = std::array{ mBrickTexSRV.get(), mSky->CubeMapSRV() };
+			md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+			md3dImmediateContext->DrawIndexed(mCylinderIndexCount, mCylinderIndexOffset, mCylinderVertexOffset);
+		}
 
-		//	activeTexTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mGridIndexCount, mGridIndexOffset, mGridVertexOffset);
+		//
+		// Draw the spheres with cubemap reflection.
+		//
+		// Draw the spheres.
+		perFrameConstants.gReflectionEnabled = true;
+		md3dImmediateContext->UpdateSubresource(mPerFrame.get(), 0, nullptr, &perFrameConstants, 0, 0);
+		for (int i = 0; i < 10; ++i)
+		{
+			auto world = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mSphereWorld[i]) };
+			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
+			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
+			auto perObjectConstants = PerObjectConstants{
+				.gMaterial = mSphereMat,
+			};
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
+			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
+			auto srv = std::array{ mStoneTexSRV.get(), mSky->CubeMapSRV() };
+			md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+			md3dImmediateContext->DrawIndexed(mSphereIndexCount, mSphereIndexOffset, mSphereVertexOffset);
+		}
 
-		//	// Draw the box.
-		//	world = XMLoadFloat4x4(&mBoxWorld);
-		//	worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	worldViewProj = world * view * proj;
+		// Draw the skull.
+		{
+			perFrameConstants.gReflectionEnabled = true;
+			perFrameConstants.gUseTexture = false;
+			md3dImmediateContext->UpdateSubresource(mPerFrame.get(), 0, nullptr, &perFrameConstants, 0, 0);
 
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetTexTransform(XMMatrixIdentity());
-		//	Effects::BasicFX->SetMaterial(mBoxMat);
-		//	Effects::BasicFX->SetDiffuseMap(mStoneTexSRV);
+			md3dImmediateContext->IASetVertexBuffers(0, 1, mSkullVB.GetAddressOf(), &stride, &offset);
+			md3dImmediateContext->IASetIndexBuffer(mSkullIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		//	activeTexTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mBoxIndexCount, mBoxIndexOffset, mBoxVertexOffset);
+			auto world = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mSkullWorld) };
+			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
+			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
 
-		//	// Draw the cylinders.
-		//	for (int i = 0; i < 10; ++i)
-		//	{
-		//		world = XMLoadFloat4x4(&mCylWorld[i]);
-		//		worldInvTranspose = MathHelper::InverseTranspose(world);
-		//		worldViewProj = world * view * proj;
+			auto perObjectConstants = PerObjectConstants{
+				.gMaterial = mSkullMat,
+			};
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
+			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
 
-		//		Effects::BasicFX->SetWorld(world);
-		//		Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//		Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//		Effects::BasicFX->SetTexTransform(XMMatrixIdentity());
-		//		Effects::BasicFX->SetMaterial(mCylinderMat);
-		//		Effects::BasicFX->SetDiffuseMap(mBrickTexSRV);
-
-		//		activeTexTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//		md3dImmediateContext->DrawIndexed(mCylinderIndexCount, mCylinderIndexOffset, mCylinderVertexOffset);
-		//	}
-		//}
-
-		////
-		//// Draw the spheres with cubemap reflection.
-		////
-		//activeReflectTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	// Draw the spheres.
-		//	for (int i = 0; i < 10; ++i)
-		//	{
-		//		world = XMLoadFloat4x4(&mSphereWorld[i]);
-		//		worldInvTranspose = MathHelper::InverseTranspose(world);
-		//		worldViewProj = world * view * proj;
-
-		//		Effects::BasicFX->SetWorld(world);
-		//		Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//		Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//		Effects::BasicFX->SetTexTransform(XMMatrixIdentity());
-		//		Effects::BasicFX->SetMaterial(mSphereMat);
-		//		Effects::BasicFX->SetDiffuseMap(mStoneTexSRV);
-
-		//		activeReflectTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//		md3dImmediateContext->DrawIndexed(mSphereIndexCount, mSphereIndexOffset, mSphereVertexOffset);
-		//	}
-		//}
-
-		//activeSkullTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	// Draw the skull.
-
-		//	md3dImmediateContext->IASetVertexBuffers(0, 1, &mSkullVB, &stride, &offset);
-		//	md3dImmediateContext->IASetIndexBuffer(mSkullIB, DXGI_FORMAT_R32_UINT, 0);
-
-		//	world = XMLoadFloat4x4(&mSkullWorld);
-		//	worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	worldViewProj = world * view * proj;
-
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetMaterial(mSkullMat);
-
-		//	activeSkullTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
-		//}
+			auto nullSrv = std::array<D3D11::ID3D11ShaderResourceView*, 1>{ };
+			md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(nullSrv.size()), nullSrv.data());
+			md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
+		}
 
 		mSky->Draw(md3dImmediateContext.get(), mCam);
 
