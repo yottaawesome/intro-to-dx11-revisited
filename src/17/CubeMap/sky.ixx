@@ -45,6 +45,7 @@ public:
 		dc->UpdateSubresource(mPerFrame.get(), 0, nullptr, &perFrameConstants, 0, 0);
 		dc->PSSetShaderResources(0, 1, mCubeMapSRV.GetAddressOf());
 		dc->PSSetConstantBuffers(0, 1, mPerFrame.GetAddressOf());
+		dc->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
 
 		auto stride = static_cast<std::uint32_t>(sizeof(DirectX::XMFLOAT3));
 		auto offset = 0u;
@@ -59,11 +60,11 @@ private:
 	void BuildShaders(D3D11::ID3D11Device* device)
 	{
 		auto vertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		HR(D3D::D3DReadFileToBlob(L"Shaders/vs.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
+		HR(D3D::D3DReadFileToBlob(L"Shaders/SkyVS.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
 		auto hr = device->CreateVertexShader(vertexShaderBytecode->GetBufferPointer(), vertexShaderBytecode->GetBufferSize(), 0, &mVertexShader);
 		HR(hr, "Failed to create vertex shader.");
 		auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-		HR(D3D::D3DReadFileToBlob(L"Shaders/ps.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
+		HR(D3D::D3DReadFileToBlob(L"Shaders/SkyPS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
 		HR(device->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mPixelShader), "Failed to create pixel shader.");
 		BuildInputLayout(device, vertexShaderBytecode.get());
 
@@ -77,6 +78,20 @@ private:
 			.StructureByteStride = 0,
 		};
 		HR(device->CreateBuffer(&perFrameCbd, 0, &mPerFrame), "Failed to create constant buffer.");
+
+		// samplers
+		auto samplerDesc = D3D11::D3D11_SAMPLER_DESC{
+			.Filter = D3D11::D3D11_FILTER::D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR,
+			.AddressU = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressV = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressW = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
+			.MipLODBias = 0.0f,
+			.MaxAnisotropy = 4,
+			.ComparisonFunc = D3D11::D3D11_COMPARISON_FUNC::D3D11_COMPARISON_NEVER,
+			.MinLOD = 0.0f,
+			.MaxLOD = std::numeric_limits<float>::max(),
+		};
+		HR(device->CreateSamplerState(&samplerDesc, &mSamplerState), "Failed to create sampler state.");
 	}
 
 	void BuildInputLayout(D3D11::ID3D11Device* device, D3D::ID3DBlob* vertexShaderBytecode)
@@ -144,5 +159,6 @@ private:
 	ComPtr<D3D11::ID3D11InputLayout> mInputLayout;
 	ComPtr<D3D11::ID3D11ShaderResourceView> mCubeMapSRV;
 	ComPtr<D3D11::ID3D11Buffer> mPerFrame;
+	ComPtr<D3D11::ID3D11SamplerState> mSamplerState;
 	std::uint32_t mIndexCount;
 };
