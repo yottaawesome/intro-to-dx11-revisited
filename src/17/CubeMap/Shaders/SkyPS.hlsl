@@ -9,12 +9,7 @@
 // Nonnumeric values cannot be added to a cbuffer.
 TextureCube gCubeMap;
 
-SamplerState samTriLinearSam
-{
-    Filter = MIN_MAG_MIP_LINEAR;
-    AddressU = Wrap;
-    AddressV = Wrap;
-};
+SamplerState samTriLinearSam : register(s0);
 
 float4 main(VertexOut pin) : SV_Target
 {
