@@ -23,6 +23,7 @@ public:
 		HR(DirectX::CreateDDSTextureFromFile(device, cubemapFilename.c_str(), nullptr, &mCubeMapSRV));
 		BuildGeometryBuffers(device, skySphereRadius);
 		BuildShaders(device);
+		BuildRenderStates(device);
 	}
 
 	auto CubeMapSRV() -> D3D11::ID3D11ShaderResourceView*
@@ -44,8 +45,16 @@ public:
 		DirectX::XMStoreFloat4x4(&perFrameConstants.WorldViewProj, WVP);
 		dc->UpdateSubresource(mPerFrame.get(), 0, nullptr, &perFrameConstants, 0, 0);
 		dc->PSSetShaderResources(0, 1, mCubeMapSRV.GetAddressOf());
-		dc->PSSetConstantBuffers(0, 1, mPerFrame.GetAddressOf());
+		dc->VSSetConstantBuffers(0, 1, mPerFrame.GetAddressOf());
 		dc->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
+
+		auto previousRasterizerState = ComPtr<D3D11::ID3D11RasterizerState>{};
+		dc->RSGetState(&previousRasterizerState);
+		auto previousDepthStencilState = ComPtr<D3D11::ID3D11DepthStencilState>{};
+		auto previousStencilRef = 0u;
+		dc->OMGetDepthStencilState(&previousDepthStencilState, &previousStencilRef);
+		dc->RSSetState(mNoCullRS.get());
+		dc->OMSetDepthStencilState(mLessEqualDSS.get(), 0);
 
 		auto stride = static_cast<std::uint32_t>(sizeof(DirectX::XMFLOAT3));
 		auto offset = 0u;
@@ -54,9 +63,31 @@ public:
 		dc->IASetInputLayout(mInputLayout.get()); 
 		dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		dc->DrawIndexed(mIndexCount, 0, 0);
+
+		dc->RSSetState(previousRasterizerState.get());
+		dc->OMSetDepthStencilState(previousDepthStencilState.get(), previousStencilRef);
 	}
 
 private:
+	void BuildRenderStates(D3D11::ID3D11Device* device)
+	{
+		auto rasterizerDesc = D3D11::D3D11_RASTERIZER_DESC{
+			.FillMode = D3D11::D3D11_FILL_MODE::D3D11_FILL_SOLID,
+			.CullMode = D3D11::D3D11_CULL_MODE::D3D11_CULL_NONE,
+			.FrontCounterClockwise = false,
+			.DepthClipEnable = true
+		};
+		HR(device->CreateRasterizerState(&rasterizerDesc, &mNoCullRS), "Failed to create sky rasterizer state.");
+
+		auto depthStencilDesc = D3D11::D3D11_DEPTH_STENCIL_DESC{
+			.DepthEnable = true,
+			.DepthWriteMask = D3D11::D3D11_DEPTH_WRITE_MASK::D3D11_DEPTH_WRITE_MASK_ALL,
+			.DepthFunc = D3D11::D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS_EQUAL,
+			.StencilEnable = false
+		};
+		HR(device->CreateDepthStencilState(&depthStencilDesc, &mLessEqualDSS), "Failed to create sky depth-stencil state.");
+	}
+
 	void BuildShaders(D3D11::ID3D11Device* device)
 	{
 		auto vertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
@@ -81,7 +112,7 @@ private:
 
 		// samplers
 		auto samplerDesc = D3D11::D3D11_SAMPLER_DESC{
-			.Filter = D3D11::D3D11_FILTER::D3D11_FILTER_COMPARISON_MIN_MAG_MIP_LINEAR,
+			.Filter = D3D11::D3D11_FILTER::D3D11_FILTER_MIN_MAG_MIP_LINEAR,
 			.AddressU = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
 			.AddressV = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
 			.AddressW = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
@@ -160,5 +191,7 @@ private:
 	ComPtr<D3D11::ID3D11ShaderResourceView> mCubeMapSRV;
 	ComPtr<D3D11::ID3D11Buffer> mPerFrame;
 	ComPtr<D3D11::ID3D11SamplerState> mSamplerState;
+	ComPtr<D3D11::ID3D11RasterizerState> mNoCullRS;
+	ComPtr<D3D11::ID3D11DepthStencilState> mLessEqualDSS;
 	std::uint32_t mIndexCount;
 };
