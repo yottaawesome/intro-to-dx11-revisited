@@ -8,6 +8,10 @@ Revisiting and updating the source code of [Frank D. Luna's](https://www.d3dcode
 
 While it's true Microsoft is no longer actively developing DirectX 11, many games are still written in it, and Microsoft won't be deprecating DX11 anytime soon. Being a higher level API, learning DX11 allows you to learn the core concepts of graphics rendering without worrying about the low level bookkeeping that's forced on you in lower level APIs like DirectX 12 and Vulkan. This is particularly useful if you're a novice to graphics programming (more experienced developers coming from other APIs like Vulkan and Metal can probably just skip straight to DX12).
 
+## Building and running
+
+You'll need Visual Studio 2026 with the C++ desktop development and C++ game development workloads installed. `vcpkg` is used to manage dependencies to avoid packaging them in the repo. Note that I have set the projects to use the MSVC Preview Build tools to catch compiler bugs earlier, but this is not strictly necessary: you can disable the use of the MSVC preview tools in the project properties if you do not wish to install them.
+
 ## Status
 
 The effort is ongoing. The following projects are functional.
