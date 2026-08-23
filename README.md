@@ -38,6 +38,7 @@ The effort is ongoing. The following projects are functional.
 * [14/Camera](./src/14/Camera)
 * [15/InstancingAndCulling](./src/15/InstancingAndCulling)
 * [16/Picking](./src/16/Picking)
+* [17/CubeMap](./src/17/CubeMap)
 
 ## Running log of changes
 
