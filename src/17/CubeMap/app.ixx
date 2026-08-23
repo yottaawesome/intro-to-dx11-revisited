@@ -9,6 +9,7 @@ struct BasicVertex
 	DirectX::XMFLOAT3 Normal;
 	DirectX::XMFLOAT2 Tex;
 };
+static_assert(sizeof(BasicVertex) == 32);
 
 struct PerFrameConstants
 {
@@ -24,6 +25,7 @@ struct PerFrameConstants
 	DirectX::XMFLOAT2 gPadding;
 	DirectX::XMFLOAT4 gFogColor;
 };
+static_assert(sizeof(PerFrameConstants) == 256);
 
 struct PerObjectConstants
 {
@@ -33,6 +35,7 @@ struct PerObjectConstants
 	DirectX::XMFLOAT4X4 gTexTransform;
 	Material gMaterial;
 };
+static_assert(sizeof(PerObjectConstants) == 320);
 
 export class CubeMapApp : public D3DApp
 {
@@ -162,6 +165,7 @@ public:
 		md3dImmediateContext->IASetInputLayout(mInputLayout.get());
 		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		md3dImmediateContext->VSSetShader(mVertexShader.get(), nullptr, 0);
+		md3dImmediateContext->GSSetShader(nullptr, nullptr, 0);
 		md3dImmediateContext->PSSetShader(mPixelShader.get(), nullptr, 0);
 
 		auto stride = static_cast<std::uint32_t>(sizeof(BasicVertex));
@@ -195,6 +199,12 @@ public:
 		md3dImmediateContext->IASetVertexBuffers(0, 1, mShapesVB.GetAddressOf(), &stride, &offset);
 		md3dImmediateContext->IASetIndexBuffer(mShapesIB.get(), DXGI_FORMAT_R32_UINT, 0);
 		md3dImmediateContext->PSSetSamplers(0, 1, mSamplerState.GetAddressOf());
+		auto constantBuffersVS = std::array{ mPerObject.get() };
+		auto constantBuffersPS = std::array{ mPerFrame.get(), mPerObject.get() };
+		md3dImmediateContext->VSSetConstantBuffers(
+			1, static_cast<std::uint32_t>(constantBuffersVS.size()), constantBuffersVS.data());
+		md3dImmediateContext->PSSetConstantBuffers(
+			0, static_cast<std::uint32_t>(constantBuffersPS.size()), constantBuffersPS.data());
 
 		// Draw the grid.
 		{
@@ -212,10 +222,6 @@ public:
 			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
 			auto srv = std::array{ mFloorTexSRV.get(), mSky->CubeMapSRV() };
 			md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
-			auto perObjectConstantBuffersVS = std::array{ mPerObject.get() };
-			auto perObjectConstantBuffersPS = std::array{ mPerFrame.get(), mPerObject.get() };
-			md3dImmediateContext->VSSetConstantBuffers(1, static_cast<std::uint32_t>(perObjectConstantBuffersVS.size()), perObjectConstantBuffersVS.data());
-			md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(perObjectConstantBuffersPS.size()), perObjectConstantBuffersPS.data());
 			md3dImmediateContext->DrawIndexed(mGridIndexCount, mGridIndexOffset, mGridVertexOffset);
 		}
 
@@ -303,8 +309,8 @@ public:
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
 			md3dImmediateContext->UpdateSubresource(mPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
 
-			auto nullSrv = std::array<D3D11::ID3D11ShaderResourceView*, 1>{ };
-			md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(nullSrv.size()), nullSrv.data());
+			auto srv = std::array<D3D11::ID3D11ShaderResourceView*, 2>{ nullptr, mSky->CubeMapSRV() };
+			md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
 			md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
 		}
 
@@ -603,8 +609,6 @@ private:
 	ComPtr<D3D11::ID3D11Buffer> mShapesIB;
 	ComPtr<D3D11::ID3D11Buffer> mSkullVB;
 	ComPtr<D3D11::ID3D11Buffer> mSkullIB;
-	ComPtr<D3D11::ID3D11Buffer> mSkySphereVB;
-	ComPtr<D3D11::ID3D11Buffer> mSkySphereIB;
 	ComPtr<D3D11::ID3D11InputLayout> mInputLayout;
 	ComPtr<D3D11::ID3D11VertexShader> mVertexShader;
 	ComPtr<D3D11::ID3D11PixelShader> mPixelShader;

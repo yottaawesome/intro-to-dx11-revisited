@@ -14,6 +14,7 @@ public:
 	{
 		DirectX::XMFLOAT4X4 WorldViewProj;
 	};
+	static_assert(sizeof(PerFrameConstants) == 64);
 
 	Sky(const Sky& rhs) = delete;
 	auto operator=(const Sky& rhs) -> Sky& = delete;
@@ -39,6 +40,7 @@ public:
 		auto WVP = DirectX::XMMATRIX{DirectX::XMMatrixMultiply(T, camera.ViewProj())};
 
 		dc->VSSetShader(mVertexShader.get(), nullptr, 0);
+		dc->GSSetShader(nullptr, nullptr, 0);
 		dc->PSSetShader(mPixelShader.get(), nullptr, 0);
 
 		auto perFrameConstants = PerFrameConstants{};

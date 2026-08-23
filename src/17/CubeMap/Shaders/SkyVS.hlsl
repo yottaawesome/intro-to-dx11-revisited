@@ -6,7 +6,7 @@
 
 #include "SkyCommon.hlsli"
 
-cbuffer cbPerFrame
+cbuffer cbPerFrame : register(b0)
 {
     row_major float4x4 gWorldViewProj;
 };

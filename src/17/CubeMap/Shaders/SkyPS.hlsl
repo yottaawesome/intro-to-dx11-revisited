@@ -7,7 +7,7 @@
 #include "SkyCommon.hlsli"
 
 // Nonnumeric values cannot be added to a cbuffer.
-TextureCube gCubeMap;
+TextureCube gCubeMap : register(t0);
 
 SamplerState samTriLinearSam : register(s0);
 

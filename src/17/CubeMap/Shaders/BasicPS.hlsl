@@ -7,8 +7,8 @@
 #include "BasicCommon.hlsli"
 
 // Nonnumeric values cannot be added to a cbuffer.
-Texture2D gDiffuseMap;
-TextureCube gCubeMap;
+Texture2D gDiffuseMap : register(t0);
+TextureCube gCubeMap : register(t1);
 
 SamplerState samAnisotropic : register(s0);
 
@@ -56,7 +56,7 @@ float4 main(VertexOut pin) : SV_Target
 
 		// Sum the light contribution from each light source.  
 		[unroll]
-        for (int i = 0; i < gLightCount; ++i)
+        for (uint i = 0; i < gLightCount; ++i)
         {
             float4 A, D, S;
             ComputeDirectionalLight(gMaterial, gDirLights[i], pin.NormalW, toEye,
