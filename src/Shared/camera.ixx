@@ -7,9 +7,38 @@ import :mathhelper;
 export class Camera
 {
 public:
+	struct Position
+	{
+		float x = 0.0f;
+		float y = 0.0f;
+		float z = 0.0f;
+	};
+	struct Lens
+	{
+		float fovY = 0.0f;
+		float aspect = 0.0f;
+		float zn = 0.0f;
+		float zf = 0.0f;
+	};
 	Camera()
 	{
 		SetLens(0.25f * MathHelper::Pi, 1.0f, 1.0f, 1000.0f);
+	}
+
+	Camera(Position pos)
+	{
+		SetPosition(pos.x, pos.y, pos.z);
+	}
+
+	Camera(Lens lens)
+	{
+		SetLens(lens.fovY, lens.aspect, lens.zn, lens.zf);
+	}
+
+	Camera(Position pos, Lens lens)
+	{
+		SetPosition(pos.x, pos.y, pos.z);
+		SetLens(lens.fovY, lens.aspect, lens.zn, lens.zf);
 	}
 
 	// Get/Set world camera position.

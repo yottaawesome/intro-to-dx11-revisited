@@ -43,68 +43,13 @@ public:
 	CubeMapApp(Win32::HINSTANCE hInstance)
 		: D3DApp{ hInstance, L"CubeMap Demo" }
 	{
-		mCam.SetPosition(0.0f, 2.0f, -15.0f);
-
-		DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
-		DirectX::XMStoreFloat4x4(&mGridWorld, I);
-
-		DirectX::XMMATRIX boxScale = DirectX::XMMatrixScaling(3.0f, 1.0f, 3.0f);
-		DirectX::XMMATRIX boxOffset = DirectX::XMMatrixTranslation(0.0f, 0.5f, 0.0f);
-		DirectX::XMStoreFloat4x4(&mBoxWorld, DirectX::XMMatrixMultiply(boxScale, boxOffset));
-
-		DirectX::XMMATRIX skullScale = DirectX::XMMatrixScaling(0.5f, 0.5f, 0.5f);
-		DirectX::XMMATRIX skullOffset = DirectX::XMMatrixTranslation(0.0f, 1.0f, 0.0f);
-		DirectX::XMStoreFloat4x4(&mSkullWorld, DirectX::XMMatrixMultiply(skullScale, skullOffset));
-
-		for (int i = 0; i < 5; ++i)
+		for (auto i = 0u; i < 5; ++i)
 		{
 			DirectX::XMStoreFloat4x4(&mCylWorld[i * 2 + 0], DirectX::XMMatrixTranslation(-5.0f, 1.5f, -10.0f + i * 5.0f));
 			DirectX::XMStoreFloat4x4(&mCylWorld[i * 2 + 1], DirectX::XMMatrixTranslation(+5.0f, 1.5f, -10.0f + i * 5.0f));
-
 			DirectX::XMStoreFloat4x4(&mSphereWorld[i * 2 + 0], DirectX::XMMatrixTranslation(-5.0f, 3.5f, -10.0f + i * 5.0f));
 			DirectX::XMStoreFloat4x4(&mSphereWorld[i * 2 + 1], DirectX::XMMatrixTranslation(+5.0f, 3.5f, -10.0f + i * 5.0f));
 		}
-
-		mDirLights[0].Ambient = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-		mDirLights[0].Diffuse = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-		mDirLights[0].Specular = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-		mDirLights[0].Direction = DirectX::XMFLOAT3(0.57735f, -0.57735f, 0.57735f);
-
-		mDirLights[1].Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-		mDirLights[1].Diffuse = DirectX::XMFLOAT4(0.20f, 0.20f, 0.20f, 1.0f);
-		mDirLights[1].Specular = DirectX::XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f);
-		mDirLights[1].Direction = DirectX::XMFLOAT3(-0.57735f, -0.57735f, 0.57735f);
-
-		mDirLights[2].Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-		mDirLights[2].Diffuse = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-		mDirLights[2].Specular = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-		mDirLights[2].Direction = DirectX::XMFLOAT3(0.0f, -0.707f, -0.707f);
-
-		mGridMat.Ambient = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-		mGridMat.Diffuse = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-		mGridMat.Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-		mGridMat.Reflect = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-
-		mCylinderMat.Ambient = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		mCylinderMat.Diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		mCylinderMat.Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-		mCylinderMat.Reflect = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-
-		mSphereMat.Ambient = DirectX::XMFLOAT4(0.2f, 0.3f, 0.4f, 1.0f);
-		mSphereMat.Diffuse = DirectX::XMFLOAT4(0.2f, 0.3f, 0.4f, 1.0f);
-		mSphereMat.Specular = DirectX::XMFLOAT4(0.9f, 0.9f, 0.9f, 16.0f);
-		mSphereMat.Reflect = DirectX::XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
-
-		mBoxMat.Ambient = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		mBoxMat.Diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		mBoxMat.Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-		mBoxMat.Reflect = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-
-		mSkullMat.Ambient = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-		mSkullMat.Diffuse = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-		mSkullMat.Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f);
-		mSkullMat.Reflect = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f);
-
 		Init();
 	}
 
@@ -159,8 +104,10 @@ public:
 
 	void DrawScene() override
 	{
-		md3dImmediateContext->ClearRenderTargetView(mRenderTargetView.get(), reinterpret_cast<const float*>(&DirectX::Colors::Silver));
-		md3dImmediateContext->ClearDepthStencilView(mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
+		md3dImmediateContext->ClearRenderTargetView(
+			mRenderTargetView.get(), reinterpret_cast<const float*>(&DirectX::Colors::Silver));
+		md3dImmediateContext->ClearDepthStencilView(
+			mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
 
 		md3dImmediateContext->IASetInputLayout(mInputLayout.get());
 		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -212,9 +159,7 @@ public:
 			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
 			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
 
-			auto perObjectConstants = PerObjectConstants{
-				.gMaterial = mGridMat,
-			};
+			auto perObjectConstants = PerObjectConstants{ .gMaterial = mGridMat, };
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
@@ -231,9 +176,7 @@ public:
 			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
 			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
 
-			auto perObjectConstants = PerObjectConstants{
-				.gMaterial = mBoxMat,
-			};
+			auto perObjectConstants = PerObjectConstants{ .gMaterial = mBoxMat, };
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
@@ -249,10 +192,8 @@ public:
 		{
 			auto world = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mCylWorld[i]) };
 			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
-			auto worldViewProj = DirectX::XMMATRIX{ world * view * proj };
-			auto perObjectConstants = PerObjectConstants{
-				.gMaterial = mCylinderMat,
-			};
+			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
+			auto perObjectConstants = PerObjectConstants{ .gMaterial = mCylinderMat, };
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
@@ -300,9 +241,7 @@ public:
 			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
 			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
 
-			auto perObjectConstants = PerObjectConstants{
-				.gMaterial = mSkullMat,
-			};
+			auto perObjectConstants = PerObjectConstants{ .gMaterial = mSkullMat, };
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
 			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
@@ -526,25 +465,27 @@ private:
 		}
 
 		// constant buffers basic32
-		auto perFrameCbd = D3D11::D3D11_BUFFER_DESC{
+		{
+			auto perFrameCbd = D3D11::D3D11_BUFFER_DESC{
 			.ByteWidth = sizeof(PerFrameConstants),
 			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
 			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
 			.CPUAccessFlags = 0,
 			.MiscFlags = 0,
 			.StructureByteStride = 0,
-		};
-		HR(md3dDevice->CreateBuffer(&perFrameCbd, 0, &mPerFrame), "Failed to create constant buffer.");
+			};
+			HR(md3dDevice->CreateBuffer(&perFrameCbd, 0, &mPerFrame), "Failed to create constant buffer.");
 
-		auto perObjectCbd = D3D11::D3D11_BUFFER_DESC{
-			.ByteWidth = sizeof(PerObjectConstants),
-			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
-			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
-			.CPUAccessFlags = 0,
-			.MiscFlags = 0,
-			.StructureByteStride = 0,
-		};
-		HR(md3dDevice->CreateBuffer(&perObjectCbd, 0, &mPerObject), "Failed to create constant buffer.");
+			auto perObjectCbd = D3D11::D3D11_BUFFER_DESC{
+				.ByteWidth = sizeof(PerObjectConstants),
+				.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
+				.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0,
+				.StructureByteStride = 0,
+			};
+			HR(md3dDevice->CreateBuffer(&perObjectCbd, 0, &mPerObject), "Failed to create constant buffer.");
+		}
 
 		// samplers
 		auto samplerDesc = D3D11::D3D11_SAMPLER_DESC{
@@ -620,39 +561,99 @@ private:
 	ComPtr<D3D11::ID3D11ShaderResourceView> mStoneTexSRV;
 	ComPtr<D3D11::ID3D11ShaderResourceView> mBrickTexSRV;
 
-	DirectionalLight mDirLights[3];
+	DirectionalLight mDirLights[3] = {
+		{
+			.Ambient = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f),
+			.Diffuse = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f),
+			.Specular = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f),
+			.Direction = DirectX::XMFLOAT3(0.57735f, -0.57735f, 0.57735f)
+		},
+		{
+			.Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f),
+			.Diffuse = DirectX::XMFLOAT4(0.20f, 0.20f, 0.20f, 1.0f),
+			.Specular = DirectX::XMFLOAT4(0.25f, 0.25f, 0.25f, 1.0f),
+			.Direction = DirectX::XMFLOAT3(-0.57735f, -0.57735f, 0.57735f)
+		},
+		{
+			.Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f),
+			.Diffuse = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f),
+			.Specular = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f),
+			.Direction = DirectX::XMFLOAT3(0.0f, -0.707f, -0.707f)
+		}
+	};
 	std::uint32_t mLightCount = 3;
-	Material mGridMat;
-	Material mBoxMat;
-	Material mCylinderMat;
-	Material mSphereMat;
-	Material mSkullMat;
+	Material mGridMat{
+		.Ambient = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f),
+		.Diffuse = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f),
+		.Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f),
+		.Reflect = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f)
+	};
+	Material mBoxMat{
+		.Ambient = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		.Diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		.Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f),
+		.Reflect = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f)
+	};
+	Material mCylinderMat{
+		.Ambient = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		.Diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		.Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f),
+		.Reflect = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f)
+	};
+	Material mSphereMat{
+		.Ambient = DirectX::XMFLOAT4(0.2f, 0.3f, 0.4f, 1.0f),
+		.Diffuse = DirectX::XMFLOAT4(0.2f, 0.3f, 0.4f, 1.0f),
+		.Specular = DirectX::XMFLOAT4(0.9f, 0.9f, 0.9f, 16.0f),
+		.Reflect = DirectX::XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f)
+	};
+	Material mSkullMat{ 
+		.Ambient = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f),
+		.Diffuse = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f),
+		.Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.8f, 16.0f),
+		.Reflect = DirectX::XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f)
+	};
 
 	// Define transformations from local spaces to world space.
 	DirectX::XMFLOAT4X4 mSphereWorld[10];
 	DirectX::XMFLOAT4X4 mCylWorld[10];
-	DirectX::XMFLOAT4X4 mBoxWorld;
-	DirectX::XMFLOAT4X4 mGridWorld;
-	DirectX::XMFLOAT4X4 mSkullWorld;
+	DirectX::XMFLOAT4X4 mBoxWorld = 
+		[] -> DirectX::XMFLOAT4X4
+		{
+			auto boxWorld = DirectX::XMFLOAT4X4{};
+			auto boxScale = DirectX::XMMATRIX{ DirectX::XMMatrixScaling(3.0f, 1.0f, 3.0f) };
+			auto boxOffset = DirectX::XMMATRIX{ DirectX::XMMatrixTranslation(0.0f, 0.5f, 0.0f) };
+			DirectX::XMStoreFloat4x4(&boxWorld, DirectX::XMMatrixMultiply(boxScale, boxOffset));
+			return boxWorld;
+		}();
+	DirectX::XMFLOAT4X4 mGridWorld = d3dHelper::Identity4x4;
+	DirectX::XMFLOAT4X4 mSkullWorld = 
+		[] -> DirectX::XMFLOAT4X4
+		{
+			auto skullWorld = DirectX::XMFLOAT4X4{};
+			auto skullScale = DirectX::XMMATRIX{ DirectX::XMMatrixScaling(0.5f, 0.5f, 0.5f) };
+			auto skullOffset = DirectX::XMMATRIX{ DirectX::XMMatrixTranslation(0.0f, 1.0f, 0.0f) };
+			DirectX::XMStoreFloat4x4(&skullWorld, DirectX::XMMatrixMultiply(skullScale, skullOffset));
+			return skullWorld;
+		}();
 
-	int mBoxVertexOffset;
-	int mGridVertexOffset;
-	int mSphereVertexOffset;
-	int mCylinderVertexOffset;
+	int mBoxVertexOffset = 0;
+	int mGridVertexOffset = 0;
+	int mSphereVertexOffset = 0;
+	int mCylinderVertexOffset = 0;
 
-	std::uint32_t mBoxIndexOffset;
-	std::uint32_t mGridIndexOffset;
-	std::uint32_t mSphereIndexOffset;
-	std::uint32_t mCylinderIndexOffset;
+	std::uint32_t mBoxIndexOffset = 0;
+	std::uint32_t mGridIndexOffset = 0;
+	std::uint32_t mSphereIndexOffset = 0;
+	std::uint32_t mCylinderIndexOffset = 0;
 
-	std::uint32_t mBoxIndexCount;
-	std::uint32_t mGridIndexCount;
-	std::uint32_t mSphereIndexCount;
-	std::uint32_t mCylinderIndexCount;
+	std::uint32_t mBoxIndexCount = 0;
+	std::uint32_t mGridIndexCount = 0;
+	std::uint32_t mSphereIndexCount = 0;
+	std::uint32_t mCylinderIndexCount = 0;
 
-	std::uint32_t mSkullIndexCount;
+	std::uint32_t mSkullIndexCount = 0;
 
-	Camera mCam;
+	Camera mCam = Camera::Position{ 0.0f, 2.0f, -15.0f };
 
 	Win32::POINT mLastMousePos{};
 };
