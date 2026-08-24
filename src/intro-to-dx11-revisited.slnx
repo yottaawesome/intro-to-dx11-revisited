@@ -57,5 +57,8 @@
     <Project Path="17/CubeMap/CubeMap.vcxproj" Id="c213b728-f2c0-4feb-a50b-652677e31edf" />
     <Project Path="17/DynamicCubeMap/DynamicCubeMap.vcxproj" Id="df1d14d7-1fbc-4621-8ce3-07db9c2b80c4" />
   </Folder>
+  <Folder Name="/18 - Normal and Displacement Mapping/">
+    <Project Path="18/NormalDisplacementMap/NormalDisplacementMap.vcxproj" Id="716011af-ae32-4ff5-a33d-a6886681b56b" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
