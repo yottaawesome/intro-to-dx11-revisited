@@ -140,6 +140,11 @@ export
 		Win32::MessageBoxW(0, msg.data(), L"Error", Win32::MbOK);
 	}
 
+	void Append(std::ranges::range auto&& to, std::ranges::range auto&&... from)
+	{
+		(std::ranges::copy(from, std::back_inserter(to)), ...);
+	}
+
 	//---------------------------------------------------------------------------------------
 	// Utility classes.
 	//---------------------------------------------------------------------------------------
