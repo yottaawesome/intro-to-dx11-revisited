@@ -23,9 +23,20 @@
     <None Include="vcpkg.json" />
     <None Include="Shaders\LightHelper.hlsli" />
     <None Include="Shaders\SkyCommon.hlsli" />
+    <None Include="Shaders\BasicCommon.hlsli" />
+    <None Include="Shaders\NormalMapCommon.hlsli" />
+    <None Include="Shaders\DisplacementMapCommon.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\SkyVS.hlsl" />
     <FxCompile Include="Shaders\SkyPS.hlsl" />
+    <FxCompile Include="Shaders\BasicPS.hlsl" />
+    <FxCompile Include="Shaders\BasicVS.hlsl" />
+    <FxCompile Include="Shaders\NormalMapVS.hlsl" />
+    <FxCompile Include="Shaders\NormalMapPS.hlsl" />
+    <FxCompile Include="Shaders\DisplacementMapVS.hlsl" />
+    <FxCompile Include="Shaders\DisplacementMapHS.hlsl" />
+    <FxCompile Include="Shaders\DisplacementMapDS.hlsl" />
+    <FxCompile Include="Shaders\DisplacementMapPS.hlsl" />
   </ItemGroup>
 </Project>
