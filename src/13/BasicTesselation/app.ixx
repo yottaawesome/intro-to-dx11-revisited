@@ -51,25 +51,24 @@ public:
 	{
 		D3DApp::OnResize();
 
-		DirectX::XMMATRIX P = DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+		auto P = DirectX::XMMATRIX{DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f)};
 		DirectX::XMStoreFloat4x4(&mProj, P);
 	}
 
 	void UpdateScene(float dt) override
 	{
 		// Convert Spherical to Cartesian coordinates.
-		float x = mRadius * std::sinf(mPhi) * std::cosf(mTheta);
-		float z = mRadius * std::sinf(mPhi) * std::sinf(mTheta);
-		float y = mRadius * std::cosf(mPhi);
+		auto x = mRadius * std::sinf(mPhi) * std::cosf(mTheta);
+		auto z = mRadius * std::sinf(mPhi) * std::sinf(mTheta);
+		auto y = mRadius * std::cosf(mPhi);
 
 		mEyePosW = DirectX::XMFLOAT3(x, y, z);
 
 		// Build the view matrix.
-		DirectX::XMVECTOR pos = DirectX::XMVectorSet(x, y, z, 1.0f);
-		DirectX::XMVECTOR target = DirectX::XMVectorZero();
-		DirectX::XMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-
-		DirectX::XMMATRIX V = DirectX::XMMatrixLookAtLH(pos, target, up);
+		auto pos = DirectX::XMVECTOR{ DirectX::XMVectorSet(x, y, z, 1.0f) };
+		auto target = DirectX::XMVECTOR{DirectX::XMVectorZero() };
+		auto up = DirectX::XMVECTOR{DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f) };
+		auto V = DirectX::XMMATRIX{DirectX::XMMatrixLookAtLH(pos, target, up) };
 		DirectX::XMStoreFloat4x4(&mView, V);
 	}
 
@@ -82,9 +81,9 @@ public:
 
 		auto blendFactor = std::array{ 0.0f, 0.0f, 0.0f, 0.0f };
 
-		DirectX::XMMATRIX view = DirectX::XMLoadFloat4x4(&mView);
-		DirectX::XMMATRIX proj = DirectX::XMLoadFloat4x4(&mProj);
-		DirectX::XMMATRIX viewProj = view * proj;
+		auto view = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mView)};
+		auto proj = DirectX::XMMATRIX{DirectX::XMLoadFloat4x4(&mProj)};
+		auto viewProj = DirectX::XMMATRIX{view * proj};
 
 		md3dImmediateContext->IASetInputLayout(mPos.get());
 		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST);
@@ -105,9 +104,9 @@ public:
 		md3dImmediateContext->IASetVertexBuffers(0, 1, mQuadPatchVB.GetAddressOf(), &stride, &offset);
 
 		// Set per object constants.
-		DirectX::XMMATRIX world = DirectX::XMMatrixIdentity();
-		DirectX::XMMATRIX worldInvTranspose = MathHelper::InverseTranspose(world);
-		DirectX::XMMATRIX worldViewProj = world * view * proj;
+		auto world = DirectX::XMMATRIX{DirectX::XMMatrixIdentity()};
+		auto worldInvTranspose = DirectX::XMMATRIX{MathHelper::InverseTranspose(world)};
+		auto worldViewProj = DirectX::XMMATRIX{world * view * proj};
 
 		auto perObjectConstants = cbPerObject{
 			.gWorld = DirectX::XMFLOAT4X4{},

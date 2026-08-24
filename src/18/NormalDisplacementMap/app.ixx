@@ -11,6 +11,22 @@ enum RenderOptions
 	RenderOptionsDisplacementMap = 2
 };
 
+struct BasicVertex
+{
+	DirectX::XMFLOAT3 Pos;
+	DirectX::XMFLOAT3 Normal;
+	DirectX::XMFLOAT2 Tex;
+};
+
+// Common to both the normal and displacement map shaders.
+struct NormalMappedVertex
+{
+	DirectX::XMFLOAT3 Position;
+	DirectX::XMFLOAT3 Normal;
+	DirectX::XMFLOAT2 Tex;
+	DirectX::XMFLOAT3 Tangent;
+};
+
 export class NormalDisplacementMapApp : public D3DApp
 {
 public:
@@ -21,13 +37,19 @@ public:
 	void UpdateScene(float dt) override;
 	void DrawScene() override;
 
-	void OnMouseDown(WPARAM btnState, int x, int y) override;
-	void OnMouseUp(WPARAM btnState, int x, int y) override;
-	void OnMouseMove(WPARAM btnState, int x, int y) override;
+	void OnMouseDown(Win32::WPARAM btnState, int x, int y) override;
+	void OnMouseUp(Win32::WPARAM btnState, int x, int y) override;
+	void OnMouseMove(Win32::WPARAM btnState, int x, int y) override;
 
 private:
 	void BuildShapeGeometryBuffers();
 	void BuildSkullGeometryBuffers();
+	void BuildShaders();
+	void BuildInputLayouts(
+		D3D::ID3DBlob* vsBytecode, 
+		D3D::ID3DBlob* normalMapVsBytecode, 
+		D3D::ID3DBlob* displacementMapVsBytecode
+	);
 
 private:
 	std::optional<Sky> mSky;
@@ -42,6 +64,19 @@ private:
 	ComPtr<D3D11::ID3D11ShaderResourceView> mBrickTexSRV;
 	ComPtr<D3D11::ID3D11ShaderResourceView> mStoneNormalTexSRV;
 	ComPtr<D3D11::ID3D11ShaderResourceView> mBrickNormalTexSRV;
+	ComPtr<D3D11::ID3D11InputLayout> mBasicVertexInputLayout;
+	ComPtr<D3D11::ID3D11InputLayout> mNormalMappedVertexInputLayout;
+
+	ComPtr<D3D11::ID3D11VertexShader> mBasicVertexShader;
+	ComPtr<D3D11::ID3D11PixelShader> mBasicPixelShader;
+
+	ComPtr<D3D11::ID3D11VertexShader> mNormalMapVertexShader;
+	ComPtr<D3D11::ID3D11PixelShader> mNormalMapPixelShader;
+
+	ComPtr<D3D11::ID3D11VertexShader> mDisplacementMapVertexShader;
+	ComPtr<D3D11::ID3D11HullShader> mDisplacementMapHullShader;
+	ComPtr<D3D11::ID3D11DomainShader> mDisplacementMapDomainShader;
+	ComPtr<D3D11::ID3D11PixelShader> mDisplacementMapPixelShader;
 
 	DirectionalLight mDirLights[3];
 	Material mGridMat;
