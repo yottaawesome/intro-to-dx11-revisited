@@ -393,7 +393,7 @@ private:
 			// Draw the center sphere.
 			auto world = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mCenterSphereWorld) };
 			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
-			auto worldViewProj = DirectX::XMMATRIX{ world * view * proj };
+			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
 			auto perObjectConstants = PerObjectConstants{
 				.gMaterial = mCenterSphereMat,
 			};
@@ -417,33 +417,31 @@ private:
 	void BuildCubeFaceCamera(float x, float y, float z)
 	{
 		// Generate the cube map about the given position.
-		DirectX::XMFLOAT3 center(x, y, z);
-		DirectX::XMFLOAT3 worldUp(0.0f, 1.0f, 0.0f);
+		auto center = DirectX::XMFLOAT3{x, y, z};
+		auto worldUp = DirectX::XMFLOAT3{0.0f, 1.0f, 0.0f};
 
 		// Look along each coordinate axis.
-		DirectX::XMFLOAT3 targets[6] =
-		{
-			DirectX::XMFLOAT3(x + 1.0f, y, z), // +X
-			DirectX::XMFLOAT3(x - 1.0f, y, z), // -X
-			DirectX::XMFLOAT3(x, y + 1.0f, z), // +Y
-			DirectX::XMFLOAT3(x, y - 1.0f, z), // -Y
-			DirectX::XMFLOAT3(x, y, z + 1.0f), // +Z
-			DirectX::XMFLOAT3(x, y, z - 1.0f)  // -Z
+		auto targets = std::array{
+			DirectX::XMFLOAT3{x + 1.0f, y, z}, // +X
+			DirectX::XMFLOAT3{x - 1.0f, y, z}, // -X
+			DirectX::XMFLOAT3{x, y + 1.0f, z}, // +Y
+			DirectX::XMFLOAT3{x, y - 1.0f, z}, // -Y
+			DirectX::XMFLOAT3{x, y, z + 1.0f}, // +Z
+			DirectX::XMFLOAT3{x, y, z - 1.0f}  // -Z
 		};
 
 		// Use world up vector (0,1,0) for all directions except +Y/-Y.  In these cases, we
 		// are looking down +Y or -Y, so we need a different "up" vector.
-		DirectX::XMFLOAT3 ups[6] =
-		{
-			DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),  // +X
-			DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),  // -X
-			DirectX::XMFLOAT3(0.0f, 0.0f, -1.0f), // +Y
-			DirectX::XMFLOAT3(0.0f, 0.0f, +1.0f), // -Y
-			DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f),	 // +Z
-			DirectX::XMFLOAT3(0.0f, 1.0f, 0.0f)	 // -Z
+		auto ups = std::array{
+			DirectX::XMFLOAT3{0.0f, 1.0f, 0.0f},  // +X
+			DirectX::XMFLOAT3{0.0f, 1.0f, 0.0f},  // -X
+			DirectX::XMFLOAT3{0.0f, 0.0f, -1.0f}, // +Y
+			DirectX::XMFLOAT3{0.0f, 0.0f, +1.0f}, // -Y
+			DirectX::XMFLOAT3{0.0f, 1.0f, 0.0f},	 // +Z
+			DirectX::XMFLOAT3{0.0f, 1.0f, 0.0f}	 // -Z
 		};
 
-		for (int i = 0; i < 6; ++i)
+		for (auto i = 0u; i < targets.size(); ++i)
 		{
 			mCubeMapCamera[i].LookAt(center, targets[i], ups[i]);
 			mCubeMapCamera[i].SetLens(0.5f * DirectX::Pi, 1.0f, 0.1f, 1000.0f);
