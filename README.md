@@ -39,6 +39,7 @@ The effort is ongoing. The following projects are functional.
 * [15/InstancingAndCulling](./src/15/InstancingAndCulling)
 * [16/Picking](./src/16/Picking)
 * [17/CubeMap](./src/17/CubeMap)
+* [17/DynamicCubeMap](./src/17/DynamicCubeMap)
 
 ## Running log of changes
 
