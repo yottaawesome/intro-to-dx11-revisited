@@ -145,6 +145,15 @@ export
 		(std::ranges::copy(from, std::back_inserter(to)), ...);
 	}
 
+	template<typename T>
+	auto MergeVectors(const std::vector<T>& first, auto&&...rest) -> std::vector<T>
+	{
+		static_assert((std::is_same_v<std::remove_cvref_t<decltype(rest)>, std::vector<T>> && ...), "All arguments must be of type std::vector<T>");
+		auto result = first;
+		(result.insert(result.end(), rest.begin(), rest.end()), ...);
+		return result;
+	}
+
 	//---------------------------------------------------------------------------------------
 	// Utility classes.
 	//---------------------------------------------------------------------------------------

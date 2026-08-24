@@ -629,8 +629,7 @@ private:
 		//
 		// Pack the indices of all the meshes into one index buffer.
 		//
-		auto indices = std::vector<std::uint32_t>{};
-		Append(indices, box.Indices, grid.Indices, sphere.Indices, cylinder.Indices);
+		auto indices = MergeVectors(box.Indices, grid.Indices, sphere.Indices, cylinder.Indices);
 
 		auto ibd = D3D11::D3D11_BUFFER_DESC{
 			.ByteWidth = static_cast<std::uint32_t>(sizeof(std::uint32_t) * totalIndexCount),
