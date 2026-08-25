@@ -60,5 +60,8 @@
   <Folder Name="/18 - Normal and Displacement Mapping/">
     <Project Path="18/NormalDisplacementMap/NormalDisplacementMap.vcxproj" Id="716011af-ae32-4ff5-a33d-a6886681b56b" />
   </Folder>
+  <Folder Name="/19 - Terrain Rendering/">
+    <Project Path="19/Terrain/Terrain.vcxproj" Id="a25527eb-b557-4a32-a747-412b328e63a1" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
