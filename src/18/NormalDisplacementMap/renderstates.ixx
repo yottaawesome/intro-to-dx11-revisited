@@ -4,7 +4,6 @@ import shared;
 
 struct RenderStates
 {
-	RenderStates() = default;
 	RenderStates(D3D11::ID3D11Device* device)
 	{
 		//

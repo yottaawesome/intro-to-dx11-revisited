@@ -46,7 +46,7 @@ namespace Basic
 	};
 }
 
-namespace NormalDisplacement
+namespace Normal
 {
 	struct Vertex
 	{
@@ -80,6 +80,51 @@ namespace NormalDisplacement
 		DirectX::XMFLOAT4X4 gTexTransform;
 		Material gMaterial;
 	};
+}
+
+namespace NormalDisplacement
+{
+	struct Vertex
+	{
+		DirectX::XMFLOAT3 Pos;
+		DirectX::XMFLOAT3 Normal;
+		DirectX::XMFLOAT2 Tex;
+		DirectX::XMFLOAT3 Tangent;
+	};
+
+	struct PerFrameConstants
+	{
+		DirectionalLight gDirLights[3];
+		DirectX::XMFLOAT3 gEyePosW;
+		float gFogStart;
+		float gFogRange;
+		std::uint32_t gLightCount;
+		bool32 gUseTexture;
+		bool32 gAlphaClip;
+		bool32 gFogEnabled;
+		bool32 gReflectionEnabled;
+		DirectX::XMFLOAT2 gPadding;
+		DirectX::XMFLOAT4 gFogColor;
+		float gHeightScale;
+		float gMaxTessDistance;
+		float gMinTessDistance;
+		float gMinTessFactor;
+		float gMaxTessFactor;
+		DirectX::XMFLOAT3 gTessellationPadding;
+	};
+
+	struct PerObjectConstants
+	{
+		DirectX::XMFLOAT4X4 gWorld;
+		DirectX::XMFLOAT4X4 gWorldInvTranspose;
+		DirectX::XMFLOAT4X4 gViewProj;
+		DirectX::XMFLOAT4X4 gWorldViewProj;
+		DirectX::XMFLOAT4X4 gTexTransform;
+		Material gMaterial;
+	};
+
+	static_assert(sizeof(PerFrameConstants) == 288);
+	static_assert(sizeof(PerObjectConstants) == 384);
 }
 
 
@@ -168,6 +213,7 @@ public:
 	{
 		D3DApp::Init();
 
+		mRenderStates.emplace(md3dDevice.get());
 		mSky.emplace(md3dDevice.get(), L"Textures/snowcube1024.dds", 5000.0f);
 		
 		HR(DirectX::CreateDDSTextureFromFile(md3dDevice.get(),
@@ -233,247 +279,388 @@ public:
 		DirectX::XMMATRIX viewProj = mCam.ViewProj();
 
 		// Set per frame constants.
-		//Effects::BasicFX->SetDirLights(mDirLights);
-		//Effects::BasicFX->SetEyePosW(mCam.GetPosition());
-		//Effects::BasicFX->SetCubeMap(mSky->CubeMapSRV());
+		auto basicPerFrameConstants = Basic::PerFrameConstants{
+			.gDirLights = { mDirLights[0], mDirLights[1], mDirLights[2] },
+			.gEyePosW = mCam.GetPosition(),
+			.gFogStart = 15.0f,
+			.gFogRange = 175.0f,
+			.gLightCount = mLightCount,
+			.gUseTexture = true,
+			.gAlphaClip = false,
+			.gFogEnabled = false,
+			.gReflectionEnabled = false,
+			.gPadding = DirectX::XMFLOAT2{ 0.0f, 0.0f },
+			.gFogColor = DirectX::XMFLOAT4{ 0.7f, 0.7f, 0.7f, 1.0f }
+		};
+		md3dImmediateContext->UpdateSubresource(mBasicVertexPerFrame.get(), 0, nullptr, &basicPerFrameConstants, 0, 0);
 
-		//Effects::NormalMapFX->SetDirLights(mDirLights);
-		//Effects::NormalMapFX->SetEyePosW(mCam.GetPosition());
-		//Effects::NormalMapFX->SetCubeMap(mSky->CubeMapSRV());
+		auto normalPerFrameConstants = Normal::PerFrameConstants{
+			.gDirLights = { mDirLights[0], mDirLights[1], mDirLights[2] },
+			.gEyePosW = mCam.GetPosition(),
+			.gFogStart = 15.0f,
+			.gFogRange = 175.0f,
+			.gLightCount = mLightCount,
+			.gUseTexture = true,
+			.gAlphaClip = false,
+			.gFogEnabled = false,
+			.gReflectionEnabled = false,
+			.gPadding = DirectX::XMFLOAT2{ 0.0f, 0.0f },
+			.gFogColor = DirectX::XMFLOAT4{ 0.7f, 0.7f, 0.7f, 1.0f }
+		};
+		md3dImmediateContext->UpdateSubresource(mNormalMapPerFrameCB.get(), 0, nullptr, &normalPerFrameConstants, 0, 0);
 
-		//Effects::DisplacementMapFX->SetDirLights(mDirLights);
-		//Effects::DisplacementMapFX->SetEyePosW(mCam.GetPosition());
-		//Effects::DisplacementMapFX->SetCubeMap(mSky->CubeMapSRV());
+		// These properties could be set per object if needed.
+		auto displacementPerFrameConstants = NormalDisplacement::PerFrameConstants{
+			.gDirLights = { mDirLights[0], mDirLights[1], mDirLights[2] },
+			.gEyePosW = mCam.GetPosition(),
+			.gFogStart = 15.0f,
+			.gFogRange = 175.0f,
+			.gLightCount = mLightCount,
+			.gUseTexture = true,
+			.gAlphaClip = false,
+			.gFogEnabled = false,
+			.gReflectionEnabled = false,
+			.gPadding = DirectX::XMFLOAT2{ 0.0f, 0.0f },
+			.gFogColor = DirectX::XMFLOAT4{ 0.7f, 0.7f, 0.7f, 1.0f },
+			.gHeightScale = 0.07f,
+			.gMaxTessDistance = 1.0f,
+			.gMinTessDistance = 25.0f,
+			.gMinTessFactor = 1.0f,
+			.gMaxTessFactor = 5.0f,
+			.gTessellationPadding = DirectX::XMFLOAT3{ 0.0f, 0.0f, 0.0f }
+		};
+		md3dImmediateContext->UpdateSubresource(mDisplacementMapPerFrameCB.get(), 0, nullptr, &displacementPerFrameConstants, 0, 0);
 
-		//// These properties could be set per object if needed.
-		//Effects::DisplacementMapFX->SetHeightScale(0.07f);
-		//Effects::DisplacementMapFX->SetMaxTessDistance(1.0f);
-		//Effects::DisplacementMapFX->SetMinTessDistance(25.0f);
-		//Effects::DisplacementMapFX->SetMinTessFactor(1.0f);
-		//Effects::DisplacementMapFX->SetMaxTessFactor(5.0f);
+		// Figure out which technique to use for different geometry.
+		switch (mRenderOptions)
+		{
+		case RenderOptionsBasic:
+			md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			md3dImmediateContext->IASetInputLayout(mBasicVertexInputLayout.get());
+			md3dImmediateContext->VSSetShader(mBasicVertexShader.get(), nullptr, 0);
+			md3dImmediateContext->PSSetShader(mBasicPixelShader.get(), nullptr, 0);
+			md3dImmediateContext->HSSetShader(nullptr, nullptr, 0);
+			md3dImmediateContext->DSSetShader(nullptr, nullptr, 0);
+			break;
+		case RenderOptionsNormalMap:
+			md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			md3dImmediateContext->IASetInputLayout(mNormalMappedVertexInputLayout.get());
+			md3dImmediateContext->VSSetShader(mNormalMapVertexShader.get(), nullptr, 0);
+			md3dImmediateContext->PSSetShader(mNormalMapPixelShader.get(), nullptr, 0);
+			md3dImmediateContext->HSSetShader(nullptr, nullptr, 0);
+			md3dImmediateContext->DSSetShader(nullptr, nullptr, 0);
+			break;
+		case RenderOptionsDisplacementMap:
+			md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
+			md3dImmediateContext->IASetInputLayout(mDisplacementMappedVertexInputLayout.get());
+			md3dImmediateContext->VSSetShader(mDisplacementMapVertexShader.get(), nullptr, 0);
+			md3dImmediateContext->PSSetShader(mDisplacementMapPixelShader.get(), nullptr, 0);
+			md3dImmediateContext->HSSetShader(mDisplacementMapHullShader.get(), nullptr, 0);
+			md3dImmediateContext->DSSetShader(mDisplacementMapDomainShader.get(), nullptr, 0);
+			break;
+		}
 
-		//// Figure out which technique to use for different geometry.
+		//
+		// Draw the grid, cylinders, and box without any cubemap reflection.
+		// 
 
-		//ID3DX11EffectTechnique* activeTech = Effects::DisplacementMapFX->Light3TexTech;
-		//ID3DX11EffectTechnique* activeSphereTech = Effects::BasicFX->Light3ReflectTech;
-		//ID3DX11EffectTechnique* activeSkullTech = Effects::BasicFX->Light3ReflectTech;
-		//switch (mRenderOptions)
-		//{
-		//case RenderOptionsBasic:
-		//	activeTech = Effects::BasicFX->Light3TexTech;
-		//	md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		//	break;
-		//case RenderOptionsNormalMap:
-		//	activeTech = Effects::NormalMapFX->Light3TexTech;
-		//	md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		//	break;
-		//case RenderOptionsDisplacementMap:
-		//	activeTech = Effects::DisplacementMapFX->Light3TexTech;
-		//	md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
-		//	break;
-		//}
+		auto stride = static_cast<std::uint32_t>(sizeof(Normal::Vertex));
+		auto offset = 0u;
 
-		//XMMATRIX world;
-		//XMMATRIX worldInvTranspose;
-		//XMMATRIX worldViewProj;
+		md3dImmediateContext->IASetVertexBuffers(0, 1, mShapesVB.GetAddressOf(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mShapesIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
-		////
-		//// Draw the grid, cylinders, and box without any cubemap reflection.
-		//// 
+		if (Win32::GetAsyncKeyState('1') & 0x8000)
+			md3dImmediateContext->RSSetState(mRenderStates->WireframeRS.get());
 
-		//UINT stride = sizeof(Vertex::PosNormalTexTan);
-		//UINT offset = 0;
+		// Draw the grid.
+		{
+			auto world = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mGridWorld) };
+			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
+			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
 
-		//md3dImmediateContext->IASetInputLayout(InputLayouts::PosNormalTexTan);
-		//md3dImmediateContext->IASetVertexBuffers(0, 1, &mShapesVB, &stride, &offset);
-		//md3dImmediateContext->IASetIndexBuffer(mShapesIB, DXGI_FORMAT_R32_UINT, 0);
+			switch (mRenderOptions)
+			{
+				case RenderOptionsBasic:
+				{
+					auto perObjectConstants = Basic::PerObjectConstants{ .gMaterial = mGridMat, };
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixScaling(8.0f, 10.0f, 1.0f));
+					md3dImmediateContext->UpdateSubresource(mBasicVertexPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
 
-		//if (GetAsyncKeyState('1') & 0x8000)
-		//	md3dImmediateContext->RSSetState(RenderStates::WireframeRS);
+					auto vsConstants = std::array{ mBasicVertexPerObject.get() };
+					auto psConstants = std::array{ mBasicVertexPerFrame.get(), mBasicVertexPerObject.get() };
+					md3dImmediateContext->VSSetConstantBuffers(1, static_cast<std::uint32_t>(vsConstants.size()), vsConstants.data());
+					md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstants.size()), psConstants.data());
+					md3dImmediateContext->PSSetSamplers(0, 1, mAnisotropicSampler.GetAddressOf());
 
-		//D3DX11_TECHNIQUE_DESC techDesc;
-		//activeTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	// Draw the grid.
-		//	world = XMLoadFloat4x4(&mGridWorld);
-		//	worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	worldViewProj = world * view * proj;
+					auto srv = std::array{ mStoneTexSRV.get(), mSky->CubeMapSRV() };
+					md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+					break;
+				}
+		
+				case RenderOptionsNormalMap:
+				{
+					auto perObjectConstants = Normal::PerObjectConstants{ .gMaterial = mGridMat, };
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixScaling(8.0f, 10.0f, 1.0f));
+					md3dImmediateContext->UpdateSubresource(mNormalMapPerObjectCB.get(), 0, nullptr, &perObjectConstants, 0, 0);
 
-		//	switch (mRenderOptions)
-		//	{
-		//	case RenderOptionsBasic:
-		//		Effects::BasicFX->SetWorld(world);
-		//		Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//		Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//		Effects::BasicFX->SetTexTransform(XMMatrixScaling(8.0f, 10.0f, 1.0f));
-		//		Effects::BasicFX->SetMaterial(mGridMat);
-		//		Effects::BasicFX->SetDiffuseMap(mStoneTexSRV);
-		//		break;
-		//	case RenderOptionsNormalMap:
-		//		Effects::NormalMapFX->SetWorld(world);
-		//		Effects::NormalMapFX->SetWorldInvTranspose(worldInvTranspose);
-		//		Effects::NormalMapFX->SetWorldViewProj(worldViewProj);
-		//		Effects::NormalMapFX->SetTexTransform(XMMatrixScaling(8.0f, 10.0f, 1.0f));
-		//		Effects::NormalMapFX->SetMaterial(mGridMat);
-		//		Effects::NormalMapFX->SetDiffuseMap(mStoneTexSRV);
-		//		Effects::NormalMapFX->SetNormalMap(mStoneNormalTexSRV);
-		//		break;
-		//	case RenderOptionsDisplacementMap:
-		//		Effects::DisplacementMapFX->SetWorld(world);
-		//		Effects::DisplacementMapFX->SetWorldInvTranspose(worldInvTranspose);
-		//		Effects::DisplacementMapFX->SetViewProj(viewProj);
-		//		Effects::DisplacementMapFX->SetWorldViewProj(worldViewProj);
-		//		Effects::DisplacementMapFX->SetTexTransform(XMMatrixScaling(8.0f, 10.0f, 1.0f));
-		//		Effects::DisplacementMapFX->SetMaterial(mGridMat);
-		//		Effects::DisplacementMapFX->SetDiffuseMap(mStoneTexSRV);
-		//		Effects::DisplacementMapFX->SetNormalMap(mStoneNormalTexSRV);
-		//		break;
-		//	}
+					auto vsConstants = std::array{ mNormalMapPerObjectCB.get() };
+					auto psConstants = std::array{ mNormalMapPerFrameCB.get(), mNormalMapPerObjectCB.get() };
+					md3dImmediateContext->VSSetConstantBuffers(1, static_cast<std::uint32_t>(vsConstants.size()), vsConstants.data());
+					md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstants.size()), psConstants.data());
+					md3dImmediateContext->PSSetSamplers(0, 1, mLinearSampler.GetAddressOf());
 
-		//	activeTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mGridIndexCount, mGridIndexOffset, mGridVertexOffset);
+					auto srv = std::array{ mStoneTexSRV.get(), mStoneNormalTexSRV.get(),  mSky->CubeMapSRV() };
+					md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+					break;
+				}
 
-		//	// Draw the box.
-		//	world = XMLoadFloat4x4(&mBoxWorld);
-		//	worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	worldViewProj = world * view * proj;
+				case RenderOptionsDisplacementMap:
+				{
+					auto perObjectConstants = NormalDisplacement::PerObjectConstants{ .gMaterial = mGridMat, };
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gViewProj, viewProj);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixScaling(8.0f, 10.0f, 1.0f));
+					md3dImmediateContext->UpdateSubresource(mDisplacementMapPerObjectCB.get(), 0, nullptr, &perObjectConstants, 0, 0);
+				
+					auto constants = std::array{ mDisplacementMapPerFrameCB.get(), mDisplacementMapPerObjectCB.get() };
+					md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(constants.size()), constants.data());
+					md3dImmediateContext->DSSetConstantBuffers(0, static_cast<std::uint32_t>(constants.size()), constants.data());
+					md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(constants.size()), constants.data());
+					md3dImmediateContext->DSSetSamplers(0, 1, mLinearSampler.GetAddressOf());
+					md3dImmediateContext->PSSetSamplers(0, 1, mLinearSampler.GetAddressOf());
 
-		//	switch (mRenderOptions)
-		//	{
-		//	case RenderOptionsBasic:
-		//		Effects::BasicFX->SetWorld(world);
-		//		Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//		Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//		Effects::BasicFX->SetTexTransform(XMMatrixScaling(2.0f, 1.0f, 1.0f));
-		//		Effects::BasicFX->SetMaterial(mBoxMat);
-		//		Effects::BasicFX->SetDiffuseMap(mBrickTexSRV);
-		//		break;
-		//	case RenderOptionsNormalMap:
-		//		Effects::NormalMapFX->SetWorld(world);
-		//		Effects::NormalMapFX->SetWorldInvTranspose(worldInvTranspose);
-		//		Effects::NormalMapFX->SetWorldViewProj(worldViewProj);
-		//		Effects::NormalMapFX->SetTexTransform(XMMatrixScaling(2.0f, 1.0f, 1.0f));
-		//		Effects::NormalMapFX->SetMaterial(mBoxMat);
-		//		Effects::NormalMapFX->SetDiffuseMap(mBrickTexSRV);
-		//		Effects::NormalMapFX->SetNormalMap(mBrickNormalTexSRV);
-		//		break;
-		//	case RenderOptionsDisplacementMap:
-		//		Effects::DisplacementMapFX->SetWorld(world);
-		//		Effects::DisplacementMapFX->SetWorldInvTranspose(worldInvTranspose);
-		//		Effects::DisplacementMapFX->SetViewProj(viewProj);
-		//		Effects::DisplacementMapFX->SetWorldViewProj(worldViewProj);
-		//		Effects::DisplacementMapFX->SetTexTransform(XMMatrixScaling(2.0f, 1.0f, 1.0f));
-		//		Effects::DisplacementMapFX->SetMaterial(mBoxMat);
-		//		Effects::DisplacementMapFX->SetDiffuseMap(mBrickTexSRV);
-		//		Effects::DisplacementMapFX->SetNormalMap(mBrickNormalTexSRV);
-		//		break;
-		//	}
+					auto srv = std::array{ mStoneTexSRV.get(), mStoneNormalTexSRV.get(),  mSky->CubeMapSRV() };
+					md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+					md3dImmediateContext->DSSetShaderResources(1, 1, mStoneNormalTexSRV.GetAddressOf());
+					break;
+				}
+			}
+			md3dImmediateContext->DrawIndexed(mGridIndexCount, mGridIndexOffset, mGridVertexOffset);
+		}
 
-		//	activeTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mBoxIndexCount, mBoxIndexOffset, mBoxVertexOffset);
+		// Draw the box.
+		{
+			auto world = DirectX::XMMATRIX{ DirectX::XMLoadFloat4x4(&mBoxWorld) };
+			auto worldInvTranspose = DirectX::XMMATRIX{ MathHelper::InverseTranspose(world) };
+			auto worldViewProj = DirectX::XMMATRIX{ world * viewProj };
 
-		//	// Draw the cylinders.
-		//	for (int i = 0; i < 10; ++i)
-		//	{
-		//		world = XMLoadFloat4x4(&mCylWorld[i]);
-		//		worldInvTranspose = MathHelper::InverseTranspose(world);
-		//		worldViewProj = world * view * proj;
+			switch (mRenderOptions)
+			{
+				case RenderOptionsBasic:
+			{
+				auto perObjectConstants = Basic::PerObjectConstants{ .gMaterial = mBoxMat, };
+				DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+				DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+				DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+				DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixScaling(2.0f, 1.0f, 1.0f));
+				md3dImmediateContext->UpdateSubresource(mBasicVertexPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
 
-		//		switch (mRenderOptions)
-		//		{
-		//		case RenderOptionsBasic:
-		//			Effects::BasicFX->SetWorld(world);
-		//			Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//			Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//			Effects::BasicFX->SetTexTransform(XMMatrixScaling(1.0f, 2.0f, 1.0f));
-		//			Effects::BasicFX->SetMaterial(mCylinderMat);
-		//			Effects::BasicFX->SetDiffuseMap(mBrickTexSRV);
-		//			break;
-		//		case RenderOptionsNormalMap:
-		//			Effects::NormalMapFX->SetWorld(world);
-		//			Effects::NormalMapFX->SetWorldInvTranspose(worldInvTranspose);
-		//			Effects::NormalMapFX->SetWorldViewProj(worldViewProj);
-		//			Effects::NormalMapFX->SetTexTransform(XMMatrixScaling(1.0f, 2.0f, 1.0f));
-		//			Effects::NormalMapFX->SetMaterial(mCylinderMat);
-		//			Effects::NormalMapFX->SetDiffuseMap(mBrickTexSRV);
-		//			Effects::NormalMapFX->SetNormalMap(mBrickNormalTexSRV);
-		//			break;
-		//		case RenderOptionsDisplacementMap:
-		//			Effects::DisplacementMapFX->SetWorld(world);
-		//			Effects::DisplacementMapFX->SetWorldInvTranspose(worldInvTranspose);
-		//			Effects::DisplacementMapFX->SetViewProj(viewProj);
-		//			Effects::DisplacementMapFX->SetWorldViewProj(worldViewProj);
-		//			Effects::DisplacementMapFX->SetTexTransform(XMMatrixScaling(1.0f, 2.0f, 1.0f));
-		//			Effects::DisplacementMapFX->SetMaterial(mCylinderMat);
-		//			Effects::DisplacementMapFX->SetDiffuseMap(mBrickTexSRV);
-		//			Effects::DisplacementMapFX->SetNormalMap(mBrickNormalTexSRV);
-		//			break;
-		//		}
+				auto vsConstants = std::array{ mBasicVertexPerObject.get() };
+				auto psConstants = std::array{ mBasicVertexPerFrame.get(), mBasicVertexPerObject.get() };
+				md3dImmediateContext->VSSetConstantBuffers(1, static_cast<std::uint32_t>(vsConstants.size()), vsConstants.data());
+				md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstants.size()), psConstants.data());
+				md3dImmediateContext->PSSetSamplers(0, 1, mAnisotropicSampler.GetAddressOf());
 
+				auto srv = std::array{ mBrickTexSRV.get(), mSky->CubeMapSRV() };
+				md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+				break;
+			}
+				case RenderOptionsNormalMap:
+			{
+				auto perObjectConstants = Normal::PerObjectConstants{ .gMaterial = mBoxMat, };
+				DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+				DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+				DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+				DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixScaling(2.0f, 1.0f, 1.0f));
+				md3dImmediateContext->UpdateSubresource(mNormalMapPerObjectCB.get(), 0, nullptr, &perObjectConstants, 0, 0);
 
-		//		activeTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//		md3dImmediateContext->DrawIndexed(mCylinderIndexCount, mCylinderIndexOffset, mCylinderVertexOffset);
-		//	}
-		//}
+				auto vsConstants = std::array{ mNormalMapPerObjectCB.get() };
+				auto psConstants = std::array{ mNormalMapPerFrameCB.get(), mNormalMapPerObjectCB.get() };
+				md3dImmediateContext->VSSetConstantBuffers(1, static_cast<std::uint32_t>(vsConstants.size()), vsConstants.data());
+				md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstants.size()), psConstants.data());
+				md3dImmediateContext->PSSetSamplers(0, 1, mLinearSampler.GetAddressOf());
 
-		//// FX sets tessellation stages, but it does not disable them.  So do that here
-		//// to turn off tessellation.
-		//md3dImmediateContext->HSSetShader(0, 0, 0);
-		//md3dImmediateContext->DSSetShader(0, 0, 0);
+				auto srv = std::array{ mBrickTexSRV.get(), mBrickNormalTexSRV.get(), mSky->CubeMapSRV() };
+				md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+				break;
+			}
+				case RenderOptionsDisplacementMap:
+				{
+					auto perObjectConstants = NormalDisplacement::PerObjectConstants{ .gMaterial = mBoxMat, };
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gViewProj, viewProj);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixScaling(2.0f, 1.0f, 1.0f));
+					md3dImmediateContext->UpdateSubresource(mDisplacementMapPerObjectCB.get(), 0, nullptr, &perObjectConstants, 0, 0);
 
-		//md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+					auto constants = std::array{ mDisplacementMapPerFrameCB.get(), mDisplacementMapPerObjectCB.get() };
+					md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(constants.size()), constants.data());
+					md3dImmediateContext->DSSetConstantBuffers(0, static_cast<std::uint32_t>(constants.size()), constants.data());
+					md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(constants.size()), constants.data());
+					md3dImmediateContext->DSSetSamplers(0, 1, mLinearSampler.GetAddressOf());
+					md3dImmediateContext->PSSetSamplers(0, 1, mLinearSampler.GetAddressOf());
 
-		////
-		//// Draw the spheres with cubemap reflection.
-		////
+					auto srv = std::array{ mBrickTexSRV.get(), mBrickNormalTexSRV.get(), mSky->CubeMapSRV() };
+					md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+					md3dImmediateContext->DSSetShaderResources(1, 1, mBrickNormalTexSRV.GetAddressOf());
+					break;
+				}
+			}
 
-		//activeSphereTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	// Draw the spheres.
-		//	for (int i = 0; i < 10; ++i)
-		//	{
-		//		world = XMLoadFloat4x4(&mSphereWorld[i]);
-		//		worldInvTranspose = MathHelper::InverseTranspose(world);
-		//		worldViewProj = world * view * proj;
+			md3dImmediateContext->DrawIndexed(mBoxIndexCount, mBoxIndexOffset, mBoxVertexOffset);
+		}
 
-		//		Effects::BasicFX->SetWorld(world);
-		//		Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//		Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//		Effects::BasicFX->SetTexTransform(XMMatrixIdentity());
-		//		Effects::BasicFX->SetMaterial(mSphereMat);
+		// Draw the cylinders.
+		for (int i = 0; i < 10; ++i)
+		{
+			auto world = XMLoadFloat4x4(&mCylWorld[i]);
+			auto worldInvTranspose = MathHelper::InverseTranspose(world);
+			auto worldViewProj = world * viewProj;
 
-		//		activeSphereTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//		md3dImmediateContext->DrawIndexed(mSphereIndexCount, mSphereIndexOffset, mSphereVertexOffset);
-		//	}
-		//}
+			switch (mRenderOptions)
+			{
+				case RenderOptionsBasic:
+				{
+					auto perObjectConstants = Basic::PerObjectConstants{ .gMaterial = mCylinderMat, };
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixScaling(1.0f, 2.0f, 1.0f));
+					md3dImmediateContext->UpdateSubresource(mBasicVertexPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
 
-		//stride = sizeof(Vertex::Basic32);
-		//offset = 0;
+					auto vsConstants = std::array{ mBasicVertexPerObject.get() };
+					auto psConstants = std::array{ mBasicVertexPerFrame.get(), mBasicVertexPerObject.get() };
+					md3dImmediateContext->VSSetConstantBuffers(1, static_cast<std::uint32_t>(vsConstants.size()), vsConstants.data());
+					md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstants.size()), psConstants.data());
+					md3dImmediateContext->PSSetSamplers(0, 1, mAnisotropicSampler.GetAddressOf());
 
-		//md3dImmediateContext->RSSetState(0);
+					auto srv = std::array{ mBrickTexSRV.get(), mSky->CubeMapSRV() };
+					md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+					break;
+				}
+				case RenderOptionsNormalMap:
+				{
+					auto perObjectConstants = Normal::PerObjectConstants{ .gMaterial = mCylinderMat, };
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixScaling(1.0f, 2.0f, 1.0f));
+					md3dImmediateContext->UpdateSubresource(mNormalMapPerObjectCB.get(), 0, nullptr, &perObjectConstants, 0, 0);
 
-		//md3dImmediateContext->IASetInputLayout(InputLayouts::Basic32);
-		//md3dImmediateContext->IASetVertexBuffers(0, 1, &mSkullVB, &stride, &offset);
-		//md3dImmediateContext->IASetIndexBuffer(mSkullIB, DXGI_FORMAT_R32_UINT, 0);
+					auto vsConstants = std::array{ mNormalMapPerObjectCB.get() };
+					auto psConstants = std::array{ mNormalMapPerFrameCB.get(), mNormalMapPerObjectCB.get() };
+					md3dImmediateContext->VSSetConstantBuffers(1, static_cast<std::uint32_t>(vsConstants.size()), vsConstants.data());
+					md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstants.size()), psConstants.data());
+					md3dImmediateContext->PSSetSamplers(0, 1, mLinearSampler.GetAddressOf());
 
-		//activeSkullTech->GetDesc(&techDesc);
-		//for (UINT p = 0; p < techDesc.Passes; ++p)
-		//{
-		//	// Draw the skull.
-		//	world = XMLoadFloat4x4(&mSkullWorld);
-		//	worldInvTranspose = MathHelper::InverseTranspose(world);
-		//	worldViewProj = world * view * proj;
+					auto srv = std::array{ mBrickTexSRV.get(), mBrickNormalTexSRV.get(), mSky->CubeMapSRV() };
+					md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+					break;
+				}
+				case RenderOptionsDisplacementMap:
+				{
+					auto perObjectConstants = NormalDisplacement::PerObjectConstants{ .gMaterial = mCylinderMat, };
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gViewProj, viewProj);
+					DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixScaling(1.0f, 2.0f, 1.0f));
+					md3dImmediateContext->UpdateSubresource(mDisplacementMapPerObjectCB.get(), 0, nullptr, &perObjectConstants, 0, 0);
 
-		//	Effects::BasicFX->SetWorld(world);
-		//	Effects::BasicFX->SetWorldInvTranspose(worldInvTranspose);
-		//	Effects::BasicFX->SetWorldViewProj(worldViewProj);
-		//	Effects::BasicFX->SetMaterial(mSkullMat);
+					auto constants = std::array{ mDisplacementMapPerFrameCB.get(), mDisplacementMapPerObjectCB.get() };
+					md3dImmediateContext->VSSetConstantBuffers(0, static_cast<std::uint32_t>(constants.size()), constants.data());
+					md3dImmediateContext->DSSetConstantBuffers(0, static_cast<std::uint32_t>(constants.size()), constants.data());
+					md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(constants.size()), constants.data());
+					md3dImmediateContext->DSSetSamplers(0, 1, mLinearSampler.GetAddressOf());
+					md3dImmediateContext->PSSetSamplers(0, 1, mLinearSampler.GetAddressOf());
 
-		//	activeSkullTech->GetPassByIndex(p)->Apply(0, md3dImmediateContext);
-		//	md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
-		//}
+					auto srv = std::array{ mBrickTexSRV.get(), mBrickNormalTexSRV.get(), mSky->CubeMapSRV() };
+					md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+					md3dImmediateContext->DSSetShaderResources(1, 1, mBrickNormalTexSRV.GetAddressOf());
+					break;
+				}
+			}
+
+			md3dImmediateContext->DrawIndexed(mCylinderIndexCount, mCylinderIndexOffset, mCylinderVertexOffset);
+		}
+
+		// FX sets tessellation stages, but it does not disable them.  So do that here
+		// to turn off tessellation.
+		auto nullSrv = static_cast<D3D11::ID3D11ShaderResourceView*>(nullptr);
+		md3dImmediateContext->DSSetShaderResources(1, 1, &nullSrv);
+		md3dImmediateContext->HSSetShader(0, 0, 0);
+		md3dImmediateContext->DSSetShader(0, 0, 0);
+
+		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		md3dImmediateContext->IASetInputLayout(mBasicVertexInputLayout.get());
+		md3dImmediateContext->VSSetShader(mBasicVertexShader.get(), nullptr, 0);
+		md3dImmediateContext->PSSetShader(mBasicPixelShader.get(), nullptr, 0);
+		md3dImmediateContext->PSSetSamplers(0, 1, mAnisotropicSampler.GetAddressOf());
+
+		//
+		// Draw the spheres with cubemap reflection.
+		//
+		basicPerFrameConstants.gUseTexture = false;
+		basicPerFrameConstants.gReflectionEnabled = true;
+		md3dImmediateContext->UpdateSubresource(mBasicVertexPerFrame.get(), 0, nullptr, &basicPerFrameConstants, 0, 0);
+		auto srv = std::array<ID3D11ShaderResourceView*, 2>{ nullptr, mSky->CubeMapSRV() };
+		md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(srv.size()), srv.data());
+
+		// Draw the spheres.
+		for (int i = 0; i < 10; ++i)
+		{
+			auto world = XMLoadFloat4x4(&mSphereWorld[i]);
+			auto worldInvTranspose = MathHelper::InverseTranspose(world);
+			auto worldViewProj = world * viewProj;
+
+			auto perObjectConstants = Basic::PerObjectConstants{ .gMaterial = mSphereMat, };
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
+			md3dImmediateContext->UpdateSubresource(mBasicVertexPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
+
+			auto vsConstants = std::array{ mBasicVertexPerObject.get() };
+			auto psConstants = std::array{ mBasicVertexPerFrame.get(), mBasicVertexPerObject.get() };
+			md3dImmediateContext->VSSetConstantBuffers(1, static_cast<std::uint32_t>(vsConstants.size()), vsConstants.data());
+			md3dImmediateContext->PSSetConstantBuffers(0, static_cast<std::uint32_t>(psConstants.size()), psConstants.data());
+
+			md3dImmediateContext->DrawIndexed(mSphereIndexCount, mSphereIndexOffset, mSphereVertexOffset);
+		}
+
+		stride = sizeof(Basic::Vertex);
+		offset = 0;
+
+		md3dImmediateContext->RSSetState(nullptr);
+
+		md3dImmediateContext->IASetVertexBuffers(0, 1, mSkullVB.GetAddressOf(), &stride, &offset);
+		md3dImmediateContext->IASetIndexBuffer(mSkullIB.get(), DXGI_FORMAT_R32_UINT, 0);
+
+		// Draw the skull.
+		{
+			auto world = XMLoadFloat4x4(&mSkullWorld);
+			auto worldInvTranspose = MathHelper::InverseTranspose(world);
+			auto worldViewProj = world * viewProj;
+
+			auto perObjectConstants = Basic::PerObjectConstants{ .gMaterial = mSkullMat, };
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorld, world);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldInvTranspose, worldInvTranspose);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gWorldViewProj, worldViewProj);
+			DirectX::XMStoreFloat4x4(&perObjectConstants.gTexTransform, DirectX::XMMatrixIdentity());
+
+			md3dImmediateContext->UpdateSubresource(mBasicVertexPerObject.get(), 0, nullptr, &perObjectConstants, 0, 0);
+			md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
+		}
 
 		mSky->Draw(md3dImmediateContext.get(), mCam);
 
@@ -520,9 +707,9 @@ private:
 
 		auto geoGen = GeometryGenerator{};
 		geoGen.CreateBox(1.0f, 1.0f, 1.0f, box);
-		geoGen.CreateGrid(20.0f, 30.0f, 60, 40, grid);
+		geoGen.CreateGrid(20.0f, 30.0f, 50, 40, grid);
 		geoGen.CreateSphere(0.5f, 20, 20, sphere);
-		geoGen.CreateCylinder(0.5f, 0.3f, 3.0f, 20, 20, cylinder);
+		geoGen.CreateCylinder(0.5f, 0.5f, 3.0f, 15, 15, cylinder);
 
 		// Cache the vertex offsets to each object in the concatenated vertex buffer.
 		mBoxVertexOffset = 0;
@@ -552,7 +739,7 @@ private:
 		// vertices of all the meshes into one vertex buffer.
 		//
 
-		auto vertices = std::vector<Basic::Vertex>(totalVertexCount);
+		auto vertices = std::vector<Normal::Vertex>(totalVertexCount);
 
 		auto k = 0u;
 		for (auto i = 0ull; i < box.Vertices.size(); ++i, ++k)
@@ -560,6 +747,7 @@ private:
 			vertices[k].Pos = box.Vertices[i].Position;
 			vertices[k].Normal = box.Vertices[i].Normal;
 			vertices[k].Tex = box.Vertices[i].TexC;
+			vertices[k].Tangent = box.Vertices[i].TangentU;
 		}
 
 		for (auto i = 0ull; i < grid.Vertices.size(); ++i, ++k)
@@ -567,6 +755,7 @@ private:
 			vertices[k].Pos = grid.Vertices[i].Position;
 			vertices[k].Normal = grid.Vertices[i].Normal;
 			vertices[k].Tex = grid.Vertices[i].TexC;
+			vertices[k].Tangent = grid.Vertices[i].TangentU;
 		}
 
 		for (auto i = 0ull; i < sphere.Vertices.size(); ++i, ++k)
@@ -574,6 +763,7 @@ private:
 			vertices[k].Pos = sphere.Vertices[i].Position;
 			vertices[k].Normal = sphere.Vertices[i].Normal;
 			vertices[k].Tex = sphere.Vertices[i].TexC;
+			vertices[k].Tangent = sphere.Vertices[i].TangentU;
 		}
 
 		for (auto i = 0ull; i < cylinder.Vertices.size(); ++i, ++k)
@@ -581,10 +771,11 @@ private:
 			vertices[k].Pos = cylinder.Vertices[i].Position;
 			vertices[k].Normal = cylinder.Vertices[i].Normal;
 			vertices[k].Tex = cylinder.Vertices[i].TexC;
+			vertices[k].Tangent = cylinder.Vertices[i].TangentU;
 		}
 
 		auto vbd = D3D11::D3D11_BUFFER_DESC{
-			.ByteWidth = static_cast<std::uint32_t>(sizeof(Basic::Vertex) * totalVertexCount),
+			.ByteWidth = static_cast<std::uint32_t>(sizeof(Normal::Vertex) * totalVertexCount),
 			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_IMMUTABLE,
 			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER,
 			.CPUAccessFlags = 0,
@@ -751,7 +942,7 @@ private:
 		// constant buffers normalmap
 		{
 			auto perFrameCbd = D3D11::D3D11_BUFFER_DESC{
-				.ByteWidth = sizeof(NormalDisplacement::PerFrameConstants),
+				.ByteWidth = sizeof(Normal::PerFrameConstants),
 				.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
 				.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
 				.CPUAccessFlags = 0,
@@ -760,7 +951,7 @@ private:
 			};
 			HR(md3dDevice->CreateBuffer(&perFrameCbd, 0, &mNormalMapPerFrameCB), "Failed to create constant buffer.");
 			auto perObjectCbd = D3D11::D3D11_BUFFER_DESC{
-				.ByteWidth = sizeof(NormalDisplacement::PerObjectConstants),
+				.ByteWidth = sizeof(Normal::PerObjectConstants),
 				.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
 				.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
 				.CPUAccessFlags = 0,
@@ -792,13 +983,14 @@ private:
 			HR(md3dDevice->CreateBuffer(&perObjectCbd, 0, &mDisplacementMapPerObjectCB), "Failed to create constant buffer.");
 		}	
 	}
+
 	void BuildInputLayouts(
 		D3D::ID3DBlob* vsBytecode,
 		D3D::ID3DBlob* normalMapVsBytecode,
 		D3D::ID3DBlob* displacementMapVsBytecode
 	)
 	{
-		// Create the vertex input layout.
+		// Create the basic vertex input layout.
 		auto basic32Desc = std::array{
 			D3D11::D3D11_INPUT_ELEMENT_DESC{
 				.SemanticName = "POSITION",
@@ -835,6 +1027,119 @@ private:
 			vsBytecode->GetBufferSize(),
 			&mBasicVertexInputLayout),
 			"Failed to create basic32 input layout.");
+
+		// Create the normal input layout.
+		auto normalMapDesc = std::array{
+			D3D11::D3D11_INPUT_ELEMENT_DESC{
+				.SemanticName = "POSITION",
+				.SemanticIndex = 0,
+				.Format = DXGI::DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
+				.InputSlot = 0,
+				.AlignedByteOffset = 0,
+				.InputSlotClass = D3D11::D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+				.InstanceDataStepRate = 0
+			},
+			D3D11::D3D11_INPUT_ELEMENT_DESC{
+				.SemanticName = "NORMAL",
+				.SemanticIndex = 0,
+				.Format = DXGI::DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
+				.InputSlot = 0,
+				.AlignedByteOffset = 12,
+				.InputSlotClass = D3D11::D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+				.InstanceDataStepRate = 0
+			},
+			D3D11::D3D11_INPUT_ELEMENT_DESC{
+				.SemanticName = "TEXCOORD",
+				.SemanticIndex = 0,
+				.Format = DXGI::DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT,
+				.InputSlot = 0,
+				.AlignedByteOffset = 24,
+				.InputSlotClass = D3D11::D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+				.InstanceDataStepRate = 0
+			},
+			D3D11::D3D11_INPUT_ELEMENT_DESC{
+				.SemanticName = "TANGENT",
+				.SemanticIndex = 0,
+				.Format = DXGI::DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
+				.InputSlot = 0,
+				.AlignedByteOffset = 32,
+				.InputSlotClass = D3D11::D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+				.InstanceDataStepRate = 0
+			}
+		};
+		HR(md3dDevice->CreateInputLayout(
+			normalMapDesc.data(),
+			static_cast<std::uint32_t>(normalMapDesc.size()),
+			normalMapVsBytecode->GetBufferPointer(),
+			normalMapVsBytecode->GetBufferSize(),
+			&mNormalMappedVertexInputLayout),
+			"Failed to create normal mapped input layout.");
+
+		// Create the displacement input layout.
+		auto displacementMapDesc = std::array{
+			D3D11::D3D11_INPUT_ELEMENT_DESC{
+				.SemanticName = "POSITION",
+				.SemanticIndex = 0,
+				.Format = DXGI::DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
+				.InputSlot = 0,
+				.AlignedByteOffset = 0,
+				.InputSlotClass = D3D11::D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+				.InstanceDataStepRate = 0
+			},
+			D3D11::D3D11_INPUT_ELEMENT_DESC{
+				.SemanticName = "NORMAL",
+				.SemanticIndex = 0,
+				.Format = DXGI::DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
+				.InputSlot = 0,
+				.AlignedByteOffset = 12,
+				.InputSlotClass = D3D11::D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+				.InstanceDataStepRate = 0
+			},
+			D3D11::D3D11_INPUT_ELEMENT_DESC{
+				.SemanticName = "TEXCOORD",
+				.SemanticIndex = 0,
+				.Format = DXGI::DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT,
+				.InputSlot = 0,
+				.AlignedByteOffset = 24,
+				.InputSlotClass = D3D11::D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+				.InstanceDataStepRate = 0
+			},
+			D3D11::D3D11_INPUT_ELEMENT_DESC{
+				.SemanticName = "TANGENT",
+				.SemanticIndex = 0,
+				.Format = DXGI::DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
+				.InputSlot = 0,
+				.AlignedByteOffset = 32,
+				.InputSlotClass = D3D11::D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+				.InstanceDataStepRate = 0
+			}
+		};
+		HR(md3dDevice->CreateInputLayout(
+			displacementMapDesc.data(),
+			static_cast<std::uint32_t>(displacementMapDesc.size()),
+			displacementMapVsBytecode->GetBufferPointer(),
+			displacementMapVsBytecode->GetBufferSize(),
+			&mDisplacementMappedVertexInputLayout),
+			"Failed to create displacement mapped input layout.");
+
+		// Create anisotropic sampler state.
+		auto samplerDesc = D3D11::D3D11_SAMPLER_DESC{
+			.Filter = D3D11::D3D11_FILTER::D3D11_FILTER_ANISOTROPIC,
+			.AddressU = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressV = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
+			.AddressW = D3D11::D3D11_TEXTURE_ADDRESS_MODE::D3D11_TEXTURE_ADDRESS_WRAP,
+			.MipLODBias = 0.0f,
+			.MaxAnisotropy = 8u,
+			.ComparisonFunc = D3D11::D3D11_COMPARISON_FUNC::D3D11_COMPARISON_ALWAYS,
+			.BorderColor = { 0.0f, 0.0f, 0.0f, 0.0f },
+			.MinLOD = 0.0f,
+			.MaxLOD = std::numeric_limits<float>::max()
+		};
+		HR(md3dDevice->CreateSamplerState(&samplerDesc, &mAnisotropicSampler), "Failed to create sampler state.");
+
+		// Create linear sampler state.
+		samplerDesc.Filter = D3D11::D3D11_FILTER::D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		HR(md3dDevice->CreateSamplerState(&samplerDesc, &mLinearSampler), "Failed to create sampler state.");
 	}
 
 private:
@@ -852,6 +1157,7 @@ private:
 	ComPtr<D3D11::ID3D11ShaderResourceView> mBrickNormalTexSRV;
 	ComPtr<D3D11::ID3D11InputLayout> mBasicVertexInputLayout;
 	ComPtr<D3D11::ID3D11InputLayout> mNormalMappedVertexInputLayout;
+	ComPtr<D3D11::ID3D11InputLayout> mDisplacementMappedVertexInputLayout;
 
 	ComPtr<D3D11::ID3D11Buffer> mBasicVertexPerFrame;
 	ComPtr<D3D11::ID3D11Buffer> mBasicVertexPerObject;
@@ -873,7 +1179,13 @@ private:
 	ComPtr<D3D11::ID3D11DomainShader> mDisplacementMapDomainShader;
 	ComPtr<D3D11::ID3D11PixelShader> mDisplacementMapPixelShader;
 
+	ComPtr<D3D11::ID3D11SamplerState> mAnisotropicSampler;
+	ComPtr<D3D11::ID3D11SamplerState> mLinearSampler;
+
+	std::optional<RenderStates> mRenderStates;
+
 	DirectionalLight mDirLights[3];
+	std::uint32_t mLightCount = 3;
 	Material mGridMat;
 	Material mBoxMat;
 	Material mCylinderMat;
