@@ -11,12 +11,78 @@ enum RenderOptions
 	RenderOptionsDisplacementMap = 2
 };
 
-struct BasicVertex
+namespace Basic
 {
-	DirectX::XMFLOAT3 Pos;
-	DirectX::XMFLOAT3 Normal;
-	DirectX::XMFLOAT2 Tex;
-};
+	struct Vertex
+	{
+		DirectX::XMFLOAT3 Pos;
+		DirectX::XMFLOAT3 Normal;
+		DirectX::XMFLOAT2 Tex;
+	};
+
+	struct PerFrameConstants
+	{
+		DirectionalLight gDirLights[3];
+		DirectX::XMFLOAT3 gEyePosW;
+		float gFogStart;
+		float gFogRange;
+		std::uint32_t gLightCount;
+		bool32 gUseTexture;
+		bool32 gAlphaClip;
+		bool32 gFogEnabled;
+		bool32 gReflectionEnabled;
+		DirectX::XMFLOAT2 gPadding;
+		DirectX::XMFLOAT4 gFogColor;
+	};
+	static_assert(sizeof(PerFrameConstants) == 256);
+
+	struct PerObjectConstants
+	{
+		DirectX::XMFLOAT4X4 gWorld;
+		DirectX::XMFLOAT4X4 gWorldInvTranspose;
+		DirectX::XMFLOAT4X4 gWorldViewProj;
+		DirectX::XMFLOAT4X4 gTexTransform;
+		Material gMaterial;
+	};
+}
+
+namespace NormalDisplacement
+{
+	struct Vertex
+	{
+		DirectX::XMFLOAT3 Pos;
+		DirectX::XMFLOAT3 Normal;
+		DirectX::XMFLOAT2 Tex;
+		DirectX::XMFLOAT3 Tangent;
+	};
+
+	struct PerFrameConstants
+	{
+		DirectionalLight gDirLights[3];
+		DirectX::XMFLOAT3 gEyePosW;
+		float gFogStart;
+		float gFogRange;
+		std::uint32_t gLightCount;
+		bool32 gUseTexture;
+		bool32 gAlphaClip;
+		bool32 gFogEnabled;
+		bool32 gReflectionEnabled;
+		DirectX::XMFLOAT2 gPadding;
+		DirectX::XMFLOAT4 gFogColor;
+	};
+
+	static_assert(sizeof(PerFrameConstants) == 256);
+	struct PerObjectConstants
+	{
+		DirectX::XMFLOAT4X4 gWorld;
+		DirectX::XMFLOAT4X4 gWorldInvTranspose;
+		DirectX::XMFLOAT4X4 gWorldViewProj;
+		DirectX::XMFLOAT4X4 gTexTransform;
+		Material gMaterial;
+	};
+}
+
+
 
 // Common to both the normal and displacement map shaders.
 struct NormalMappedVertex
@@ -409,9 +475,9 @@ public:
 		//	md3dImmediateContext->DrawIndexed(mSkullIndexCount, 0, 0);
 		//}
 
-		//mSky->Draw(md3dImmediateContext, mCam);
+		mSky->Draw(md3dImmediateContext.get(), mCam);
 
-		//// restore default states, as the SkyFX changes them in the effect file.
+		// restore default states, as the SkyFX changes them in the effect file.
 		md3dImmediateContext->RSSetState(0);
 		md3dImmediateContext->OMSetDepthStencilState(0, 0);
 
@@ -486,7 +552,7 @@ private:
 		// vertices of all the meshes into one vertex buffer.
 		//
 
-		auto vertices = std::vector<BasicVertex>(totalVertexCount);
+		auto vertices = std::vector<Basic::Vertex>(totalVertexCount);
 
 		auto k = 0u;
 		for (auto i = 0ull; i < box.Vertices.size(); ++i, ++k)
@@ -518,7 +584,7 @@ private:
 		}
 
 		auto vbd = D3D11::D3D11_BUFFER_DESC{
-			.ByteWidth = static_cast<std::uint32_t>(sizeof(BasicVertex) * totalVertexCount),
+			.ByteWidth = static_cast<std::uint32_t>(sizeof(Basic::Vertex) * totalVertexCount),
 			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_IMMUTABLE,
 			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER,
 			.CPUAccessFlags = 0,
@@ -557,7 +623,7 @@ private:
 		fin >> ignore >> tcount;
 		fin >> ignore >> ignore >> ignore >> ignore;
 
-		auto vertices = std::vector<BasicVertex>(vcount);
+		auto vertices = std::vector<Basic::Vertex>(vcount);
 		for (auto i = 0u; i < vcount; ++i)
 		{
 			fin >> vertices[i].Pos.x >> vertices[i].Pos.y >> vertices[i].Pos.z;
@@ -578,7 +644,7 @@ private:
 		fin.close();
 
 		auto vbd = D3D11::D3D11_BUFFER_DESC{
-			.ByteWidth = static_cast<std::uint32_t>(sizeof(BasicVertex) * vcount),
+			.ByteWidth = static_cast<std::uint32_t>(sizeof(Basic::Vertex) * vcount),
 			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_IMMUTABLE,
 			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER,
 			.CPUAccessFlags = 0,
@@ -603,39 +669,128 @@ private:
 
 	void BuildShaders()
 	{
+		auto basicVertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
 		{
-			auto vertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
-			HR(D3D::D3DReadFileToBlob(L"Shaders/BasicVS.cso", &vertexShaderBytecode), "Failed to read vertex shader file.");
-			auto hr = md3dDevice->CreateVertexShader(vertexShaderBytecode->GetBufferPointer(), vertexShaderBytecode->GetBufferSize(), 0, &mVertexShader);
+			HR(D3D::D3DReadFileToBlob(L"Shaders/BasicVS.cso", &basicVertexShaderBytecode), "Failed to read vertex shader file.");
+			auto hr = md3dDevice->CreateVertexShader(
+				basicVertexShaderBytecode->GetBufferPointer(), basicVertexShaderBytecode->GetBufferSize(), 0, &mBasicVertexShader);
 			HR(hr, "Failed to create vertex shader.");
 			auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
 			HR(D3D::D3DReadFileToBlob(L"Shaders/BasicPS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
-			HR(md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mPixelShader), "Failed to create pixel shader.");
-			BuildInputLayout(vertexShaderBytecode.get());
+			HR(md3dDevice->CreatePixelShader(
+				pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mBasicPixelShader), "Failed to create pixel shader.");
 		}
 
-		// constant buffers basic32
+		auto normalMapShaderBytecode = ComPtr<D3D::ID3DBlob>{};
+		{
+			HR(D3D::D3DReadFileToBlob(L"Shaders/NormalMapVS.cso", &normalMapShaderBytecode), "Failed to read vertex shader file.");
+			auto hr = md3dDevice->CreateVertexShader(
+				normalMapShaderBytecode->GetBufferPointer(), normalMapShaderBytecode->GetBufferSize(), 0, &mNormalMapVertexShader);
+			HR(hr, "Failed to create vertex shader.");
+			auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
+			HR(D3D::D3DReadFileToBlob(L"Shaders/NormalMapPS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
+			HR(md3dDevice->CreatePixelShader(
+				pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mNormalMapPixelShader), "Failed to create pixel shader.");
+		}
+		
+		auto displacementMapShaderBytecode = ComPtr<D3D::ID3DBlob>{};
+		{
+			HR(D3D::D3DReadFileToBlob(L"Shaders/DisplacementMapVS.cso", &displacementMapShaderBytecode), "Failed to read vertex shader file.");
+			auto hr = md3dDevice->CreateVertexShader(
+				displacementMapShaderBytecode->GetBufferPointer(), displacementMapShaderBytecode->GetBufferSize(), 0, &mDisplacementMapVertexShader);
+			HR(hr, "Failed to create vertex shader.");
+			auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
+			HR(D3D::D3DReadFileToBlob(L"Shaders/DisplacementMapPS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");
+			HR(md3dDevice->CreatePixelShader(
+				pixelShaderBytecode->GetBufferPointer(), pixelShaderBytecode->GetBufferSize(), 0, &mDisplacementMapPixelShader), "Failed to create pixel shader.");
+
+			// Domain shader
+			{
+				auto domainShaderBytecode = ComPtr<D3D::ID3DBlob>{};
+				HR(D3D::D3DReadFileToBlob(L"Shaders/DisplacementMapDS.cso", &domainShaderBytecode), "Failed to read domain shader file.");
+				auto hr = md3dDevice->CreateDomainShader(
+					domainShaderBytecode->GetBufferPointer(), domainShaderBytecode->GetBufferSize(), 0, &mDisplacementMapDomainShader);
+				HR(hr, "Failed to create domain shader.");
+			}
+
+			// Hull shader
+			{
+				auto hullShaderBytecode = ComPtr<D3D::ID3DBlob>{};
+				HR(D3D::D3DReadFileToBlob(L"Shaders/DisplacementMapHS.cso", &hullShaderBytecode), "Failed to read hull shader file.");
+				auto hr = md3dDevice->CreateHullShader(
+					hullShaderBytecode->GetBufferPointer(), hullShaderBytecode->GetBufferSize(), 0, &mDisplacementMapHullShader);
+				HR(hr, "Failed to create hull shader.");
+			}
+		}
+
+		BuildInputLayouts(basicVertexShaderBytecode.get(), normalMapShaderBytecode.get(), displacementMapShaderBytecode.get());
+
+		// constant buffers basicvertex
 		{
 			auto perFrameCbd = D3D11::D3D11_BUFFER_DESC{
-				.ByteWidth = sizeof(PerFrameConstants),
+				.ByteWidth = sizeof(Basic::PerFrameConstants),
 				.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
 				.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
 				.CPUAccessFlags = 0,
 				.MiscFlags = 0,
 				.StructureByteStride = 0,
 			};
-			HR(md3dDevice->CreateBuffer(&perFrameCbd, 0, &mPerFrame), "Failed to create constant buffer.");
+			HR(md3dDevice->CreateBuffer(&perFrameCbd, 0, &mBasicVertexPerFrame), "Failed to create constant buffer.");
 
 			auto perObjectCbd = D3D11::D3D11_BUFFER_DESC{
-				.ByteWidth = sizeof(PerObjectConstants),
+				.ByteWidth = sizeof(Basic::PerObjectConstants),
 				.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
 				.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
 				.CPUAccessFlags = 0,
 				.MiscFlags = 0,
 				.StructureByteStride = 0,
 			};
-			HR(md3dDevice->CreateBuffer(&perObjectCbd, 0, &mPerObject), "Failed to create constant buffer.");
+			HR(md3dDevice->CreateBuffer(&perObjectCbd, 0, &mBasicVertexPerObject), "Failed to create constant buffer.");
 		}
+
+		// constant buffers normalmap
+		{
+			auto perFrameCbd = D3D11::D3D11_BUFFER_DESC{
+				.ByteWidth = sizeof(NormalDisplacement::PerFrameConstants),
+				.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
+				.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0,
+				.StructureByteStride = 0,
+			};
+			HR(md3dDevice->CreateBuffer(&perFrameCbd, 0, &mNormalMapPerFrameCB), "Failed to create constant buffer.");
+			auto perObjectCbd = D3D11::D3D11_BUFFER_DESC{
+				.ByteWidth = sizeof(NormalDisplacement::PerObjectConstants),
+				.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
+				.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0,
+				.StructureByteStride = 0,
+			};
+			HR(md3dDevice->CreateBuffer(&perObjectCbd, 0, &mNormalMapPerObjectCB), "Failed to create constant buffer.");
+		}
+
+		// constant buffers displacementmap
+		{
+			auto perFrameCbd = D3D11::D3D11_BUFFER_DESC{
+				.ByteWidth = sizeof(NormalDisplacement::PerFrameConstants),
+				.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
+				.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0,
+				.StructureByteStride = 0,
+			};
+			HR(md3dDevice->CreateBuffer(&perFrameCbd, 0, &mDisplacementMapPerFrameCB), "Failed to create constant buffer.");
+			auto perObjectCbd = D3D11::D3D11_BUFFER_DESC{
+				.ByteWidth = sizeof(NormalDisplacement::PerObjectConstants),
+				.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
+				.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0,
+				.StructureByteStride = 0,
+			};
+			HR(md3dDevice->CreateBuffer(&perObjectCbd, 0, &mDisplacementMapPerObjectCB), "Failed to create constant buffer.");
+		}	
 	}
 	void BuildInputLayouts(
 		D3D::ID3DBlob* vsBytecode,
@@ -700,6 +855,12 @@ private:
 
 	ComPtr<D3D11::ID3D11Buffer> mBasicVertexPerFrame;
 	ComPtr<D3D11::ID3D11Buffer> mBasicVertexPerObject;
+
+	ComPtr<D3D11::ID3D11Buffer> mNormalMapPerFrameCB;
+	ComPtr<D3D11::ID3D11Buffer> mNormalMapPerObjectCB;
+
+	ComPtr<D3D11::ID3D11Buffer> mDisplacementMapPerFrameCB;
+	ComPtr<D3D11::ID3D11Buffer> mDisplacementMapPerObjectCB;
 
 	ComPtr<D3D11::ID3D11VertexShader> mBasicVertexShader;
 	ComPtr<D3D11::ID3D11PixelShader> mBasicPixelShader;

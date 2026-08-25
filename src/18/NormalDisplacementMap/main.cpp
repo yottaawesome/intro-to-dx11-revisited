@@ -3,12 +3,13 @@
 
 import std;
 import shared;
+import normaldisplacementmap;
 
 auto wWinMain(Win32::HINSTANCE hInstance, Win32::HINSTANCE, Win32::LPWSTR, int) -> int
 try
 {
 	Win32::SetDebugBuildFlag(Win32::CrtAllocMemDf | Win32::CrtLeakCheckDf);
-	return 0;
+	return NormalDisplacementMapApp{ hInstance }.Run();
 }
 catch (const std::exception& e)
 {
