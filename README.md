@@ -40,6 +40,7 @@ The effort is ongoing. The following projects are functional.
 * [16/Picking](./src/16/Picking)
 * [17/CubeMap](./src/17/CubeMap)
 * [17/DynamicCubeMap](./src/17/DynamicCubeMap)
+* [18/NormalDisplacementMap](./src/18/NormalDisplacementMap)
 
 ## Running log of changes
 
