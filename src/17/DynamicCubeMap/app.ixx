@@ -716,12 +716,12 @@ private:
 		// constant buffers basic32
 		{
 			auto perFrameCbd = D3D11::D3D11_BUFFER_DESC{
-			.ByteWidth = sizeof(PerFrameConstants),
-			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
-			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
-			.CPUAccessFlags = 0,
-			.MiscFlags = 0,
-			.StructureByteStride = 0,
+				.ByteWidth = sizeof(PerFrameConstants),
+				.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
+				.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
+				.CPUAccessFlags = 0,
+				.MiscFlags = 0,
+				.StructureByteStride = 0,
 			};
 			HR(md3dDevice->CreateBuffer(&perFrameCbd, 0, &mPerFrame), "Failed to create constant buffer.");
 
