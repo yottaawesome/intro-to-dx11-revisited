@@ -29,7 +29,7 @@ cbuffer cbPerFrame : register(b0)
     float gWorldCellSpace;
     float2 padding1;
     
-    float2 gTexScale = 50.0f;
+    float2 gTexScale;
     float2 padding2;
     float4 gWorldFrustumPlanes[6];
 };
@@ -44,9 +44,9 @@ cbuffer cbPerObject : register(b1)
 };
 
 // Nonnumeric values cannot be added to a cbuffer.
-Texture2DArray gLayerMapArray;
-Texture2D gBlendMap;
-Texture2D gHeightMap;
+Texture2DArray gLayerMapArray : register(t0);
+Texture2D gBlendMap : register(t1);
+Texture2D gHeightMap : register(t2);
 
 SamplerState samLinear : register(s0);
 

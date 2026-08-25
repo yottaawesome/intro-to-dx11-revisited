@@ -1,8 +1,6 @@
 #include "TerrainCommon.hlsli"
 
-float4 main(DomainOut pin,
-          uniform int gLightCount,
-		  uniform bool gFogEnabled) : SV_Target
+float4 main(DomainOut pin) : SV_Target
 {
 	//
 	// Estimate normal and tangent using central differences.
