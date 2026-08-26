@@ -20,6 +20,32 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\BasicCommon.hlsli" />
+    <None Include="Shaders\FireCommon.hlsli" />
+    <None Include="Shaders\LightHelper.hlsli" />
+    <None Include="Shaders\RainCommon.hlsli" />
+    <None Include="Shaders\SkyCommon.hlsli" />
+    <None Include="Shaders\TerrainCommon.hlsli" />
     <None Include="vcpkg.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\BasicPS.hlsl" />
+    <FxCompile Include="Shaders\BasicVS.hlsl" />
+    <FxCompile Include="Shaders\FireDrawGS.hlsl" />
+    <FxCompile Include="Shaders\FireDrawPS.hlsl" />
+    <FxCompile Include="Shaders\FireDrawVS.hlsl" />
+    <FxCompile Include="Shaders\FireStreamOutGS.hlsl" />
+    <FxCompile Include="Shaders\FireStreamOutVS.hlsl" />
+    <FxCompile Include="Shaders\RainDrawGS.hlsl" />
+    <FxCompile Include="Shaders\RainDrawPS.hlsl" />
+    <FxCompile Include="Shaders\RainDrawVS.hlsl" />
+    <FxCompile Include="Shaders\RainStreamOutGS.hlsl" />
+    <FxCompile Include="Shaders\RainStreamOutVS.hlsl" />
+    <FxCompile Include="Shaders\SkyPS.hlsl" />
+    <FxCompile Include="Shaders\SkyVS.hlsl" />
+    <FxCompile Include="Shaders\TerrainDS.hlsl" />
+    <FxCompile Include="Shaders\TerrainHS.hlsl" />
+    <FxCompile Include="Shaders\TerrainPS.hlsl" />
+    <FxCompile Include="Shaders\TerrainVS.hlsl" />
   </ItemGroup>
 </Project>
