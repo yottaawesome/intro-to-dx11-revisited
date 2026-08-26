@@ -71,7 +71,7 @@ public:
 	};
 
 public:
-	Terrain()
+	Terrain(D3D11::ID3D11Device* device, D3D11::ID3D11DeviceContext* dc, const InitInfo& initInfo)
 	{
 		DirectX::XMStoreFloat4x4(&mWorld, DirectX::XMMatrixIdentity());
 
@@ -79,6 +79,7 @@ public:
 		mMat.Diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 		mMat.Specular = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 64.0f);
 		mMat.Reflect = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+		Init(device, dc, initInfo);
 	}
 
 	auto GetWidth()const -> float
@@ -142,39 +143,6 @@ public:
 		DirectX::XMStoreFloat4x4(&mWorld, M);
 	}
 
-	void Init(D3D11::ID3D11Device* device, D3D11::ID3D11DeviceContext* dc, const InitInfo& initInfo)
-	{
-		mInfo = initInfo;
-
-		// Divide heightmap into patches such that each patch has CellsPerPatch.
-		mNumPatchVertRows = ((mInfo.HeightmapHeight - 1) / CellsPerPatch) + 1;
-		mNumPatchVertCols = ((mInfo.HeightmapWidth - 1) / CellsPerPatch) + 1;
-
-		mNumPatchVertices = mNumPatchVertRows * mNumPatchVertCols;
-		mNumPatchQuadFaces = (mNumPatchVertRows - 1) * (mNumPatchVertCols - 1);
-
-		LoadHeightmap();
-		Smooth();
-		CalcAllPatchBoundsY();
-
-		BuildQuadPatchVB(device);
-		BuildQuadPatchIB(device);
-		BuildHeightmapSRV(device);
-
-		std::vector<std::wstring> layerFilenames;
-		layerFilenames.push_back(mInfo.LayerMapFilename0);
-		layerFilenames.push_back(mInfo.LayerMapFilename1);
-		layerFilenames.push_back(mInfo.LayerMapFilename2);
-		layerFilenames.push_back(mInfo.LayerMapFilename3);
-		layerFilenames.push_back(mInfo.LayerMapFilename4);
-		mLayerMapArraySRV = d3dHelper::CreateTexture2DArraySRV(device, dc, layerFilenames);
-
-		HR(DirectX::CreateDDSTextureFromFile(device,
-			mInfo.BlendMapFilename.c_str(), nullptr, &mBlendMapSRV));
-
-		BuildShaders(device);
-	}
-
 	void Draw(D3D11::ID3D11DeviceContext* dc, const Camera& cam, DirectionalLight lights[3])
 	{
 		dc->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_4_CONTROL_POINT_PATCHLIST);
@@ -230,6 +198,7 @@ public:
 		dc->VSSetShader(mVertexShader.get(), nullptr, 0);
 		dc->HSSetShader(mHullShader.get(), nullptr, 0);
 		dc->DSSetShader(mDomainShader.get(), nullptr, 0);
+		dc->GSSetShader(nullptr, nullptr, 0);
 		dc->PSSetShader(mPixelShader.get(), nullptr, 0);
 
 		dc->HSSetConstantBuffers(0, 1, mPerFrameConstants.GetAddressOf());
@@ -263,6 +232,47 @@ public:
 	}
 
 private:
+	void Init(D3D11::ID3D11Device* device, D3D11::ID3D11DeviceContext* dc, const InitInfo& initInfo)
+	{
+		mInfo = initInfo;
+
+		// Divide heightmap into patches such that each patch has CellsPerPatch.
+		mNumPatchVertRows = ((mInfo.HeightmapHeight - 1) / CellsPerPatch) + 1;
+		mNumPatchVertCols = ((mInfo.HeightmapWidth - 1) / CellsPerPatch) + 1;
+
+		mNumPatchVertices = mNumPatchVertRows * mNumPatchVertCols;
+		mNumPatchQuadFaces = (mNumPatchVertRows - 1) * (mNumPatchVertCols - 1);
+
+		LoadHeightmap();
+		Smooth();
+		CalcAllPatchBoundsY();
+
+		BuildQuadPatchVB(device);
+		BuildQuadPatchIB(device);
+		BuildHeightmapSRV(device);
+
+		auto layerFilenames = std::vector<std::wstring>{
+			mInfo.LayerMapFilename0,
+			mInfo.LayerMapFilename1,
+			mInfo.LayerMapFilename2,
+			mInfo.LayerMapFilename3,
+			mInfo.LayerMapFilename4
+		};
+
+		// Gotcha inherited from the original assets: snow.dds has an alpha channel,
+		// while the other layer maps use X8, so normalize their formats before creating the array.
+		mLayerMapArraySRV = d3dHelper::CreateConvertedTexture2DArraySRV(
+			device,
+			layerFilenames,
+			DXGI::DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM
+		);
+
+		HR(DirectX::CreateDDSTextureFromFile(device,
+			mInfo.BlendMapFilename.c_str(), nullptr, &mBlendMapSRV));
+
+		BuildShaders(device);
+	}
+
 	void LoadHeightmap()
 	{
 		// A height for each vertex
@@ -515,6 +525,7 @@ private:
 			HR(hr, "Failed to create vertex shader.");
 		}
 
+		// Pixel shader
 		auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
 		{
 			HR(D3D::D3DReadFileToBlob(L"Shaders/TerrainPS.cso", &pixelShaderBytecode), "Failed to read pixel shader file.");

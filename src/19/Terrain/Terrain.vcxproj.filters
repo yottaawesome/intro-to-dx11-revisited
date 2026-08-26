@@ -27,6 +27,12 @@
     <ClCompile Include="terrain.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sky.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderstates.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
