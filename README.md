@@ -41,6 +41,7 @@ The effort is ongoing. The following projects are functional.
 * [17/CubeMap](./src/17/CubeMap)
 * [17/DynamicCubeMap](./src/17/DynamicCubeMap)
 * [18/NormalDisplacementMap](./src/18/NormalDisplacementMap)
+* [19/Terrain Rendering](./src/19/Terrain)
 
 ## Running log of changes
 
