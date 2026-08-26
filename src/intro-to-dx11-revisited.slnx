@@ -63,5 +63,8 @@
   <Folder Name="/19 - Terrain Rendering/">
     <Project Path="19/Terrain/Terrain.vcxproj" Id="a25527eb-b557-4a32-a747-412b328e63a1" />
   </Folder>
+  <Folder Name="/20 - Particle Systems/">
+    <Project Path="20/ParticleSystem/ParticleSystem.vcxproj" Id="1704ece7-5d5e-4b38-bf85-ac40dd34a640" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
