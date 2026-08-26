@@ -308,6 +308,8 @@ export namespace DirectX
 			::DirectX::PackedVector::XMCOLOR,
 			::DirectX::PackedVector::XMHALF4,
 			::DirectX::PackedVector::XMCOLOR,
+			::DirectX::PackedVector::HALF,
+			::DirectX::PackedVector::XMConvertFloatToHalf,
 			::DirectX::PackedVector::XMStoreColor
 			;
 	}
