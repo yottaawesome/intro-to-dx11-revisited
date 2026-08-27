@@ -10,31 +10,9 @@ export class ParticlesApp : public D3DApp
 {
 public:
 	ParticlesApp(Win32::HINSTANCE hInstance)
-		: D3DApp(hInstance), mWalkCamMode(false)
+		: D3DApp(hInstance, L"Particles Demo")
 	{
-		mMainWndCaption = L"Particles Demo";
 		mEnable4xMsaa = false;
-
-		mLastMousePos.x = 0;
-		mLastMousePos.y = 0;
-
-		mCam.SetPosition(0.0f, 2.0f, 100.0f);
-
-		mDirLights[0].Ambient = DirectX::XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f);
-		mDirLights[0].Diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-		mDirLights[0].Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.7f, 1.0f);
-		mDirLights[0].Direction = DirectX::XMFLOAT3(0.707f, -0.707f, 0.0f);
-
-		mDirLights[1].Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-		mDirLights[1].Diffuse = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-		mDirLights[1].Specular = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-		mDirLights[1].Direction = DirectX::XMFLOAT3(0.57735f, -0.57735f, 0.57735f);
-
-		mDirLights[2].Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-		mDirLights[2].Diffuse = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-		mDirLights[2].Specular = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-		mDirLights[2].Direction = DirectX::XMFLOAT3(-0.57735f, -0.57735f, -0.57735f);
-
 		Init();
 	}
 
@@ -44,26 +22,26 @@ public:
 
 		mSky.emplace(md3dDevice.get(), L"Textures/grasscube1024.dds", 5000.0f);
 
-		Terrain::InitInfo tii;
-		tii.HeightMapFilename = L"Textures/terrain.raw";
-		tii.LayerMapFilename0 = L"Textures/grass.dds";
-		tii.LayerMapFilename1 = L"Textures/darkdirt.dds";
-		tii.LayerMapFilename2 = L"Textures/stone.dds";
-		tii.LayerMapFilename3 = L"Textures/lightdirt.dds";
-		tii.LayerMapFilename4 = L"Textures/snow.dds";
-		tii.BlendMapFilename = L"Textures/blend.dds";
-		tii.HeightScale = 50.0f;
-		tii.HeightmapWidth = 2049;
-		tii.HeightmapHeight = 2049;
-		tii.CellSpacing = 0.5f;
+		auto tii = Terrain::InitInfo{
+			.HeightMapFilename = L"Textures/terrain.raw",
+			.LayerMapFilename0 = L"Textures/grass.dds",
+			.LayerMapFilename1 = L"Textures/darkdirt.dds",
+			.LayerMapFilename2 = L"Textures/stone.dds",
+			.LayerMapFilename3 = L"Textures/lightdirt.dds",
+			.LayerMapFilename4 = L"Textures/snow.dds",
+			.BlendMapFilename = L"Textures/blend.dds",
+			.HeightScale = 50.0f,
+			.HeightmapWidth = 2049,
+			.HeightmapHeight = 2049,
+			.CellSpacing = 0.5f,
+		};
 
 		mTerrain.emplace(md3dDevice.get(), md3dImmediateContext.get(), tii);
 		mRenderStates.emplace(md3dDevice.get());
 
 		mRandomTexSRV = d3dHelper::CreateRandomTexture1DSRV(md3dDevice.get());
 
-		std::vector<std::wstring> flares;
-		flares.push_back(L"Textures\\flare0.dds");
+		auto flares = std::vector<std::wstring>{ L"Textures\\flare0.dds" };
 		mFlareTexSRV = d3dHelper::CreateTexture2DArraySRV(md3dDevice.get(), md3dImmediateContext.get(), flares);
 
 		mFire.emplace(
@@ -160,9 +138,6 @@ public:
 		md3dImmediateContext->ClearDepthStencilView(
 			mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
 
-		//md3dImmediateContext->IASetInputLayout(InputLayouts::Basic32);
-		//md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
 		if (Win32::GetAsyncKeyState('1') & 0x8000)
 			md3dImmediateContext->RSSetState(mRenderStates->WireframeRS.get());
 
@@ -171,7 +146,6 @@ public:
 		md3dImmediateContext->RSSetState(nullptr);
 
 		mSky->Draw(md3dImmediateContext.get(), mCam);
-
 
 		// Draw particle systems last so it is blended with scene.
 		mFire->SetEyePos(mCam.GetPosition());
@@ -190,7 +164,6 @@ public:
 	void OnMouseDown(Win32::WPARAM btnState, int x, int y) override
 	{
 		mLastMousePos = { x, y };
-
 		Win32::SetCapture(mhMainWnd);
 	}
 
@@ -204,8 +177,8 @@ public:
 		if ((btnState & Win32::MK::LButton) != 0)
 		{
 			// Make each pixel correspond to a quarter of a degree.
-			float dx = DirectX::XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
-			float dy = DirectX::XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
+			auto dx = DirectX::XMConvertToRadians(0.25f * static_cast<float>(x - mLastMousePos.x));
+			auto dy = DirectX::XMConvertToRadians(0.25f * static_cast<float>(y - mLastMousePos.y));
 
 			mCam.Pitch(dy);
 			mCam.RotateY(dx);
@@ -225,11 +198,30 @@ private:
 	std::optional<ParticleSystem> mFire;
 	std::optional<ParticleSystem> mRain;
 
-	DirectionalLight mDirLights[3];
+	DirectionalLight mDirLights[3]{
+		{
+			.Ambient = DirectX::XMFLOAT4(0.3f, 0.3f, 0.3f, 1.0f),
+			.Diffuse = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+			.Specular = DirectX::XMFLOAT4(0.8f, 0.8f, 0.7f, 1.0f),
+			.Direction = DirectX::XMFLOAT3(0.707f, -0.707f, 0.0f)
+		},
+		{
+			.Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f),
+			.Diffuse = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f),
+			.Specular = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f),
+			.Direction = DirectX::XMFLOAT3(0.57735f, -0.57735f, 0.57735f)
+		},
+		{
+			.Ambient = DirectX::XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f),
+			.Diffuse = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f),
+			.Specular = DirectX::XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f),
+			.Direction = DirectX::XMFLOAT3(-0.57735f, -0.57735f, -0.57735f)
+		}
+	};
 
-	Camera mCam;
+	Camera mCam = Camera::Position{ 0.0f, 2.0f, 100.0f };
 
-	bool mWalkCamMode;
+	bool mWalkCamMode = false;
 
 	Win32::POINT mLastMousePos = {};
 };
