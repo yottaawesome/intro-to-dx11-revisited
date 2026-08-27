@@ -66,5 +66,8 @@
   <Folder Name="/20 - Particle Systems/">
     <Project Path="20/ParticleSystem/ParticleSystem.vcxproj" Id="1704ece7-5d5e-4b38-bf85-ac40dd34a640" />
   </Folder>
+  <Folder Name="/21 - Shadow Mapping/">
+    <Project Path="21/Shadows/Shadows.vcxproj" Id="2964787e-38d8-4229-a715-081418f2a6a8" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
