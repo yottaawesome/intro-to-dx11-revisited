@@ -32,10 +32,13 @@ public:
 		D3D11::ID3D11Device* device,
 		ComPtr<D3D11::ID3D11ShaderResourceView>& texArraySRV,
 		ComPtr<D3D11::ID3D11ShaderResourceView>& randomTexSRV,
-		std::uint32_t maxParticles
+		std::uint32_t maxParticles,
+		const std::wstring& vertexShaderFile,
+		const std::wstring& pixelShaderFile,
+		std::optional<std::wstring> geometryShaderFile
 	)
 	{
-		Init(device, texArraySRV, randomTexSRV, maxParticles);
+		Init(device, texArraySRV, randomTexSRV, maxParticles, vertexShaderFile, pixelShaderFile, geometryShaderFile);
 	}
 
 	// Time elapsed since the system was reset.
@@ -148,7 +151,10 @@ private:
 		D3D11::ID3D11Device* device,
 		ComPtr<D3D11::ID3D11ShaderResourceView>& texArraySRV,
 		ComPtr<D3D11::ID3D11ShaderResourceView>& randomTexSRV,
-		std::uint32_t maxParticles
+		std::uint32_t maxParticles,
+		const std::wstring& vertexShaderFile,
+		const std::wstring& pixelShaderFile,
+		std::optional<std::wstring> geometryShaderFile
 	)
 	{
 		mMaxParticles = maxParticles;
@@ -156,7 +162,7 @@ private:
 		mRandomTexSRV = randomTexSRV;
 
 		BuildVB(device);
-		BuildShaders(device);
+		BuildShaders(device, vertexShaderFile, pixelShaderFile, geometryShaderFile);
 	}
 
 	void BuildVB(D3D11::ID3D11Device* device)
@@ -191,7 +197,12 @@ private:
 		HR(device->CreateBuffer(&vbd, 0, &mStreamOutVB));
 	}
 
-	void BuildShaders(D3D11::ID3D11Device* device)
+	void BuildShaders(
+		D3D11::ID3D11Device* device, 
+		std::optional<std::wstring> vertexShaderFile, 
+		std::optional<std::wstring> pixelShaderFile, 
+		std::optional<std::wstring> geometryShaderFile
+	)
 	{
 		// Vertex shader
 		auto vsBytecode = ComPtr<D3D::ID3DBlob>{};
