@@ -1,10 +1,14 @@
 cbuffer cbPerFrame : register(b0)
 {
     float3 gEyePosW;
+    float padA;
     float3 gEmitPosW;
+    float padB;
     float3 gEmitDirW;
+    float padC;
     float gGameTime;
     float gTimeStep;
+    float2 padD;
     row_major float4x4 gViewProj;
 };
 

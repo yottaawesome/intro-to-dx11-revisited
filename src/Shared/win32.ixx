@@ -367,6 +367,7 @@ export namespace DXGI
 export namespace D3D11
 {
 	constexpr auto SdkVersion = D3D11_SDK_VERSION;
+	constexpr auto SoNoRasterizedStream = D3D11_SO_NO_RASTERIZED_STREAM;
 	using 
 		::D3D11_DEPTH_STENCIL_DESC,
 		::D3D11_DEPTH_WRITE_MASK,
@@ -423,6 +424,7 @@ export namespace D3D11
 		::D3D11_USAGE,
 		::D3D11_CPU_ACCESS_FLAG,
 		::D3D11_INPUT_ELEMENT_DESC,
+		::D3D11_SO_DECLARATION_ENTRY,
 		::D3D11_RESOURCE_MISC_FLAG,
 		::D3D11_FILTER,
 		::ID3D11InputLayout,
