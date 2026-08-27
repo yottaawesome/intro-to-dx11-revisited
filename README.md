@@ -42,7 +42,7 @@ The effort is ongoing. The following projects are functional.
 * [17 - Cube Mapping: DynamicCubeMap](./src/17/DynamicCubeMap)
 * [18 - Normal and Displacement Mapping: NormalDisplacementMap](./src/18/NormalDisplacementMap)
 * [19 - Terrain Rendering: Terrain](./src/19/Terrain)
-* [20 - Paricle Systems: ParticleSystem](./src/20/ParticleSystem)
+* [20 - Particle Systems: ParticleSystem](./src/20/ParticleSystem)
 
 ## Running log of changes
 
