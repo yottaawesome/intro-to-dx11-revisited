@@ -14,9 +14,8 @@ enum RenderOptions
 
 struct BoundingSphere
 {
-	BoundingSphere() : Center(0.0f, 0.0f, 0.0f), Radius(0.0f) {}
-	DirectX::XMFLOAT3 Center;
-	float Radius;
+	DirectX::XMFLOAT3 Center = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
+	float Radius = 0.0f;
 };
 
 namespace Basic
@@ -1511,7 +1510,7 @@ private:
 
 	std::optional<RenderStates> mRenderStates;
 
-	BoundingSphere mSceneBounds;
+	BoundingSphere mSceneBounds{};
 
 	static constexpr auto SMapSize = 2048;
 	std::optional<ShadowMap> mSmap;
