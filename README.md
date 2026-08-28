@@ -43,6 +43,7 @@ The effort is ongoing. The following projects are functional.
 * [18 - Normal and Displacement Mapping: NormalDisplacementMap](./src/18/NormalDisplacementMap)
 * [19 - Terrain Rendering: Terrain](./src/19/Terrain)
 * [20 - Particle Systems: ParticleSystem](./src/20/ParticleSystem)
+* [21 - Shadow Mapping: Shadows](./src/21/Shadows)
 
 ## Running log of changes
 
