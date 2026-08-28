@@ -175,16 +175,8 @@ export class ShadowsApp : public D3DApp
 {
 public:
 	ShadowsApp(Win32::HINSTANCE hInstance)
-		: D3DApp(hInstance),
-		mSkullIndexCount(0),
-		mRenderOptions(RenderOptionsNormalMap),
-		mLightRotationAngle(0.0f)
+		: D3DApp(hInstance, L"Shadows Demo")
 	{
-		mMainWndCaption = L"Shadows Demo";
-
-		mLastMousePos.x = 0;
-		mLastMousePos.y = 0;
-
 		mCam.SetPosition(0.0f, 2.0f, -15.0f);
 
 		// Estimate the scene bounding sphere manually since we know how the scene was constructed.
@@ -194,15 +186,15 @@ public:
 		mSceneBounds.Center = DirectX::XMFLOAT3(0.0f, 0.0f, 0.0f);
 		mSceneBounds.Radius = std::sqrtf(10.0f * 10.0f + 15.0f * 15.0f);
 
-		DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
+		auto I = DirectX::XMMATRIX{ DirectX::XMMatrixIdentity() };
 		DirectX::XMStoreFloat4x4(&mGridWorld, I);
 
-		DirectX::XMMATRIX boxScale = DirectX::XMMatrixScaling(3.0f, 1.0f, 3.0f);
-		DirectX::XMMATRIX boxOffset = DirectX::XMMatrixTranslation(0.0f, 0.5f, 0.0f);
+		auto boxScale = DirectX::XMMATRIX{ DirectX::XMMatrixScaling(3.0f, 1.0f, 3.0f) };
+		auto boxOffset = DirectX::XMMATRIX{ DirectX::XMMatrixTranslation(0.0f, 0.5f, 0.0f) };
 		DirectX::XMStoreFloat4x4(&mBoxWorld, DirectX::XMMatrixMultiply(boxScale, boxOffset));
 
-		DirectX::XMMATRIX skullScale = DirectX::XMMatrixScaling(0.5f, 0.5f, 0.5f);
-		DirectX::XMMATRIX skullOffset = DirectX::XMMatrixTranslation(0.0f, 1.0f, 0.0f);
+		auto skullScale = DirectX::XMMATRIX{ DirectX::XMMatrixScaling(0.5f, 0.5f, 0.5f) };
+		auto skullOffset = DirectX::XMMATRIX{ DirectX::XMMatrixTranslation(0.0f, 1.0f, 0.0f) };
 		DirectX::XMStoreFloat4x4(&mSkullWorld, DirectX::XMMatrixMultiply(skullScale, skullOffset));
 
 		for (int i = 0; i < 5; ++i)
@@ -1527,7 +1519,7 @@ private:
 	DirectX::XMFLOAT4X4 mLightProj;
 	DirectX::XMFLOAT4X4 mShadowTransform;
 
-	float mLightRotationAngle;
+	float mLightRotationAngle = 0;
 	DirectX::XMFLOAT3 mOriginalLightDir[3];
 	DirectionalLight mDirLights[3];
 	std::uint32_t mLightCount = 3;
@@ -1559,9 +1551,9 @@ private:
 	std::uint32_t mSphereIndexCount;
 	std::uint32_t mCylinderIndexCount;
 
-	std::uint32_t mSkullIndexCount;
+	std::uint32_t mSkullIndexCount = 0;
 
-	RenderOptions mRenderOptions;
+	RenderOptions mRenderOptions = RenderOptionsNormalMap;
 
 	Camera mCam;
 
