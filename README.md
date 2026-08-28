@@ -44,6 +44,7 @@ The effort is ongoing. The following projects are functional.
 * [19 - Terrain Rendering: Terrain](./src/19/Terrain)
 * [20 - Particle Systems: ParticleSystem](./src/20/ParticleSystem)
 * [21 - Shadow Mapping: Shadows](./src/21/Shadows)
+* [22 - Ambient Occlusion: AmbientOcclusion](./src/22/AmbientOcclusion)
 
 ## Running log of changes
 
