@@ -213,6 +213,7 @@ export
 		::DirectX::operator*,
 		::DirectX::operator-,
 		::DirectX::operator+,
+		::DirectX::operator+=,
 		::DirectX::operator/
 		;
 }

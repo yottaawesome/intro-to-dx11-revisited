@@ -152,10 +152,26 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ambientocclusiondemo.ixx" />
+    <ClCompile Include="app.ixx" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="octree.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
+    <None Include="Shaders\AmbientOcclusionCommon.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\AmbientOcclusionVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <ObjectFileOutput>%(RelativeDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
+    <FxCompile Include="Shaders\AmbientOcclusionPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>5.0</ShaderModel>
+      <ObjectFileOutput>%(RelativeDir)%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.vcxproj">
