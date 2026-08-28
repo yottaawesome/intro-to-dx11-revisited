@@ -3,12 +3,13 @@
 
 import std;
 import shared;
+import shadowsdemo;
 
 auto wWinMain(Win32::HINSTANCE hInstance, Win32::HINSTANCE, Win32::LPWSTR, int) -> int
 try
 {
 	Win32::SetDebugBuildFlag(Win32::CrtAllocMemDf | Win32::CrtLeakCheckDf);
-	return 0;
+	return ShadowsApp{ hInstance }.Run();
 }
 catch (const std::exception& e)
 {

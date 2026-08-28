@@ -30,6 +30,20 @@ struct RenderStates
 		HR(device->CreateRasterizerState(&noCullDesc, &NoCullRS));
 
 		//
+		// ShadowMapRS
+		//
+		auto shadowMapDesc = D3D11::D3D11_RASTERIZER_DESC{
+			.FillMode = D3D11::D3D11_FILL_MODE::D3D11_FILL_SOLID,
+			.CullMode = D3D11::D3D11_CULL_MODE::D3D11_CULL_BACK,
+			.FrontCounterClockwise = false,
+			.DepthBias = 100000,
+			.DepthBiasClamp = 0.0f,
+			.SlopeScaledDepthBias = 1.0f,
+			.DepthClipEnable = true
+		};
+		HR(device->CreateRasterizerState(&shadowMapDesc, &ShadowMapRS));
+
+		//
 		// AlphaToCoverageBS
 		//
 		auto alphaToCoverageDesc = D3D11::D3D11_BLEND_DESC{
@@ -76,6 +90,7 @@ struct RenderStates
 
 	ComPtr<D3D11::ID3D11RasterizerState> WireframeRS;
 	ComPtr<D3D11::ID3D11RasterizerState> NoCullRS;
+	ComPtr<D3D11::ID3D11RasterizerState> ShadowMapRS;
 	ComPtr<D3D11::ID3D11BlendState> AlphaToCoverageBS;
 	ComPtr<D3D11::ID3D11BlendState> TransparentBS;
 	ComPtr<D3D11::ID3D11DepthStencilState> LessEqualDSS;

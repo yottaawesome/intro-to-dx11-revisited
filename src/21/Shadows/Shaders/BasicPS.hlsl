@@ -4,7 +4,7 @@ Texture2D gDiffuseMap : register(t0);
 TextureCube gCubeMap : register(t1);
 Texture2D gShadowMap : register(t2);
 
-SamplerState samAnisotropic : register(s0);
+SamplerState samLinear : register(s0);
 SamplerComparisonState samShadow : register(s1);
 
 float4 main(VertexOut pin) : SV_Target
@@ -18,7 +18,7 @@ float4 main(VertexOut pin) : SV_Target
     float4 textureColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
     if (gUseTexture)
     {
-        textureColor = gDiffuseMap.Sample(samAnisotropic, pin.Tex);
+        textureColor = gDiffuseMap.Sample(samLinear, pin.Tex);
 
         if (gAlphaClip)
         {
@@ -62,7 +62,7 @@ float4 main(VertexOut pin) : SV_Target
         {
             float3 reflectionVector = reflect(-toEye, pin.NormalW);
             float4 reflectionColor =
-                gCubeMap.Sample(samAnisotropic, reflectionVector);
+                gCubeMap.Sample(samLinear, reflectionVector);
             litColor += gMaterial.Reflect * reflectionColor;
         }
     }

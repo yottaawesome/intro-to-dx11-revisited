@@ -236,6 +236,7 @@ export namespace DirectX
 		::DirectX::BoundingBox, // replaces XNA::AxisAlignedBox
 		::DirectX::BoundingFrustum, // replaces XNA::Frustum
 		::DirectX::XMMatrixDecompose,
+		::DirectX::XMMatrixOrthographicOffCenterLH,
 		::DirectX::XMLoadFloat3,
 		::DirectX::XMLoadFloat4x4,
 		::DirectX::XMVectorSet,
