@@ -158,6 +158,7 @@
     <ClCompile Include="octree.ixx" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="README.md" />
     <None Include="vcpkg.json" />
     <None Include="Shaders\AmbientOcclusionCommon.hlsli" />
   </ItemGroup>
