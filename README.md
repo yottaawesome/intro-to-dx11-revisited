@@ -67,6 +67,7 @@ The effort is ongoing. The following projects are functional.
 * FX-specific `SampleState` definitions in .fx files have been replaced with proper sampler definitions, set through the C++ side.
 * `DirectXTK` has been added as vcpkg dependency, specifically for DDS texture loading, replacing the old `D3DX11CreateShaderResourceViewFromFile()` calls with `DirectX::CreateDDSTextureFromFile()`.
 * The chapter 13 samples included shaders that were not actually used, and have been removed.
+* Various `private` copy constructors and assignment operators (a legacy technique for preventing a class from being copied) have been un`private`d and `= delete`d.
 
 ## License and copyright
 
