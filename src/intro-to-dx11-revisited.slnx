@@ -76,5 +76,7 @@
   <Folder Name="/23 - Meshes/">
     <Project Path="23/MeshView/MeshView.vcxproj" Id="9183185f-9925-49af-9455-75f440e0e125" />
   </Folder>
+  <Folder Name="/24 - Quaternions/" />
+  <Folder Name="/25 - Character Animation/" />
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
