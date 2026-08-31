@@ -48,6 +48,7 @@ The effort is ongoing. The following projects are functional.
 * [22 - Ambient Occlusion: Ssao](./src/22/Ssao)
 * [23 - Meshes: MeshView](./src/23/MeshView)
 * [24 - Quaternions: Quaternions](./src/24/Quaternions)
+* [25 - Character Animation: SkinnedMesh](./src/25/SkinnedMesh)
 
 ## Running log of changes
 
