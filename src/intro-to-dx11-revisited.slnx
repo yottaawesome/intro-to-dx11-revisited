@@ -76,7 +76,11 @@
   <Folder Name="/23 - Meshes/">
     <Project Path="23/MeshView/MeshView.vcxproj" Id="9183185f-9925-49af-9455-75f440e0e125" />
   </Folder>
-  <Folder Name="/24 - Quaternions/" />
-  <Folder Name="/25 - Character Animation/" />
+  <Folder Name="/24 - Quaternions/">
+    <Project Path="24/Quaternions/Quaternions.vcxproj" Id="b4bfc0d5-d7cd-43f9-9f91-d79b5c542294" />
+  </Folder>
+  <Folder Name="/25 - Character Animation/">
+    <Project Path="25/SkinnedMesh/SkinnedMesh.vcxproj" Id="1cd90234-0605-48cb-b16c-7db91fb5af0b" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
