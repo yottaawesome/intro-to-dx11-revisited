@@ -45,6 +45,7 @@ The effort is ongoing. The following projects are functional.
 * [20 - Particle Systems: ParticleSystem](./src/20/ParticleSystem)
 * [21 - Shadow Mapping: Shadows](./src/21/Shadows)
 * [22 - Ambient Occlusion: AmbientOcclusion](./src/22/AmbientOcclusion)
+* [22 - Ambient Occlusion: Ssao](./src/22/Ssao)
 
 ## Running log of changes
 
