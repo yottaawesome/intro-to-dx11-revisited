@@ -15,11 +15,90 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="animationhelper.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="basicmodel.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="loadm3d.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="meshgeometry.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderstates.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shadowmap.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sharedvertices.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="skinnedmeshdemo.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="skinneddata.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="skinnedmodel.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sky.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ssao.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="app.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
+    <None Include="Shaders\BasicCommon.hlsli" />
+    <None Include="Shaders\BuildShadowMapCommon.hlsli" />
+    <None Include="Shaders\DebugTextureCommon.hlsli" />
+    <None Include="Shaders\LightHelper.hlsli" />
+    <None Include="Shaders\NormalMapCommon.hlsli" />
+    <None Include="Shaders\SkyCommon.hlsli" />
+    <None Include="Shaders\SsaoBlurCommon.hlsli" />
+    <None Include="Shaders\SsaoCommon.hlsli" />
+    <None Include="Shaders\SsaoNormalDepthCommon.hlsli" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\BasicVS.hlsl" />
+    <FxCompile Include="Shaders\BasicPS.hlsl" />
+    <FxCompile Include="Shaders\NormalMapVS.hlsl" />
+    <FxCompile Include="Shaders\NormalMapSkinnedVS.hlsl" />
+    <FxCompile Include="Shaders\NormalMapPS.hlsl" />
+    <FxCompile Include="Shaders\BuildShadowMapVS.hlsl" />
+    <FxCompile Include="Shaders\BuildShadowMapSkinnedVS.hlsl" />
+    <FxCompile Include="Shaders\BuildShadowMapPS.hlsl" />
+    <FxCompile Include="Shaders\BuildShadowMapTessVS.hlsl" />
+    <FxCompile Include="Shaders\BuildShadowMapTessHS.hlsl" />
+    <FxCompile Include="Shaders\BuildShadowMapTessDS.hlsl" />
+    <FxCompile Include="Shaders\BuildShadowMapTessPS.hlsl" />
+    <FxCompile Include="Shaders\DebugTextureVS.hlsl" />
+    <FxCompile Include="Shaders\DebugTexturePS.hlsl" />
+    <FxCompile Include="Shaders\DebugTextureRedPS.hlsl" />
+    <FxCompile Include="Shaders\DebugTextureGreenPS.hlsl" />
+    <FxCompile Include="Shaders\DebugTextureBluePS.hlsl" />
+    <FxCompile Include="Shaders\DebugTextureAlphaPS.hlsl" />
+    <FxCompile Include="Shaders\SkyVS.hlsl" />
+    <FxCompile Include="Shaders\SkyPS.hlsl" />
+    <FxCompile Include="Shaders\SsaoNormalDepthVS.hlsl" />
+    <FxCompile Include="Shaders\SsaoNormalDepthSkinnedVS.hlsl" />
+    <FxCompile Include="Shaders\SsaoNormalDepthPS.hlsl" />
+    <FxCompile Include="Shaders\SsaoNormalDepthAlphaClipPS.hlsl" />
+    <FxCompile Include="Shaders\SsaoVS.hlsl" />
+    <FxCompile Include="Shaders\SsaoPS.hlsl" />
+    <FxCompile Include="Shaders\SsaoBlurVS.hlsl" />
+    <FxCompile Include="Shaders\SsaoBlurHorzPS.hlsl" />
+    <FxCompile Include="Shaders\SsaoBlurVertPS.hlsl" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,13 @@
+export module skinnedmeshdemo;
+export import :animationhelper;
+export import :basicmodel;
+export import :loadm3d;
+export import :meshgeometry;
+export import :renderstates;
+export import :shadowmap;
+export import :sharedvertices;
+export import :skinneddata;
+export import :skinnedmodel;
+export import :sky;
+export import :ssao;
+export import :app;
