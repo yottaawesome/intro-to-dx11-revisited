@@ -18,23 +18,8 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ambientocclusiondemo.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="app.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="octree.ixx">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />
-    <None Include="Shaders\AmbientOcclusionCommon.hlsli" />
-    <None Include="README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Shaders\AmbientOcclusionVS.hlsl" />
-    <FxCompile Include="Shaders\AmbientOcclusionPS.hlsl" />
   </ItemGroup>
 </Project>

@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>18.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{91dbd9c6-351c-495d-95de-cd6526a1b1ee}</ProjectGuid>
-    <RootNamespace>AmbientOcclusion</RootNamespace>
+    <ProjectGuid>{9183185f-9925-49af-9455-75f440e0e125}</ProjectGuid>
+    <RootNamespace>MeshView</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -116,10 +116,10 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <BuildStlModules>true</BuildStlModules>
       <ModuleOutputFile>$(IntDir)$(RelativeDir)</ModuleOutputFile>
       <ModuleDependenciesFile>$(IntDir)$(RelativeDir)</ModuleDependenciesFile>
       <ObjectFileName>$(IntDir)$(RelativeDir)</ObjectFileName>
-      <BuildStlModules>true</BuildStlModules>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -139,10 +139,10 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <BuildStlModules>true</BuildStlModules>
       <ModuleOutputFile>$(IntDir)$(RelativeDir)</ModuleOutputFile>
       <ModuleDependenciesFile>$(IntDir)$(RelativeDir)</ModuleDependenciesFile>
       <ObjectFileName>$(IntDir)$(RelativeDir)</ObjectFileName>
-      <BuildStlModules>true</BuildStlModules>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
@@ -154,32 +154,15 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ambientocclusiondemo.ixx" />
-    <ClCompile Include="app.ixx" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="octree.ixx" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="README.md" />
-    <None Include="vcpkg.json" />
-    <None Include="Shaders\AmbientOcclusionCommon.hlsli" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Shaders\AmbientOcclusionVS.hlsl">
-      <ShaderType>Vertex</ShaderType>
-      <ShaderModel>5.0</ShaderModel>
-      <ObjectFileOutput>%(RelativeDir)%(Filename).cso</ObjectFileOutput>
-    </FxCompile>
-    <FxCompile Include="Shaders\AmbientOcclusionPS.hlsl">
-      <ShaderType>Pixel</ShaderType>
-      <ShaderModel>5.0</ShaderModel>
-      <ObjectFileOutput>%(RelativeDir)%(Filename).cso</ObjectFileOutput>
-    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.vcxproj">
       <Project>{df990ccb-27b1-487f-aac6-728208932207}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vcpkg.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

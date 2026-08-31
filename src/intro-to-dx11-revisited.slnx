@@ -73,5 +73,8 @@
     <Project Path="22/AmbientOcclusion/AmbientOcclusion.vcxproj" Id="91dbd9c6-351c-495d-95de-cd6526a1b1ee" />
     <Project Path="22/Ssao/Ssao.vcxproj" Id="e2b1cc02-41e5-4f42-bb57-9588c7674c16" />
   </Folder>
+  <Folder Name="/23 - Meshes/">
+    <Project Path="23/MeshView/MeshView.vcxproj" Id="9183185f-9925-49af-9455-75f440e0e125" />
+  </Folder>
   <Project Path="Shared/Shared.vcxproj" Id="df990ccb-27b1-487f-aac6-728208932207" />
 </Solution>
