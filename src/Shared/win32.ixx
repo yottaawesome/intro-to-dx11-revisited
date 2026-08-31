@@ -237,6 +237,8 @@ export namespace DirectX
 		::DirectX::BoundingBox, // replaces XNA::AxisAlignedBox
 		::DirectX::BoundingFrustum, // replaces XNA::Frustum
 		::DirectX::XMMatrixDecompose,
+		::DirectX::XMVector4Normalize,
+		::DirectX::XMVector3Transform,
 		::DirectX::XMMatrixOrthographicOffCenterLH,
 		::DirectX::XMLoadFloat3,
 		::DirectX::XMLoadFloat4x4,
@@ -309,7 +311,6 @@ export namespace DirectX
 		using
 			::DirectX::PackedVector::XMCOLOR,
 			::DirectX::PackedVector::XMHALF4,
-			::DirectX::PackedVector::XMCOLOR,
 			::DirectX::PackedVector::HALF,
 			::DirectX::PackedVector::XMConvertFloatToHalf,
 			::DirectX::PackedVector::XMStoreColor
