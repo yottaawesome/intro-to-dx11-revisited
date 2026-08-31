@@ -9,3 +9,4 @@ export import :comptr;
 export import :geometrygenerator;
 export import :lighthelper;
 export import :camera;
+export import :texturemanager;
