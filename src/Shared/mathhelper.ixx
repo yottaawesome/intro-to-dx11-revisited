@@ -87,6 +87,7 @@ public:
 			return DirectX::XMVector3Normalize(v);
 		}
 	}
+
 	static auto RandHemisphereUnitVec3(DirectX::XMVECTOR n) -> DirectX::XMVECTOR
 	{
 		auto One = DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
@@ -111,6 +112,14 @@ public:
 
 			return DirectX::XMVector3Normalize(v);
 		}
+	}
+
+	static auto ScaledTranslation(DirectX::FXMMATRIX scale, DirectX::CXMMATRIX offset) -> DirectX::XMFLOAT4X4
+	{
+		auto scaleTranslation = DirectX::XMMatrixMultiply(scale, offset);
+		auto result = DirectX::XMFLOAT4X4{};
+		DirectX::XMStoreFloat4x4(&result, scaleTranslation);
+		return result;
 	}
 
 	static inline constexpr auto Infinity = std::numeric_limits<float>::infinity();

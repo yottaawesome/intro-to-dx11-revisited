@@ -8,7 +8,7 @@ import :ssao;
 import :sharedvertices;
 import :skinnedmodel;
 
-export struct BoundingSphere
+struct BoundingSphere
 {
 	DirectX::XMFLOAT3 Center = { 0.0f, 0.0f, 0.0f };
 	float Radius = 0.0f;
@@ -30,6 +30,7 @@ namespace Basic
 		DirectX::XMFLOAT2 gPadding;
 		DirectX::XMFLOAT4 gFogColor;
 	};
+	static_assert(sizeof(PerFrameConstants) == 256);
 
 	struct PerObjectConstants
 	{
@@ -41,8 +42,6 @@ namespace Basic
 		DirectX::XMFLOAT4X4 gShadowTransform;
 		Material gMaterial;
 	};
-
-	static_assert(sizeof(PerFrameConstants) == 256);
 	static_assert(sizeof(PerObjectConstants) == 448);
 }
 
@@ -62,6 +61,7 @@ namespace Normal
 		DirectX::XMFLOAT2 gPadding;
 		DirectX::XMFLOAT4 gFogColor;
 	};
+	static_assert(sizeof(PerFrameConstants) == 256);
 
 	struct PerObjectConstants
 	{
@@ -73,8 +73,6 @@ namespace Normal
 		DirectX::XMFLOAT4X4 gShadowTransform;
 		Material gMaterial;
 	};
-
-	static_assert(sizeof(PerFrameConstants) == 256);
 	static_assert(sizeof(PerObjectConstants) == 448);
 }
 
@@ -88,7 +86,6 @@ namespace Shadow
 		DirectX::XMFLOAT4X4 gWorldViewProj;
 		DirectX::XMFLOAT4X4 gTexTransform;
 	};
-
 	static_assert(sizeof(PerObjectConstants) == 320);
 }
 
@@ -101,7 +98,6 @@ namespace Skinned
 		std::array<DirectX::XMFLOAT4X4, MaxBoneTransforms>
 			gBoneTransforms;
 	};
-
 	static_assert(sizeof(BoneConstants) == 6144);
 }
 
@@ -114,7 +110,6 @@ namespace NormalDepth
 		DirectX::XMFLOAT4X4 gWorldViewProj;
 		DirectX::XMFLOAT4X4 gTexTransform;
 	};
-
 	static_assert(sizeof(PerObjectConstants) == 256);
 }
 
@@ -124,38 +119,25 @@ namespace DebugTexture
 	{
 		DirectX::XMFLOAT4X4 gWorldViewProj;
 	};
-
 	static_assert(sizeof(PerObjectConstants) == 64);
 }
 
 export class SkinnedMeshApp : public D3DApp
 {
 public:
-	SkinnedMeshApp(Win32::HINSTANCE hInstance)
-		: D3DApp{ hInstance, L"Skinned Mesh Demo" }
+	SkinnedMeshApp(Win32::HINSTANCE hInstance) : D3DApp{ hInstance, L"Skinned Mesh Demo" }
 	{
-		DirectX::XMMATRIX I = DirectX::XMMatrixIdentity();
-		DirectX::XMStoreFloat4x4(&mGridWorld, I);
-
-		DirectX::XMMATRIX boxScale = DirectX::XMMatrixScaling(3.0f, 1.0f, 3.0f);
-		DirectX::XMMATRIX boxOffset = DirectX::XMMatrixTranslation(0.0f, 0.5f, 0.0f);
-		DirectX::XMStoreFloat4x4(&mBoxWorld, DirectX::XMMatrixMultiply(boxScale, boxOffset));
-
-		DirectX::XMMATRIX skullScale = DirectX::XMMatrixScaling(0.5f, 0.5f, 0.5f);
-		DirectX::XMMATRIX skullOffset = DirectX::XMMatrixTranslation(0.0f, 1.0f, 0.0f);
-		DirectX::XMStoreFloat4x4(&mSkullWorld, DirectX::XMMatrixMultiply(skullScale, skullOffset));
-
-		for (int i = 0; i < 5; ++i)
+		for (int i = 0; i < NumObjects / 2; ++i)
 		{
 			DirectX::XMStoreFloat4x4(&mCylWorld[i * 2 + 0], DirectX::XMMatrixTranslation(-5.0f, 1.5f, -10.0f + i * 5.0f));
 			DirectX::XMStoreFloat4x4(&mCylWorld[i * 2 + 1], DirectX::XMMatrixTranslation(+5.0f, 1.5f, -10.0f + i * 5.0f));
 			DirectX::XMStoreFloat4x4(&mSphereWorld[i * 2 + 0], DirectX::XMMatrixTranslation(-5.0f, 3.5f, -10.0f + i * 5.0f));
 			DirectX::XMStoreFloat4x4(&mSphereWorld[i * 2 + 1], DirectX::XMMatrixTranslation(+5.0f, 3.5f, -10.0f + i * 5.0f));
 		}
-
 		Init();
 	}
 
+private:
 	void Init() override
 	{
 		D3DApp::Init();
@@ -235,7 +217,7 @@ public:
 
 		md3dImmediateContext->RSSetState(nullptr);
 		md3dImmediateContext->ClearDepthStencilView(
-			mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
+			mDepthStencilView.get(), D3D11::D3D11_CLEAR_FLAG{ D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL }, 1.0f, 0);
 		mSsao->SetNormalDepthRenderTarget(mDepthStencilView.get());
 		DrawSceneToSsaoNormalDepthMap();
 
@@ -258,8 +240,7 @@ public:
 			0.5f, 0.5f, 0.0f, 1.0f,
 		};
 
-		auto basicPerFrameConstants =
-			Basic::PerFrameConstants{
+		auto basicPerFrameConstants = Basic::PerFrameConstants{
 			.gDirLights = { mDirLights[0], mDirLights[1], mDirLights[2] },
 			.gEyePosW = mCam.GetPosition(),
 			.gFogStart = 15.0f,
@@ -286,11 +267,9 @@ public:
 			.gFogEnabled = false,
 			.gReflectionEnabled = false,
 			.gPadding = DirectX::XMFLOAT2{ 0.0f, 0.0f },
-			.gFogColor =
-				DirectX::XMFLOAT4{ 0.7f, 0.7f, 0.7f, 1.0f },
+			.gFogColor = DirectX::XMFLOAT4{ 0.7f, 0.7f, 0.7f, 1.0f },
 		};
-		md3dImmediateContext->UpdateSubresource(
-			mNormalMapPerFrameCB.get(), 0, nullptr, &normalPerFrameConstants, 0, 0);
+		md3dImmediateContext->UpdateSubresource(mNormalMapPerFrameCB.get(), 0, nullptr, &normalPerFrameConstants, 0, 0);
 
 		md3dImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		md3dImmediateContext->IASetInputLayout(mNormalMapInputLayout.get());
@@ -302,8 +281,7 @@ public:
 
 		auto shapeStride = static_cast<std::uint32_t>(sizeof(Vertices::PosNormalTexTan));
 		auto offset = 0u;
-		md3dImmediateContext->IASetVertexBuffers(
-			0, 1, mShapesVB.GetAddressOf(), &shapeStride, &offset);
+		md3dImmediateContext->IASetVertexBuffers(0, 1, mShapesVB.GetAddressOf(), &shapeStride, &offset);
 		md3dImmediateContext->IASetIndexBuffer(mShapesIB.get(), DXGI_FORMAT_R32_UINT, 0);
 
 		if (Win32::GetAsyncKeyState('1') & 0x8000)
@@ -311,15 +289,10 @@ public:
 
 		auto normalBuffers = std::array{ mNormalMapPerFrameCB.get(), mNormalMapPerObjectCB.get(), };
 		auto normalSamplers = std::array{ mLinearSampler.get(), mShadowSampler.get(), };
-		md3dImmediateContext->PSSetSamplers(
-			0, static_cast<std::uint32_t>(normalSamplers.size()), normalSamplers.data());
+		md3dImmediateContext->PSSetSamplers(0, static_cast<std::uint32_t>(normalSamplers.size()), normalSamplers.data());
 
 		auto UpdateNormalObject =
-			[&](
-				DirectX::CXMMATRIX world,
-				DirectX::CXMMATRIX texTransform,
-				const Material& material
-			)
+			[&](DirectX::CXMMATRIX world, DirectX::CXMMATRIX texTransform, const Material& material)
 			{
 				auto worldViewProj = world * view * proj;
 				auto constants = Normal::PerObjectConstants{};
@@ -348,14 +321,7 @@ public:
 			)
 			{
 				UpdateNormalObject(world, texTransform, material);
-				auto resources =
-					std::array<D3D11::ID3D11ShaderResourceView*, 5>{
-						diffuseMap,
-						normalMap,
-						mSky->CubeMapSRV(),
-						mSmap->DepthMapSRV(),
-						mSsao->AmbientSRV(),
-					};
+				auto resources = std::array{ diffuseMap, normalMap, mSky->CubeMapSRV(), mSmap->DepthMapSRV(), mSsao->AmbientSRV() };
 				md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(resources.size()), resources.data());
 				md3dImmediateContext->DrawIndexed(indexCount, indexOffset, vertexOffset);
 			};
@@ -402,25 +368,13 @@ public:
 		basicPerFrameConstants.gReflectionEnabled = true;
 		md3dImmediateContext->UpdateSubresource(mBasicPerFrameCB.get(), 0, nullptr, &basicPerFrameConstants, 0, 0);
 
-		auto reflectiveResources =
-			std::array<D3D11::ID3D11ShaderResourceView*, 4>{
-				nullptr,
-				mSky->CubeMapSRV(),
-				mSmap->DepthMapSRV(),
-				mSsao->AmbientSRV(),
-			};
-		auto reflectiveSamplers = std::array{ mLinearSampler.get(), mShadowSampler.get(), };
+		auto reflectiveResources = std::array{ static_cast<D3D11::ID3D11ShaderResourceView*>(nullptr), mSky->CubeMapSRV(), mSmap->DepthMapSRV(), mSsao->AmbientSRV() };
+		auto reflectiveSamplers = std::array{ mLinearSampler.get(), mShadowSampler.get() };
 		md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(reflectiveResources.size()), reflectiveResources.data());
 		md3dImmediateContext->PSSetSamplers(0, static_cast<std::uint32_t>(reflectiveSamplers.size()), reflectiveSamplers.data());
 
 		auto DrawReflectiveObject =
-			[&](
-				DirectX::CXMMATRIX world,
-				const Material& material,
-				std::uint32_t indexCount,
-				std::uint32_t indexOffset,
-				std::int32_t vertexOffset
-			)
+			[&](DirectX::CXMMATRIX world, const Material& material, std::uint32_t indexCount, std::uint32_t indexOffset, std::int32_t vertexOffset)
 			{
 				auto worldViewProj = world * view * proj;
 				auto constants = Basic::PerObjectConstants{};
@@ -473,14 +427,13 @@ public:
 				for (auto subset = 0u; subset < instance.Model->SubsetCount; ++subset)
 				{
 					UpdateNormalObject(world, texTransform, instance.Model->Mat[subset]);
-					auto resources =
-						std::array<D3D11::ID3D11ShaderResourceView*, 5>{
-							instance.Model->DiffuseMapSRV[subset].get(),
-							instance.Model->NormalMapSRV[subset].get(),
-							mSky->CubeMapSRV(),
-							mSmap->DepthMapSRV(),
-							mSsao->AmbientSRV(),
-						};
+					auto resources = std::array{
+						instance.Model->DiffuseMapSRV[subset].get(),
+						instance.Model->NormalMapSRV[subset].get(),
+						mSky->CubeMapSRV(),
+						mSmap->DepthMapSRV(),
+						mSsao->AmbientSRV()
+					};
 					md3dImmediateContext->PSSetShaderResources(0, static_cast<std::uint32_t>(resources.size()), resources.data());
 					instance.Model->ModelMesh.Draw(md3dImmediateContext.get(), subset);
 				}
@@ -526,7 +479,6 @@ public:
 		mLastMousePos = { x, y };
 	}
 
-private:
 	void UploadBoneTransforms(const SkinnedModelInstance& instance, std::uint32_t slot)
 	{
 		if (instance.FinalTransforms.size() > Skinned::MaxBoneTransforms)
@@ -576,13 +528,9 @@ private:
 		DrawNormalDepthObject(DirectX::XMLoadFloat4x4(&mGridWorld), DirectX::XMMatrixScaling(8.0f, 10.0f, 1.0f), mGridIndexCount, mGridIndexOffset, mGridVertexOffset);
 		DrawNormalDepthObject(DirectX::XMLoadFloat4x4(&mBoxWorld), DirectX::XMMatrixScaling(2.0f, 1.0f, 1.0f), mBoxIndexCount, mBoxIndexOffset, mBoxVertexOffset);
 
-		for (auto i = 0; i < 10; ++i)
+		for (auto i = 0; i < NumObjects; ++i)
 		{
 			DrawNormalDepthObject(DirectX::XMLoadFloat4x4(&mCylWorld[i]), DirectX::XMMatrixScaling(1.0f, 2.0f, 1.0f), mCylinderIndexCount, mCylinderIndexOffset, mCylinderVertexOffset);
-		}
-
-		for (auto i = 0; i < 10; ++i)
-		{
 			DrawNormalDepthObject(DirectX::XMLoadFloat4x4(&mSphereWorld[i]), DirectX::XMMatrixIdentity(), mSphereIndexCount, mSphereIndexOffset, mSphereVertexOffset);
 		}
 
@@ -656,10 +604,11 @@ private:
 		DrawShadowObject(DirectX::XMLoadFloat4x4(&mGridWorld), DirectX::XMMatrixScaling(8.0f, 10.0f, 1.0f), mGridIndexCount, mGridIndexOffset, mGridVertexOffset);
 		DrawShadowObject(DirectX::XMLoadFloat4x4(&mBoxWorld), DirectX::XMMatrixScaling(2.0f, 1.0f, 1.0f), mBoxIndexCount, mBoxIndexOffset, mBoxVertexOffset);
 
-		for (auto i = 0; i < 10; ++i)
+		for (auto i = 0; i < NumObjects; ++i)
+		{
 			DrawShadowObject(DirectX::XMLoadFloat4x4(&mCylWorld[i]), DirectX::XMMatrixScaling(1.0f, 2.0f, 1.0f), mCylinderIndexCount, mCylinderIndexOffset, mCylinderVertexOffset);
-		for (auto i = 0; i < 10; ++i)
 			DrawShadowObject(DirectX::XMLoadFloat4x4(&mSphereWorld[i]), DirectX::XMMatrixIdentity(), mSphereIndexCount, mSphereIndexOffset, mSphereVertexOffset);
+		}
 
 		auto skullStride = static_cast<std::uint32_t>(sizeof(Vertices::Basic32));
 		offset = 0;
@@ -1175,10 +1124,13 @@ private:
 				.InstanceDataStepRate = 0,
 			},
 		};
-		HR(
-			md3dDevice->CreateInputLayout(
-				basic32Desc.data(), static_cast<std::uint32_t>(basic32Desc.size()), basicVertexShaderBytecode->GetBufferPointer(), basicVertexShaderBytecode->GetBufferSize(), &mBasic32InputLayout),
-			"Failed to create basic32 input layout.");
+		HR(md3dDevice->CreateInputLayout(
+			basic32Desc.data(), 
+			static_cast<std::uint32_t>(basic32Desc.size()), 
+			basicVertexShaderBytecode->GetBufferPointer(), 
+			basicVertexShaderBytecode->GetBufferSize(), 
+			&mBasic32InputLayout
+		), "Failed to create basic32 input layout.");
 
 		auto posNormalTexTanDesc = std::array{
 			D3D11::D3D11_INPUT_ELEMENT_DESC{
@@ -1218,10 +1170,13 @@ private:
 				.InstanceDataStepRate = 0,
 			},
 		};
-		HR(
-			md3dDevice->CreateInputLayout(
-				posNormalTexTanDesc.data(), static_cast<std::uint32_t>(posNormalTexTanDesc.size()), normalMapVertexShaderBytecode->GetBufferPointer(), normalMapVertexShaderBytecode->GetBufferSize(), &mNormalMapInputLayout),
-			"Failed to create normal-map input layout.");
+		HR(md3dDevice->CreateInputLayout(
+			posNormalTexTanDesc.data(), 
+			static_cast<std::uint32_t>(posNormalTexTanDesc.size()), 
+			normalMapVertexShaderBytecode->GetBufferPointer(), 
+			normalMapVertexShaderBytecode->GetBufferSize(), 
+			&mNormalMapInputLayout
+		), "Failed to create normal-map input layout.");
 
 		auto skinnedDesc = std::array{
 			D3D11::D3D11_INPUT_ELEMENT_DESC{
@@ -1279,10 +1234,13 @@ private:
 				.InstanceDataStepRate = 0,
 			},
 		};
-		HR(
-			md3dDevice->CreateInputLayout(
-				skinnedDesc.data(), static_cast<std::uint32_t>(skinnedDesc.size()), normalMapSkinnedVertexShaderBytecode->GetBufferPointer(), normalMapSkinnedVertexShaderBytecode->GetBufferSize(), &mSkinnedInputLayout),
-			"Failed to create skinned input layout.");
+		HR(md3dDevice->CreateInputLayout(
+			skinnedDesc.data(), 
+			static_cast<std::uint32_t>(skinnedDesc.size()), 
+			normalMapSkinnedVertexShaderBytecode->GetBufferPointer(), 
+			normalMapSkinnedVertexShaderBytecode->GetBufferSize(), 
+			&mSkinnedInputLayout
+		), "Failed to create skinned input layout.");
 	}
 
 private:
@@ -1403,11 +1361,12 @@ private:
 	};
 
 	// Define transformations from local spaces to world space.
-	DirectX::XMFLOAT4X4 mSphereWorld[10];
-	DirectX::XMFLOAT4X4 mCylWorld[10];
-	DirectX::XMFLOAT4X4 mBoxWorld;
-	DirectX::XMFLOAT4X4 mGridWorld;
-	DirectX::XMFLOAT4X4 mSkullWorld;
+	static constexpr auto NumObjects = 10;
+	std::array<DirectX::XMFLOAT4X4, NumObjects> mSphereWorld;
+	std::array<DirectX::XMFLOAT4X4, NumObjects> mCylWorld;
+	DirectX::XMFLOAT4X4 mBoxWorld = MathHelper::ScaledTranslation(DirectX::XMMatrixScaling(3.0f, 1.0f, 3.0f), DirectX::XMMatrixTranslation(0.0f, 0.5f, 0.0f));
+	DirectX::XMFLOAT4X4 mGridWorld = d3dHelper::Identity4x4;
+	DirectX::XMFLOAT4X4 mSkullWorld = MathHelper::ScaledTranslation(DirectX::XMMatrixScaling(0.5f, 0.5f, 0.5f), DirectX::XMMatrixTranslation(0.0f, 1.0f, 0.0f));
 
 	int mBoxVertexOffset;
 	int mGridVertexOffset;
