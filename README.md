@@ -14,7 +14,7 @@ You'll need Visual Studio 2026 with the C++ desktop development and C++ game dev
 
 ## Status
 
-The effort is ongoing. The following projects are functional.
+The effort is largely complete, but some cleanup remains. The following projects are functional.
 
 * [01 - Vector Algebra: XMVECTOR](./src/01/XMVECTOR)
 * [02 - Matrix Algebra: XMMATRIX](./src/02/XMMATRIX)
