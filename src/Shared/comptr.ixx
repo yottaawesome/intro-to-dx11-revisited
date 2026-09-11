@@ -1,26 +1,32 @@
 export module shared:comptr;
 import std;
 import :win32;
+import :error;
 
+// A smart pointer for COM objects that automatically manages reference counting. Intended as a 
+// replacement for Microsoft::WRL::ComPtr as it exposes clearer ownership semantics at 
+// construction via Own and Copy tags.
 export template<typename T>
 class ComPtr
 {
 public:
+	using pointer = T*;
+
 	struct Own { T* ptr = nullptr; };
 	struct Copy { T* ptr = nullptr; };
+	
 	constexpr ~ComPtr()
 	{
 		if (m_ptr)
 			m_ptr->Release();
 	}
-
+	
+	// Constructors and assignment operators
 	constexpr ComPtr() = default;
 
-	constexpr ComPtr(Own own)
-		: m_ptr(own.ptr)
+	constexpr ComPtr(Own own) : m_ptr(own.ptr)
 	{}
-	constexpr ComPtr(Copy copy)
-		: m_ptr(copy.ptr)
+	constexpr ComPtr(Copy copy) : m_ptr(copy.ptr)
 	{
 		if (m_ptr)
 			m_ptr->AddRef();
@@ -60,6 +66,7 @@ public:
 		return *this;
 	}
 
+	// public member functions
 	constexpr auto Uuid() const -> Win32::GUID
 	{
 		return __uuidof(T);
@@ -103,9 +110,15 @@ public:
 		}
 	}
 
+	constexpr void reset(T* ptr)
+	{
+		reset();
+		m_ptr = ptr;
+	}
+
 	constexpr void swap(ComPtr<T>& other)
 	{
-		std::swap(m_ptr, other.m_ptr);
+		std::exchange(m_ptr, other.m_ptr);
 	}
 
 	constexpr auto get() const -> T*
@@ -131,6 +144,25 @@ public:
 	constexpr auto VoidAddress() -> void**
 	{
 		return reinterpret_cast<void**>(&m_ptr);
+	}
+
+	template<typename T>
+	constexpr auto TryAs() noexcept -> std::expected<ComPtr<T>, Win32::HRESULT>
+	{
+		if (not m_ptr)
+			return ComPtr<T>{};
+		auto result = ComPtr<T>{};
+		auto hr = m_ptr->QueryInterface(__uuidof(T), reinterpret_cast<void**>(&result.ptr));
+		return Win32::Succeeded(hr) ? result : std::unexpected{ hr };
+	}
+
+	template<typename T>
+	constexpr auto As() -> ComPtr<T>
+	{
+		auto result = TryAs<T>();
+		if (not result)
+			throw ComException{ result.error(), "QueryInterface() failed" };
+		return *result;
 	}
 
 private:

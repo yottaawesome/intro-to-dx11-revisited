@@ -51,6 +51,12 @@
     <ClCompile Include="texturemanager.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="strings.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="error.ixx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />

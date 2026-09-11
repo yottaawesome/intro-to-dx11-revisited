@@ -10,3 +10,5 @@ export import :geometrygenerator;
 export import :lighthelper;
 export import :camera;
 export import :texturemanager;
+export import :strings;
+export import :error;

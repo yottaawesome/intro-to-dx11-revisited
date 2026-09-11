@@ -5,6 +5,7 @@ import :gametimer;
 import :d3dutil;
 import :comptr;
 import :build;
+import :d3dutil;
 
 export class D3DApp
 {
@@ -116,7 +117,7 @@ public:
 		// Resize the swap chain and recreate the render target view.
 		HR(mSwapChain->ResizeBuffers(1, mClientWidth, mClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
 		auto backBuffer = ComPtr<D3D11::ID3D11Texture2D>{};
-		HR(mSwapChain->GetBuffer(0, backBuffer.Uuid(), backBuffer.ReleaseAndGetAddressOfVoid()));
+		HR(mSwapChain->GetBuffer(0, backBuffer.Uuid(), std::out_ptr(backBuffer)));
 		HR(md3dDevice->CreateRenderTargetView(backBuffer.get(), 0, &mRenderTargetView));
 		backBuffer.reset();
 
@@ -398,7 +399,6 @@ protected:
 		//assert(m4xMsaaQuality > 0);
 
 		// Fill out a DXGI_SWAP_CHAIN_DESC to describe our swap chain.
-
 		auto sd = DXGI::DXGI_SWAP_CHAIN_DESC{
 			.BufferDesc = {
 				.Width = static_cast<std::uint32_t>(mClientWidth),
