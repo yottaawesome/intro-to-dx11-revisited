@@ -81,6 +81,8 @@ public:
 				{
 					CalculateFrameStats();
 					UpdateScene(mTimer.DeltaTime());
+					// With the transition to DXGI_SWAP_EFFECT_FLIP_DISCARD, this is required.
+					md3dImmediateContext->OMSetRenderTargets(1, mRenderTargetView.GetAddressOf(), mDepthStencilView.get());
 					DrawScene();
 				}
 				else
@@ -115,7 +117,7 @@ public:
 		mDepthStencilBuffer.reset();
 
 		// Resize the swap chain and recreate the render target view.
-		HR(mSwapChain->ResizeBuffers(1, mClientWidth, mClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+		HR(mSwapChain->ResizeBuffers(0, mClientWidth, mClientHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
 		auto backBuffer = ComPtr<D3D11::ID3D11Texture2D>{};
 		HR(mSwapChain->GetBuffer(0, backBuffer.Uuid(), std::out_ptr(backBuffer)));
 		HR(md3dDevice->CreateRenderTargetView(backBuffer.get(), 0, &mRenderTargetView));
@@ -128,10 +130,9 @@ public:
 			.MipLevels = 1,
 			.ArraySize = 1,
 			.Format = DXGI_FORMAT_D24_UNORM_S8_UINT,
-			// Use 4X MSAA? --must match swap chain MSAA values.
 			.SampleDesc = {
-				.Count = static_cast<std::uint32_t>(mEnable4xMsaa ? 4 : 1),
-				.Quality = static_cast<std::uint32_t>(mEnable4xMsaa ? m4xMsaaQuality - 1 : 0)
+				.Count = 1,
+				.Quality = 0
 			},
 			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_DEFAULT,
 			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_DEPTH_STENCIL,
@@ -398,30 +399,19 @@ protected:
 		HR(md3dDevice->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m4xMsaaQuality));
 		//assert(m4xMsaaQuality > 0);
 
-		// Fill out a DXGI_SWAP_CHAIN_DESC to describe our swap chain.
-		auto sd = DXGI::DXGI_SWAP_CHAIN_DESC{
-			.BufferDesc = {
-				.Width = static_cast<std::uint32_t>(mClientWidth),
-				.Height = static_cast<std::uint32_t>(mClientHeight),
-				.RefreshRate = {
-					.Numerator = 60,
-					.Denominator = 1
-				},
-				.Format = DXGI_FORMAT_R8G8B8A8_UNORM,
-				.ScanlineOrdering = DXGI::DXGI_MODE_SCANLINE_ORDER::DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
-				.Scaling = DXGI::DXGI_MODE_SCALING::DXGI_MODE_SCALING_UNSPECIFIED
-			},
-			// Use 4X MSAA? 
+		// Fill out a DXGI_SWAP_CHAIN_DESC1 to describe our swap chain.
+		auto sd = DXGI::DXGI_SWAP_CHAIN_DESC1{
+			.Width = static_cast<std::uint32_t>(mClientWidth),
+			.Height = static_cast<std::uint32_t>(mClientHeight),
+			.Format = DXGI_FORMAT_R8G8B8A8_UNORM,
 			.SampleDesc = {
-				.Count = static_cast<std::uint32_t>(mEnable4xMsaa ? 4 : 1),
-				.Quality = static_cast<std::uint32_t>(mEnable4xMsaa ? m4xMsaaQuality - 1 : 0)
+				.Count = 1,
+				.Quality = 0
 			},
 			.BufferUsage = DXGI::Usage::RenderTargetOutput,
-			.BufferCount = 1,
-			.OutputWindow = mhMainWnd,
-			.Windowed = true,
-			// TODO: Use DXGI_SWAP_EFFECT_FLIP_DISCARD, but this requires using IDXGIFactory2 and CreateSwapChainForHwnd().
-			.SwapEffect = DXGI::DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_DISCARD,
+			.BufferCount = 2,
+			.Scaling = DXGI::DXGI_SCALING::DXGI_SCALING_NONE,
+			.SwapEffect = DXGI::DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_FLIP_DISCARD,
 			.Flags = 0
 		};
 
@@ -436,10 +426,10 @@ protected:
 		auto dxgiAdapter = ComPtr<DXGI::IDXGIAdapter>{};
 		HR(dxgiDevice->GetParent(dxgiAdapter.Uuid(), dxgiAdapter.VoidAddress()));
 
-		auto dxgiFactory = ComPtr<DXGI::IDXGIFactory>{};
+		auto dxgiFactory = ComPtr<DXGI::IDXGIFactory2>{};
 		HR(dxgiAdapter->GetParent(dxgiFactory.Uuid(), dxgiFactory.VoidAddress()));
 
-		HR(dxgiFactory->CreateSwapChain(md3dDevice.get(), &sd, mSwapChain.GetAddressOf()));
+		HR(dxgiFactory->CreateSwapChainForHwnd(md3dDevice.get(), mhMainWnd, &sd, nullptr, nullptr, mSwapChain.GetAddressOf()));
 
 		// The remaining steps that need to be carried out for d3d creation
 		// also need to be executed every time the window is resized.  So
@@ -484,7 +474,7 @@ protected:
 
 	ComPtr<D3D11::ID3D11Device> md3dDevice;
 	ComPtr<D3D11::ID3D11DeviceContext> md3dImmediateContext;
-	ComPtr<DXGI::IDXGISwapChain> mSwapChain;
+	ComPtr<DXGI::IDXGISwapChain1> mSwapChain;
 	ComPtr<D3D11::ID3D11Texture2D> mDepthStencilBuffer;
 	ComPtr<D3D11::ID3D11RenderTargetView> mRenderTargetView;
 	ComPtr<D3D11::ID3D11DepthStencilView> mDepthStencilView;
