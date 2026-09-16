@@ -73,6 +73,7 @@ The effort is largely complete, but some cleanup remains. The following projects
 * The chapter 13 samples included shaders that were not actually used, and have been removed.
 * Various `private` copy constructors and assignment operators (a legacy technique for preventing a class from being copied) have been un`private`d and `= delete`d.
 * `Ssao::DrawFullScreenQuad()` was declared but never defined, and has been deleted.
+* Swap effect has been changed to `DXGI_SWAP_EFFECT_FLIP_DISCARD` given that `DXGI_SWAP_EFFECT_FLIP_DISCARD` has been deprecated. This required changing some of the DXGI COM interfaces to a later version and enabling double buffering by default.
 
 ## License and copyright
 
