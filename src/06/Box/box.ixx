@@ -47,6 +47,7 @@ public:
 		auto P = DirectX::XMMATRIX{ DirectX::XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f)};
 		DirectX::XMStoreFloat4x4(&mProj, P);
 	}
+
 	void UpdateScene(float dt)
 	{
 		// Convert Spherical to Cartesian coordinates.
@@ -170,10 +171,7 @@ private:
 			.MiscFlags = 0,
 			.StructureByteStride = 0,
 		};
-		
-		auto vinitData = D3D11::D3D11_SUBRESOURCE_DATA{
-			.pSysMem = vertices.data()
-		};
+		auto vinitData = D3D11::D3D11_SUBRESOURCE_DATA{ .pSysMem = vertices.data() };
 		HR(md3dDevice->CreateBuffer(&vbd, &vinitData, &mBoxVB));
 
 		// Create the index buffer
@@ -205,15 +203,13 @@ private:
 
 		auto ibd = D3D11::D3D11_BUFFER_DESC{
 			.ByteWidth = sizeof(UINT) * 36,
-			.Usage = D3D11_USAGE_IMMUTABLE,
-			.BindFlags = D3D11_BIND_INDEX_BUFFER,
+			.Usage = D3D11::D3D11_USAGE::D3D11_USAGE_IMMUTABLE,
+			.BindFlags = D3D11::D3D11_BIND_FLAG::D3D11_BIND_INDEX_BUFFER,
 			.CPUAccessFlags = 0,
 			.MiscFlags = 0,
 			.StructureByteStride = 0,
 		};
-		auto iinitData = D3D11::D3D11_SUBRESOURCE_DATA{
-			.pSysMem = indices.data()
-		};
+		auto iinitData = D3D11::D3D11_SUBRESOURCE_DATA{ .pSysMem = indices.data() };
 		HR(md3dDevice->CreateBuffer(&ibd, &iinitData, &mBoxIB));
 	}
 
@@ -222,12 +218,12 @@ private:
 		auto vertexShaderBytecode = ComPtr<D3D::ID3DBlob>{};
 		auto hr = D3D::D3DReadFileToBlob(L"Shaders/color_VS.cso", &vertexShaderBytecode);
 		if (Win32::Failed(hr))
-			throw std::runtime_error{ "Failed to read vertex shader file." };
+			throw ComException{ hr, "Failed to read vertex shader file." };
 
 		hr = md3dDevice->CreateVertexShader(vertexShaderBytecode->GetBufferPointer(),
 			vertexShaderBytecode->GetBufferSize(), 0, &mColorVS);
 		if (Win32::Failed(hr))
-			throw std::runtime_error{ "Failed to create vertex shader." };
+			throw ComException{ hr, "Failed to create vertex shader." };
 
 		BuildVertexLayout(vertexShaderBytecode.get());
 		vertexShaderBytecode.reset();
@@ -235,13 +231,13 @@ private:
 		auto pixelShaderBytecode = ComPtr<D3D::ID3DBlob>{};
 		hr = D3D::D3DReadFileToBlob(L"Shaders/color_PS.cso", &pixelShaderBytecode);
 		if (Win32::Failed(hr))
-			throw std::runtime_error{ "Failed to read pixel shader file." };
+			throw ComException{ hr, "Failed to read pixel shader file." };
 
 		hr = md3dDevice->CreatePixelShader(pixelShaderBytecode->GetBufferPointer(),
 			pixelShaderBytecode->GetBufferSize(), 0, &mColorPS);
 		pixelShaderBytecode.reset();
 		if (Win32::Failed(hr))
-			throw std::runtime_error{ "Failed to create pixel shader." };
+			throw ComException{ hr, "Failed to create pixel shader." };
 
 		auto cbd = D3D11::D3D11_BUFFER_DESC{
 			.ByteWidth = sizeof(PerObjectConstants),
@@ -251,10 +247,9 @@ private:
 			.MiscFlags = 0,
 			.StructureByteStride = 0,
 		};
-		
 		hr = md3dDevice->CreateBuffer(&cbd, 0, &mPerObjectCB);
 		if (Win32::Failed(hr))
-			throw std::runtime_error{ "Failed to create constant buffer." };
+			throw ComException{ hr, "Failed to create constant buffer." };
 	}
 
 	void BuildVertexLayout(D3D::ID3DBlob* vertexShaderBytecode)
@@ -289,7 +284,7 @@ private:
 			&mInputLayout
 		);
 		if (Win32::Failed(hr))
-			throw std::runtime_error{ "Failed to create input layout." };
+			throw ComException{ hr, "Failed to create input layout." };
 	}
 
 private:
