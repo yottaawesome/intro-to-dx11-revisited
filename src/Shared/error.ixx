@@ -5,6 +5,21 @@ import :strings;
 
 export
 {
+	void ErrorMsg(const std::exception& ex)
+	{
+		Win32::MessageBoxA(nullptr, ex.what(), "Error", Win32::MbOK);
+	}
+
+	void ErrorMsg(std::string_view msg)
+	{
+		Win32::MessageBoxA(nullptr, msg.data(), "Error", Win32::MbOK);
+	}
+
+	void ErrorMsg(std::wstring_view msg)
+	{
+		Win32::MessageBoxW(nullptr, msg.data(), L"Error", Win32::MbOK);
+	}
+
 	class ComException : public std::runtime_error
 	{
 	public:
@@ -64,19 +79,4 @@ export
 		) : ComException(hr, msg, location)
 		{}
 	};
-
-	void ErrorMsg(const std::exception& ex)
-	{
-		Win32::MessageBoxA(0, ex.what(), "Error", Win32::MbOK);
-	}
-
-	void ErrorMsg(std::string_view msg)
-	{
-		Win32::MessageBoxA(0, msg.data(), "Error", Win32::MbOK);
-	}
-
-	void ErrorMsg(std::wstring_view msg)
-	{
-		Win32::MessageBoxW(0, msg.data(), L"Error", Win32::MbOK);
-	}
 }
