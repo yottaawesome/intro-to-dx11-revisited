@@ -29,9 +29,12 @@ public:
 			float px, float py, float pz,
 			float nx, float ny, float nz,
 			float tx, float ty, float tz,
-			float u, float v)
-			: Position(px, py, pz), Normal(nx, ny, nz),
-			TangentU(tx, ty, tz), TexC(u, v) {}
+			float u, float v
+		)	: Position(px, py, pz)
+			, Normal(nx, ny, nz)
+			, TangentU(tx, ty, tz)
+			, TexC(u, v) 
+		{}
 
 		DirectX::XMFLOAT3 Position;
 		DirectX::XMFLOAT3 Normal;
@@ -53,82 +56,79 @@ public:
 		//
 		// Create the vertices.
 		//
+		auto w2 = 0.5f * width;
+		auto h2 = 0.5f * height;
+		auto d2 = 0.5f * depth;
 
-		Vertex v[24];
+		auto v = std::array<Vertex, 24>{
+			// Fill in the front face vertex data.
+			Vertex{-w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f},
+			Vertex{-w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+			Vertex{+w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f},
+			Vertex{+w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f},
 
-		float w2 = 0.5f * width;
-		float h2 = 0.5f * height;
-		float d2 = 0.5f * depth;
+			// Fill in the back face vertex data.
+			Vertex{-w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f},
+			Vertex{+w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f},
+			Vertex{+w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+			Vertex{-w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f},
 
-		// Fill in the front face vertex data.
-		v[0] = Vertex(-w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-		v[1] = Vertex(-w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-		v[2] = Vertex(+w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-		v[3] = Vertex(+w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+			// Fill in the top face vertex data.
+			Vertex{-w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f},
+			Vertex{-w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+			Vertex{+w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f},
+			Vertex{+w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f},
 
-		// Fill in the back face vertex data.
-		v[4] = Vertex(-w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-		v[5] = Vertex(+w2, -h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-		v[6] = Vertex(+w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-		v[7] = Vertex(-w2, +h2, +d2, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+			// Fill in the bottom face vertex data.
+			Vertex{-w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f},
+			Vertex{+w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f},
+			Vertex{+w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f},
+			Vertex{-w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f},
 
-		// Fill in the top face vertex data.
-		v[8] = Vertex(-w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-		v[9] = Vertex(-w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-		v[10] = Vertex(+w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-		v[11] = Vertex(+w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
+			// Fill in the left face vertex data.
+			Vertex{-w2, -h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f},
+			Vertex{-w2, +h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f},
+			Vertex{-w2, +h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f},
+			Vertex{-w2, -h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f},
 
-		// Fill in the bottom face vertex data.
-		v[12] = Vertex(-w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f);
-		v[13] = Vertex(+w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-		v[14] = Vertex(+w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-		v[15] = Vertex(-w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+			// Fill in the right face vertex data.
+			Vertex{+w2, -h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f},
+			Vertex{+w2, +h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
+			Vertex{+w2, +h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f},
+			Vertex{+w2, -h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f},
+		};
 
-		// Fill in the left face vertex data.
-		v[16] = Vertex(-w2, -h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f);
-		v[17] = Vertex(-w2, +h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f);
-		v[18] = Vertex(-w2, +h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f);
-		v[19] = Vertex(-w2, -h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f);
-
-		// Fill in the right face vertex data.
-		v[20] = Vertex(+w2, -h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f);
-		v[21] = Vertex(+w2, +h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f);
-		v[22] = Vertex(+w2, +h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
-		v[23] = Vertex(+w2, -h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
-
-		meshData.Vertices.assign(&v[0], &v[24]);
+		meshData.Vertices.assign(v.begin(), v.end());
 
 		//
 		// Create the indices.
-		//
+		auto i = std::array<std::uint32_t, 36>{
+			// Fill in the front face index data
+			0, 1, 2,
+			0, 2, 3,
 
-		std::uint32_t i[36];
+			// Fill in the back face index data
+			4, 5, 6,
+			4, 6, 7,
 
-		// Fill in the front face index data
-		i[0] = 0; i[1] = 1; i[2] = 2;
-		i[3] = 0; i[4] = 2; i[5] = 3;
+			// Fill in the top face index data
+			8, 9, 10,
+			8, 10, 11,
 
-		// Fill in the back face index data
-		i[6] = 4; i[7] = 5; i[8] = 6;
-		i[9] = 4; i[10] = 6; i[11] = 7;
+			// Fill in the bottom face index data
+			12, 13, 14,
+			12, 14, 15,
 
-		// Fill in the top face index data
-		i[12] = 8; i[13] = 9; i[14] = 10;
-		i[15] = 8; i[16] = 10; i[17] = 11;
+			// Fill in the left face index data
+			16, 17, 18,
+			16, 18, 19,
 
-		// Fill in the bottom face index data
-		i[18] = 12; i[19] = 13; i[20] = 14;
-		i[21] = 12; i[22] = 14; i[23] = 15;
+			// Fill in the right face index data
+			20, 21, 22,
+			20, 22, 23,
+		};
 
-		// Fill in the left face index data
-		i[24] = 16; i[25] = 17; i[26] = 18;
-		i[27] = 16; i[28] = 18; i[29] = 19;
-
-		// Fill in the right face index data
-		i[30] = 20; i[31] = 21; i[32] = 22;
-		i[33] = 20; i[34] = 22; i[35] = 23;
-
-		meshData.Indices.assign(&i[0], &i[36]);
+		meshData.Indices.assign(i.begin(), i.end());
 	}
 
 	///<summary>
@@ -147,25 +147,25 @@ public:
 		// Poles: note that there will be texture coordinate distortion as there is
 		// not a unique point on the texture map to assign to the pole when mapping
 		// a rectangular texture onto a sphere.
-		Vertex topVertex(0.0f, +radius, 0.0f, 0.0f, +1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-		Vertex bottomVertex(0.0f, -radius, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		auto topVertex = Vertex(0.0f, +radius, 0.0f, 0.0f, +1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+		auto bottomVertex = Vertex(0.0f, -radius, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 		meshData.Vertices.push_back(topVertex);
 
-		float phiStep = DirectX::Pi / stackCount;
-		float thetaStep = 2.0f * DirectX::TwoPi / sliceCount;
+		auto phiStep = DirectX::Pi / stackCount;
+		auto thetaStep = DirectX::TwoPi / sliceCount;
 
 		// Compute vertices for each stack ring (do not count the poles as rings).
-		for (std::uint32_t i = 1; i <= stackCount - 1; ++i)
+		for (std::uint32_t i = 1u; i <= stackCount - 1; ++i)
 		{
-			float phi = i * phiStep;
+			auto phi = i * phiStep;
 
 			// Vertices of ring.
 			for (std::uint32_t j = 0; j <= sliceCount; ++j)
 			{
-				float theta = j * thetaStep;
+				auto theta = j * thetaStep;
 
-				Vertex v;
+				auto v = Vertex{};
 
 				// spherical to cartesian
 				v.Position.x = radius * std::sinf(phi) * std::cosf(theta);
@@ -177,10 +177,10 @@ public:
 				v.TangentU.y = 0.0f;
 				v.TangentU.z = +radius * std::sinf(phi) * std::cosf(theta);
 
-				DirectX::XMVECTOR T = DirectX::XMLoadFloat3(&v.TangentU);
+				auto T = DirectX::XMLoadFloat3(&v.TangentU);
 				DirectX::XMStoreFloat3(&v.TangentU, DirectX::XMVector3Normalize(T));
 
-				DirectX::XMVECTOR p = DirectX::XMLoadFloat3(&v.Position);
+				auto p = DirectX::XMLoadFloat3(&v.Position);
 				DirectX::XMStoreFloat3(&v.Normal, DirectX::XMVector3Normalize(p));
 
 				v.TexC.x = theta / DirectX::TwoPi;

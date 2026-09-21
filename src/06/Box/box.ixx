@@ -21,11 +21,6 @@ public:
 	{
 		mMainWndCaption = L"Box Demo";
 
-		auto I = DirectX::XMMATRIX{DirectX::XMMatrixIdentity()};
-		DirectX::XMStoreFloat4x4(&mWorld, I);
-		DirectX::XMStoreFloat4x4(&mView, I);
-		DirectX::XMStoreFloat4x4(&mProj, I);
-
 		Init();
 	}
 
@@ -98,8 +93,7 @@ public:
 
 	void OnMouseDown(Win32::WPARAM btnState, int x, int y)
 	{
-		mLastMousePos.x = x;
-		mLastMousePos.y = y;
+		mLastMousePos = { x, y };
 		Win32::SetCapture(mhMainWnd);
 	}
 
@@ -136,8 +130,7 @@ public:
 			mRadius = std::clamp(mRadius, 3.0f, 15.0f);
 		}
 
-		mLastMousePos.x = x;
-		mLastMousePos.y = y;
+		mLastMousePos = { x, y };
 	}
 
 private:
@@ -295,9 +288,9 @@ private:
 	ComPtr<D3D11::ID3D11Buffer> mPerObjectCB;
 	ComPtr<D3D11::ID3D11InputLayout> mInputLayout;
 
-	DirectX::XMFLOAT4X4 mWorld;
-	DirectX::XMFLOAT4X4 mView;
-	DirectX::XMFLOAT4X4 mProj;
+	DirectX::XMFLOAT4X4 mWorld = d3dHelper::Identity4x4;
+	DirectX::XMFLOAT4X4 mView = d3dHelper::Identity4x4;
+	DirectX::XMFLOAT4X4 mProj = d3dHelper::Identity4x4;
 
 	float mTheta = 1.5f * MathHelper::Pi;
 	float mPhi = 0.25f * MathHelper::Pi;
