@@ -4,11 +4,13 @@ import :win32;
 
 export using bool32 = std::uint32_t;
 
-export class MathHelper
+export namespace MathHelper
 {
-public:
+	constexpr auto Infinity = std::numeric_limits<float>::infinity();
+	constexpr auto Pi = 3.1415926535f;
+
 	// Returns random float in [0, 1).
-	static auto RandF() -> float
+	auto RandF() -> float
 	{
 		auto rd = std::random_device{};
 		auto gen = std::mt19937{rd()};
@@ -17,7 +19,7 @@ public:
 	}
 
 	// Returns random float in [a, b).
-	static auto RandF(float a, float b) -> float
+	auto RandF(float a, float b) -> float
 	{
 		auto rd = std::random_device{};
 		auto gen = std::mt19937{ rd() };
@@ -26,13 +28,13 @@ public:
 	}
 
 	template<typename T>
-	static auto Lerp(const T& a, const T& b, float t) -> T
+	auto Lerp(const T& a, const T& b, float t) -> T
 	{
 		return a + (b - a) * t;
 	}
 
 	// Returns the polar angle of the point (x,y) in [0, 2*PI).
-	static auto AngleFromXY(float x, float y) -> float
+	auto AngleFromXY(float x, float y) -> float
 	{
 		float theta = 0.0f;
 
@@ -54,7 +56,7 @@ public:
 		return theta;
 	}
 
-	static auto InverseTranspose(DirectX::CXMMATRIX M) -> DirectX::XMMATRIX
+	auto InverseTranspose(DirectX::CXMMATRIX M) -> DirectX::XMMATRIX
 	{
 		// Inverse-transpose is just applied to normals.  So zero out 
 		// translation row so that it doesn't get into our inverse-transpose
@@ -66,7 +68,7 @@ public:
 		return DirectX::XMMatrixTranspose(DirectX::XMMatrixInverse(&det, A));
 	}
 
-	static auto RandUnitVec3() -> DirectX::XMVECTOR
+	auto RandUnitVec3() -> DirectX::XMVECTOR
 	{
 		auto One = DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
 		auto Zero = DirectX::XMVectorZero();
@@ -88,7 +90,7 @@ public:
 		}
 	}
 
-	static auto RandHemisphereUnitVec3(DirectX::XMVECTOR n) -> DirectX::XMVECTOR
+	auto RandHemisphereUnitVec3(DirectX::XMVECTOR n) -> DirectX::XMVECTOR
 	{
 		auto One = DirectX::XMVectorSet(1.0f, 1.0f, 1.0f, 1.0f);
 		auto Zero = DirectX::XMVectorZero();
@@ -114,14 +116,11 @@ public:
 		}
 	}
 
-	static auto ScaledTranslation(DirectX::FXMMATRIX scale, DirectX::CXMMATRIX offset) -> DirectX::XMFLOAT4X4
+	auto ScaledTranslation(DirectX::FXMMATRIX scale, DirectX::CXMMATRIX offset) -> DirectX::XMFLOAT4X4
 	{
 		auto scaleTranslation = DirectX::XMMatrixMultiply(scale, offset);
 		auto result = DirectX::XMFLOAT4X4{};
 		DirectX::XMStoreFloat4x4(&result, scaleTranslation);
 		return result;
 	}
-
-	static inline constexpr auto Infinity = std::numeric_limits<float>::infinity();
-	static inline constexpr auto Pi = 3.1415926535f;
 };
