@@ -311,7 +311,8 @@ export namespace DirectX
 	using
 		::DirectX::CreateDDSTextureFromFile,
 		::DirectX::CreateDDSTextureFromMemory,
-		::DirectX::CreateWICTextureFromFile
+		::DirectX::CreateWICTextureFromFile,
+		::DirectX::LoadFromTGAFile
 		;
 
 	namespace PackedVector
