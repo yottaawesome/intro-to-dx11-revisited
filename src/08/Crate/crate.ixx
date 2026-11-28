@@ -1,6 +1,6 @@
-export module crate;
+export module Crate;
 import std;
-import shared;
+import Shared;
 
 // Basic 32-byte vertex structure.
 struct Basic32

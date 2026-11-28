@@ -1,6 +1,6 @@
-export module skinnedmeshdemo:shadowmap;
+export module SkinnedMeshDemo:ShadowMap;
 import std;
-import shared;
+import Shared;
 
 class ShadowMap
 {

@@ -1,6 +1,6 @@
-export module terraindemo:terrain;
+export module TerrainDemo:Terrain;
 import std;
-import shared;
+import Shared;
 
 export class Terrain
 {

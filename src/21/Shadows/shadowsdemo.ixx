@@ -1,5 +1,5 @@
-export module shadowsdemo;
-export import :renderstates;
-export import :shadowmap;
-export import :app;
-export import :sky;
+export module ShadowsDemo;
+export import :RenderStates;
+export import :ShadowMap;
+export import :App;
+export import :Sky;

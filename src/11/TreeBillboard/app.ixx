@@ -1,8 +1,8 @@
-export module treebillboard:app;
+export module TreeBillboard:App;
 import std;
-import shared;
-import :waves;
-import :renderstates;
+import Shared;
+import :Waves;
+import :RenderStates;
 
 enum RenderOptions
 {

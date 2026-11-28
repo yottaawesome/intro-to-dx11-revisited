@@ -1,7 +1,7 @@
-export module ambientocclusiondemo:app;
+export module AmbientOcclusionDemo:App;
 import std;
-import shared;
-import :octree;
+import Shared;
+import :Octree;
 
 struct PerObjectConstants
 {

@@ -1,3 +1,3 @@
-export module ambientocclusiondemo;
-export import :app;
-export import :octree;
+export module AmbientOcclusionDemo;
+export import :App;
+export import :Octree;

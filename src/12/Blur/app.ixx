@@ -1,9 +1,9 @@
-export module blur:app;
+export module Blur:App;
 import std;
-import shared;
-import :renderstates;
-import :blurfilter;
-import :waves;
+import Shared;
+import :RenderStates;
+import :BlurFilter;
+import :Waves;
 
 // Basic 32-byte vertex structure.
 struct Basic32

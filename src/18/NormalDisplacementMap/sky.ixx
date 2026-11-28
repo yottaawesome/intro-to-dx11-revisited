@@ -1,6 +1,6 @@
-export module normaldisplacementmap:sky;
+export module NormalDisplacementMap:Sky;
 import std;
-import shared;
+import Shared;
 
 class Sky
 {

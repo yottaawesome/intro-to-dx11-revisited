@@ -155,9 +155,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="app.ixx" />
-    <ClCompile Include="picking.ixx" />
-    <ClCompile Include="renderstates.ixx" />
+    <ClCompile Include="App.ixx" />
+    <ClCompile Include="Picking.ixx" />
+    <ClCompile Include="RenderStates.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.vcxproj">

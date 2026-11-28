@@ -1,6 +1,6 @@
-export module camera;
+export module Camera;
 import std;
-import shared;
+import Shared;
 
 struct Vertex
 {

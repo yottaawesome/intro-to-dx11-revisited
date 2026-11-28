@@ -1,7 +1,7 @@
-export module meshviewdemo:ssao;
+export module MeshViewDemo:Ssao;
 import std;
-import shared;
-import :sharedvertices;
+import Shared;
+import :SharedVertices;
 
 class Ssao
 {

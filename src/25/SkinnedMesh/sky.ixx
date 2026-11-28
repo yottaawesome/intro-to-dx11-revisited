@@ -1,6 +1,6 @@
-export module skinnedmeshdemo:sky;
+export module SkinnedMeshDemo:Sky;
 import std;
-import shared;
+import Shared;
 
 class Sky
 {

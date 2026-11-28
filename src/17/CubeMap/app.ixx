@@ -1,7 +1,7 @@
-export module cubemap:app;
+export module CubeMap:App;
 import std;
-import shared;
-import :sky;
+import Shared;
+import :Sky;
 
 struct BasicVertex
 {

@@ -1,6 +1,6 @@
-export module wavesdemo:waves;
+export module WavesDemo:Waves;
 import std;
-import shared;
+import Shared;
 
 class Waves
 {

@@ -18,13 +18,13 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FX\texturedhillsandwaves.ixx">
+    <ClCompile Include="TexturedHillsAndWaves.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FX\texturedhillsandwavesapp.ixx">
+    <ClCompile Include="TexturedHillsAndWavesApp.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FX\waves.ixx">
+    <ClCompile Include="Waves.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

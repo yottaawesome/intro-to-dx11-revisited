@@ -1,7 +1,7 @@
-export module skinnedmeshdemo:ssao;
+export module SkinnedMeshDemo:Ssao;
 import std;
-import shared;
-import :sharedvertices;
+import Shared;
+import :SharedVertices;
 
 class Ssao
 {

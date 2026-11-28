@@ -1,3 +1,3 @@
-export module cubemap;
-export import :app;
-export import :sky;
+export module CubeMap;
+export import :App;
+export import :Sky;

@@ -1,8 +1,8 @@
-export module shared:camera;
+export module Shared:Camera;
 import std;
-import :win32;
-import :d3dutil;
-import :mathhelper;
+import :Win32;
+import :D3DUtil;
+import :MathHelper;
 
 export class Camera
 {

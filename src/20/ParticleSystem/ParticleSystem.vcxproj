@@ -156,13 +156,13 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="app.ixx" />
+    <ClCompile Include="App.ixx" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="particlesystem.ixx" />
-    <ClCompile Include="particlesystemdemo.ixx" />
-    <ClCompile Include="renderstates.ixx" />
-    <ClCompile Include="sky.ixx" />
-    <ClCompile Include="terrain.ixx" />
+    <ClCompile Include="ParticleSystem.ixx" />
+    <ClCompile Include="ParticleSystemDemo.ixx" />
+    <ClCompile Include="RenderStates.ixx" />
+    <ClCompile Include="Sky.ixx" />
+    <ClCompile Include="Terrain.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\BasicCommon.hlsli" />

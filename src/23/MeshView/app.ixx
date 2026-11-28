@@ -1,12 +1,12 @@
-export module meshviewdemo:app;
+export module MeshViewDemo:App;
 import std;
-import shared;
-import :sky;
-import :ssao;
-import :shadowmap;
-import :basicmodel;
-import :renderstates;
-import :sharedvertices;
+import Shared;
+import :Sky;
+import :Ssao;
+import :ShadowMap;
+import :BasicModel;
+import :RenderStates;
+import :SharedVertices;
 
 struct BoundingSphere
 {

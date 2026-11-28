@@ -18,13 +18,13 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="renderstates.ixx">
+    <ClCompile Include="RenderStates.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vecadd.ixx">
+    <ClCompile Include="VecAdd.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="app.ixx">
+    <ClCompile Include="App.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

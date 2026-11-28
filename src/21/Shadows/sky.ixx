@@ -1,6 +1,6 @@
-export module shadowsdemo:sky;
+export module ShadowsDemo:Sky;
 import std;
-import shared;
+import Shared;
 
 class Sky
 {

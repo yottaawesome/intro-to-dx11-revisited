@@ -1,3 +1,3 @@
-export module dynamiccubemap;
-export import :sky;
-export import :app;
+export module DynamicCubeMap;
+export import :Sky;
+export import :App;

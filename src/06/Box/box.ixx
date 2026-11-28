@@ -1,6 +1,6 @@
-export module box;
+export module Box;
 import std;
-import shared;
+import Shared;
 
 struct Vertex
 {

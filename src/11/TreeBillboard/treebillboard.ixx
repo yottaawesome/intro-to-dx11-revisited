@@ -1,4 +1,4 @@
-export module treebillboard;
-export import :renderstates;
-export import :waves;
-export import :app;
+export module TreeBillboard;
+export import :RenderStates;
+export import :Waves;
+export import :App;

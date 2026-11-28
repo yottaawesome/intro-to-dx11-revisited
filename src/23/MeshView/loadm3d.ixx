@@ -1,8 +1,8 @@
-export module meshviewdemo:loadm3d;
+export module MeshViewDemo:LoadM3d;
 import std;
-import shared;
-import :sharedvertices;
-import :meshgeometry;
+import Shared;
+import :SharedVertices;
+import :MeshGeometry;
 
 struct M3dMaterial
 {

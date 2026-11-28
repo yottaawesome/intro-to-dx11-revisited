@@ -1,11 +1,11 @@
-export module shared:d3dapp;
+export module Shared:D3DApp;
 import std;
-import :win32;
-import :gametimer;
-import :d3dutil;
-import :comptr;
-import :build;
-import :d3dutil;
+import :Win32;
+import :GameTimer;
+import :D3DUtil;
+import :ComPtr;
+import :Build;
+import :D3DUtil;
 
 export class D3DApp
 {

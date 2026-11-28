@@ -1,6 +1,6 @@
-export module meshviewdemo:sharedvertices;
+export module MeshViewDemo:SharedVertices;
 import std;
-import shared;
+import Shared;
 
 namespace Vertices
 {

@@ -1,6 +1,6 @@
-export module shared:mathhelper;
+export module Shared:MathHelper;
 import std;
-import :win32;
+import :Win32;
 
 export using bool32 = std::uint32_t;
 

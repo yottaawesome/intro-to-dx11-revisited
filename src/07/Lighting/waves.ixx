@@ -1,6 +1,6 @@
-export module lighting:waves;
+export module Lighting:Waves;
 import std;
-import shared;
+import Shared;
 
 class Waves
 {

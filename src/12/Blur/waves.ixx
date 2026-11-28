@@ -1,6 +1,6 @@
-export module blur:waves;
+export module Blur:Waves;
 import std;
-import shared;
+import Shared;
 
 class Waves
 {

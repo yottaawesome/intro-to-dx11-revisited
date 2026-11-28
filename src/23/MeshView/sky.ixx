@@ -1,6 +1,6 @@
-export module meshviewdemo:sky;
+export module MeshViewDemo:Sky;
 import std;
-import shared;
+import Shared;
 
 class Sky
 {

@@ -156,14 +156,14 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="app.ixx" />
+    <ClCompile Include="App.ixx" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="renderstates.ixx" />
-    <ClCompile Include="shadowmap.ixx" />
-    <ClCompile Include="sharedvertices.ixx" />
-    <ClCompile Include="sky.ixx" />
-    <ClCompile Include="ssao.ixx" />
-    <ClCompile Include="ssaodemo.ixx" />
+    <ClCompile Include="RenderStates.ixx" />
+    <ClCompile Include="ShadowMap.ixx" />
+    <ClCompile Include="SharedVertices.ixx" />
+    <ClCompile Include="Sky.ixx" />
+    <ClCompile Include="Ssao.ixx" />
+    <ClCompile Include="SsaoDemo.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />

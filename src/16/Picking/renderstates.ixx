@@ -1,6 +1,6 @@
-export module picking:renderstates;
+export module Picking:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

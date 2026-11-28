@@ -10,10 +10,10 @@
 //
 //***************************************************************************************
 
-export module wavesdemo:wavesapp;
+export module WavesDemo:WavesApp;
 import std;
-import shared;
-import :waves;
+import Shared;
+import :Waves;
 
 struct Vertex
 {

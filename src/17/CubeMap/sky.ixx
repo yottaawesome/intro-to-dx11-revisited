@@ -1,6 +1,6 @@
-export module cubemap:sky;
+export module CubeMap:Sky;
 import std;
-import shared;
+import Shared;
 
 class Sky
 {

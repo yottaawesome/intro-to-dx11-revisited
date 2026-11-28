@@ -1,6 +1,6 @@
-export module blenddemo:renderstates;
+export module BlendDemo:RenderStates;
 import std;
-import shared;
+import Shared;
 
 class RenderStates
 {

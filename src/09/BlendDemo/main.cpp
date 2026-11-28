@@ -1,6 +1,6 @@
 import std;
-import shared;
-import blenddemo;
+import Shared;
+import BlendDemo;
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")

@@ -1,6 +1,6 @@
-export module blur:blurfilter;
+export module Blur:BlurFilter;
 import std;
-import shared;
+import Shared;
 
 class BlurFilter
 {

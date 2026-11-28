@@ -1,6 +1,6 @@
-export module ssaodemo:sharedvertices;
+export module SsaoDemo:SharedVertices;
 import std;
-import shared;
+import Shared;
 
 namespace Vertices
 {

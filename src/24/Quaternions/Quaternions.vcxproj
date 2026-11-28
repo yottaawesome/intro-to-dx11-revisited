@@ -156,10 +156,10 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="animationhelper.ixx" />
-    <ClCompile Include="app.ixx" />
+    <ClCompile Include="AnimationHelper.ixx" />
+    <ClCompile Include="App.ixx" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="quaternionsdemo.ixx" />
+    <ClCompile Include="QuaternionsDemo.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />

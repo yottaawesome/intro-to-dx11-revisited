@@ -1,6 +1,6 @@
-export module normaldisplacementmap:renderstates;
+export module NormalDisplacementMap:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

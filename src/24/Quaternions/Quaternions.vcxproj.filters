@@ -18,13 +18,13 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="quaternionsdemo.ixx">
+    <ClCompile Include="QuaternionsDemo.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="animationhelper.ixx">
+    <ClCompile Include="AnimationHelper.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="app.ixx">
+    <ClCompile Include="App.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

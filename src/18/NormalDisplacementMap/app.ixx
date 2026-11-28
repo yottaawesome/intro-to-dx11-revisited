@@ -1,8 +1,8 @@
-export module normaldisplacementmap:app;
+export module NormalDisplacementMap:App;
 import std;
-import shared;
-import :sky;
-import :renderstates;
+import Shared;
+import :Sky;
+import :RenderStates;
 
 enum RenderOptions
 {

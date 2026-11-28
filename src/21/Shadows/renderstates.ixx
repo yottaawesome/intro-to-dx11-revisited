@@ -1,6 +1,6 @@
-export module shadowsdemo:renderstates;
+export module ShadowsDemo:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

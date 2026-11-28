@@ -1,9 +1,9 @@
-export module meshviewdemo:basicmodel;
+export module MeshViewDemo:BasicModel;
 import std;
-import shared;
-import :sharedvertices;
-import :meshgeometry;
-import :loadm3d;
+import Shared;
+import :SharedVertices;
+import :MeshGeometry;
+import :LoadM3d;
 
 class BasicModel
 {

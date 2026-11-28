@@ -1,7 +1,7 @@
-export module shared:comptr;
+export module Shared:ComPtr;
 import std;
-import :win32;
-import :error;
+import :Win32;
+import :Error;
 
 // A smart pointer for COM objects that automatically manages reference counting. Intended as a 
 // replacement for Microsoft::WRL::ComPtr as it exposes clearer ownership semantics at 

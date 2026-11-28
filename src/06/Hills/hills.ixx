@@ -1,6 +1,6 @@
-export module hills;
+export module Hills;
 import std;
-import shared;
+import Shared;
 
 struct Vertex
 {

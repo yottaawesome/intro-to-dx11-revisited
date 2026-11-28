@@ -1,6 +1,6 @@
-export module terraindemo:renderstates;
+export module TerrainDemo:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

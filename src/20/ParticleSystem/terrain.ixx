@@ -1,6 +1,6 @@
-export module particlesystemdemo:terrain;
+export module ParticleSystemDemo:Terrain;
 import std;
-import shared;
+import Shared;
 
 class Terrain
 {

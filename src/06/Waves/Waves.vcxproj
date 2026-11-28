@@ -157,9 +157,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="waves.ixx" />
-    <ClCompile Include="wavesapp.ixx" />
-    <ClCompile Include="wavesdemo.ixx" />
+    <ClCompile Include="Waves.ixx" />
+    <ClCompile Include="WavesApp.ixx" />
+    <ClCompile Include="WavesDemo.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.vcxproj">

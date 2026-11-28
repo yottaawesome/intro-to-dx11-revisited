@@ -1,6 +1,6 @@
-export module dynamiccubemap:sky;
+export module DynamicCubeMap:Sky;
 import std;
-import shared;
+import Shared;
 
 class Sky
 {

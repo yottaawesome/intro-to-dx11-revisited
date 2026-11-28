@@ -1,7 +1,7 @@
-export module basictesselation:app;
+export module BasicTessellation:App;
 import std;
-import shared;
-import :renderstates;
+import Shared;
+import :RenderStates;
 
 struct cbPerFrame
 {

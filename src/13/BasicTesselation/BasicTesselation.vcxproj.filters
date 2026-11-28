@@ -18,13 +18,13 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="basictesselation.ixx">
+    <ClCompile Include="BasicTesselation.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="renderstates.ixx">
+    <ClCompile Include="RenderStates.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="app.ixx">
+    <ClCompile Include="App.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

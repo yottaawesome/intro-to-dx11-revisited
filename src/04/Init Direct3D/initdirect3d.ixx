@@ -1,6 +1,6 @@
-export module initdirect3d;
+export module InitDirect3D;
 import std;
-import shared;
+import Shared;
 
 export class InitDirect3DApp : public D3DApp
 {

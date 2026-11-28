@@ -156,9 +156,9 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="lighting.ixx" />
+    <ClCompile Include="Lighting.ixx" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="waves.ixx" />
+    <ClCompile Include="Waves.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.vcxproj">

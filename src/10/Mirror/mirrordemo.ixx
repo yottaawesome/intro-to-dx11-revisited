@@ -1,3 +1,3 @@
-export module mirrordemo;
-export import :renderstates;
-export import :app;
+export module MirrorDemo;
+export import :RenderStates;
+export import :App;

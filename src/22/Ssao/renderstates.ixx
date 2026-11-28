@@ -1,6 +1,6 @@
-export module ssaodemo:renderstates;
+export module SsaoDemo:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

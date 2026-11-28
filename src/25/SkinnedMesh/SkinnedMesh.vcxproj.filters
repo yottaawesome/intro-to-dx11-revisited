@@ -15,46 +15,46 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="animationhelper.ixx">
+    <ClCompile Include="AnimationHelper.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="basicmodel.ixx">
+    <ClCompile Include="BasicModel.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="loadm3d.ixx">
+    <ClCompile Include="LoadM3D.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="meshgeometry.ixx">
+    <ClCompile Include="MeshGeometry.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="renderstates.ixx">
+    <ClCompile Include="RenderStates.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shadowmap.ixx">
+    <ClCompile Include="ShadowMap.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="sharedvertices.ixx">
+    <ClCompile Include="SharedVertices.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="skinnedmeshdemo.ixx">
+    <ClCompile Include="SkinnedMeshDemo.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="skinneddata.ixx">
+    <ClCompile Include="SkinnedData.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="skinnedmodel.ixx">
+    <ClCompile Include="SkinnedModel.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="sky.ixx">
+    <ClCompile Include="Sky.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ssao.ixx">
+    <ClCompile Include="Ssao.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="app.ixx">
+    <ClCompile Include="App.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -168,20 +168,20 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="build.ixx" />
-    <ClCompile Include="camera.ixx" />
-    <ClCompile Include="comptr.ixx" />
-    <ClCompile Include="d3dapp.ixx" />
-    <ClCompile Include="d3dutil.ixx" />
-    <ClCompile Include="error.ixx" />
-    <ClCompile Include="gametimer.ixx" />
-    <ClCompile Include="geometrygenerator.ixx" />
-    <ClCompile Include="lighthelper.ixx" />
-    <ClCompile Include="mathhelper.ixx" />
-    <ClCompile Include="shared.ixx" />
-    <ClCompile Include="strings.ixx" />
-    <ClCompile Include="texturemanager.ixx" />
-    <ClCompile Include="win32.ixx" />
+    <ClCompile Include="Build.ixx" />
+    <ClCompile Include="Camera.ixx" />
+    <ClCompile Include="ComPtr.ixx" />
+    <ClCompile Include="D3DApp.ixx" />
+    <ClCompile Include="D3DUtil.ixx" />
+    <ClCompile Include="Error.ixx" />
+    <ClCompile Include="GameTimer.ixx" />
+    <ClCompile Include="GeometryGenerator.ixx" />
+    <ClCompile Include="LightHelper.ixx" />
+    <ClCompile Include="MathHelper.ixx" />
+    <ClCompile Include="Shared.ixx" />
+    <ClCompile Include="Strings.ixx" />
+    <ClCompile Include="TextureManager.ixx" />
+    <ClCompile Include="Win32.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />

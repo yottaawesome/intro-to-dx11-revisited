@@ -1,6 +1,6 @@
-export module skinnedmeshdemo:renderstates;
+export module SkinnedMeshDemo:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

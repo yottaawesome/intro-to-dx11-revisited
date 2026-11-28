@@ -1,8 +1,8 @@
-export module blenddemo:app;
+export module BlendDemo:App;
 import std;
-import shared;
-import :waves;
-import :renderstates;
+import Shared;
+import :Waves;
+import :RenderStates;
 
 enum RenderOptions
 {

@@ -1,10 +1,10 @@
-export module skinnedmeshdemo:skinnedmodel;
+export module SkinnedMeshDemo:SkinnedModel;
 import std;
-import shared;
-import :loadm3d;
-import :meshgeometry;
-import :sharedvertices;
-import :skinneddata;
+import Shared;
+import :LoadM3D;
+import :MeshGeometry;
+import :SharedVertices;
+import :SkinnedData;
 
 class SkinnedModel
 {

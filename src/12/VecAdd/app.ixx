@@ -1,7 +1,7 @@
-export module vecadd:app;
+export module VecAdd:App;
 import std;
-import shared;
-import :renderstates;
+import Shared;
+import :RenderStates;
 
 struct Data
 {

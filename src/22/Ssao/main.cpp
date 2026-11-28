@@ -2,8 +2,8 @@
 #pragma comment(lib, "d3dcompiler.lib")
 
 import std;
-import shared;
-import ssaodemo;
+import Shared;
+import SsaoDemo;
 
 auto wWinMain(Win32::HINSTANCE hInstance, Win32::HINSTANCE, Win32::LPWSTR, int) -> int
 try

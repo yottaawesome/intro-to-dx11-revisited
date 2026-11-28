@@ -21,7 +21,7 @@ module;
 #include <directxtk/WICTextureLoader.h>
 #include <DirectXTex.h>
 
-export module shared:win32;
+export module Shared:Win32;
 
 export template<auto X>
 struct ConstValue

@@ -1,7 +1,7 @@
-export module bezierpatch:app;
+export module BezierPatch:App;
 import std;
-import shared;
-import :renderstates;
+import Shared;
+import :RenderStates;
 
 struct PerFrame
 {

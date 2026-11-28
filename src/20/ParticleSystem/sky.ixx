@@ -1,6 +1,6 @@
-export module particlesystemdemo:sky;
+export module ParticleSystemDemo:Sky;
 import std;
-import shared;
+import Shared;
 
 class Sky
 {

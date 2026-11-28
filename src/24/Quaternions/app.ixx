@@ -1,7 +1,7 @@
-export module quaternionsdemo:app;
+export module QuaternionsDemo:App;
 import std;
-import shared;
-import :animationhelper;
+import Shared;
+import :AnimationHelper;
 
 struct BasicVertex
 {

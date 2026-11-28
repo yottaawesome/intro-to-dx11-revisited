@@ -1,6 +1,6 @@
-export module skinnedmeshdemo:animationhelper;
+export module SkinnedMeshDemo:AnimationHelper;
 import std;
-import shared;
+import Shared;
 
 ///<summary>
 /// A Keyframe defines the bone transformation at an instant in time.

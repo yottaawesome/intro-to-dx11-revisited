@@ -156,10 +156,10 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="FX\texturedhillsandwaves.ixx" />
-    <ClCompile Include="FX\texturedhillsandwavesapp.ixx" />
-    <ClCompile Include="FX\waves.ixx" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="TexturedHillsAndWaves.ixx" />
+    <ClCompile Include="TexturedHillsAndWavesApp.ixx" />
+    <ClCompile Include="Waves.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.vcxproj">

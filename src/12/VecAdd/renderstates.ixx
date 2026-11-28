@@ -1,6 +1,6 @@
-export module vecadd:renderstates;
+export module VecAdd:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

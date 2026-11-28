@@ -1,6 +1,6 @@
-export module skinnedmeshdemo:sharedvertices;
+export module SkinnedMeshDemo:SharedVertices;
 import std;
-import shared;
+import Shared;
 
 namespace Vertices
 {

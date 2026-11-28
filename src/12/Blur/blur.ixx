@@ -1,4 +1,4 @@
-export module blur;
-export import :app;
-export import :blurfilter;
-export import :renderstates;
+export module Blur;
+export import :App;
+export import :BlurFilter;
+export import :RenderStates;

@@ -156,12 +156,12 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="app.ixx" />
+    <ClCompile Include="App.ixx" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="renderstates.ixx" />
-    <ClCompile Include="shadowmap.ixx" />
-    <ClCompile Include="shadowsdemo.ixx" />
-    <ClCompile Include="sky.ixx" />
+    <ClCompile Include="RenderStates.ixx" />
+    <ClCompile Include="ShadowMap.ixx" />
+    <ClCompile Include="ShadowsDemo.ixx" />
+    <ClCompile Include="Sky.ixx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="vcpkg.json" />

@@ -1,6 +1,6 @@
-export module meshviewdemo:shadowmap;
+export module MeshViewDemo:ShadowMap;
 import std;
-import shared;
+import Shared;
 
 class ShadowMap
 {

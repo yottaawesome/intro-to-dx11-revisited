@@ -1,6 +1,6 @@
-export module ambientocclusiondemo:octree;
+export module AmbientOcclusionDemo:Octree;
 import std;
-import shared;
+import Shared;
 
 struct OctreeNode
 {

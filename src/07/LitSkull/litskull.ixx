@@ -1,6 +1,6 @@
-export module litskull;
+export module LitSkull;
 import std;
-import shared;
+import Shared;
 
 struct PosNormal
 {

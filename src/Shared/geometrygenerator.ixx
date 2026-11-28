@@ -12,10 +12,10 @@
 //   3. Update the texture coordinates and tangent vectors.
 //***************************************************************************************
 
-export module shared:geometrygenerator;
+export module Shared:GeometryGenerator;
 import std;
-import :win32;
-import :mathhelper;
+import :Win32;
+import :MathHelper;
 
 export class GeometryGenerator
 {

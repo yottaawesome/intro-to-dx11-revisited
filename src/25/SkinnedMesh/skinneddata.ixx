@@ -1,7 +1,7 @@
-export module skinnedmeshdemo:skinneddata;
+export module SkinnedMeshDemo:SkinnedData;
 import std;
-import shared;
-import :animationhelper;
+import Shared;
+import :AnimationHelper;
 
 ///<summary>
 /// An animation clip contains one bone animation for every bone.

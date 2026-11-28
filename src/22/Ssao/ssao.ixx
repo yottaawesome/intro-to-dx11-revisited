@@ -1,7 +1,7 @@
-export module ssaodemo:ssao;
+export module SsaoDemo:Ssao;
 import std;
-import shared;
-import :sharedvertices;
+import Shared;
+import :SharedVertices;
 
 class Ssao
 {

@@ -156,11 +156,11 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="app.ixx" />
+    <ClCompile Include="App.ixx" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="renderstates.ixx" />
-    <ClCompile Include="treebillboard.ixx" />
-    <ClCompile Include="waves.ixx" />
+    <ClCompile Include="RenderStates.ixx" />
+    <ClCompile Include="TreeBillboard.ixx" />
+    <ClCompile Include="Waves.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.vcxproj">

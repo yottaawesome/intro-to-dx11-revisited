@@ -1,6 +1,6 @@
-export module shared:gametimer;
+export module Shared:GameTimer;
 import std;
-import :win32;
+import :Win32;
 
 export class GameTimer
 {

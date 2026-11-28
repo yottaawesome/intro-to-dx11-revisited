@@ -1,3 +1,3 @@
-export module vecadd;
-export import :renderstates;
-export import :app;
+export module VecAdd;
+export import :RenderStates;
+export import :App;

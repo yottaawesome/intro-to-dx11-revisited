@@ -1,6 +1,6 @@
-export module particlesystemdemo:renderstates;
+export module ParticleSystemDemo:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

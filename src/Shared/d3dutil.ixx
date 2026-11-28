@@ -1,10 +1,10 @@
-export module shared:d3dutil;
+export module Shared:D3DUtil;
 import std;
-import :win32;
-import :mathhelper;
-import :comptr;
-import :strings;
-import :error;
+import :Win32;
+import :MathHelper;
+import :ComPtr;
+import :Strings;
+import :Error;
 
 export
 {

@@ -1,9 +1,9 @@
-export module terraindemo:app;
+export module TerrainDemo:App;
 import std;
-import shared;
-import :sky;
-import :terrain;
-import :renderstates;
+import Shared;
+import :Sky;
+import :Terrain;
+import :RenderStates;
 
 export class TerrainApp : public D3DApp
 {

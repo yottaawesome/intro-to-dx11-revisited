@@ -1,7 +1,7 @@
-export module texturedhillsandwaves:app;
+export module TexturedHillsAndWaves:App;
 import std;
-import shared;
-import :waves;
+import Shared;
+import :Waves;
 
 // Basic 32-byte vertex structure.
 struct Basic32

@@ -18,19 +18,19 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shadowsdemo.ixx">
+    <ClCompile Include="RenderStates.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="renderstates.ixx">
+    <ClCompile Include="App.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="app.ixx">
+    <ClCompile Include="ShadowMap.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shadowmap.ixx">
+    <ClCompile Include="Sky.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="sky.ixx">
+    <ClCompile Include="ShadowsDemo.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

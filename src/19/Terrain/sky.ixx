@@ -1,6 +1,6 @@
-export module terraindemo:sky;
+export module TerrainDemo:Sky;
 import std;
-import shared;
+import Shared;
 
 class Sky
 {

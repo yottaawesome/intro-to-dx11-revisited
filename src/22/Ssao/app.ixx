@@ -1,11 +1,11 @@
-export module ssaodemo:app;
+export module SsaoDemo:App;
 import std;
-import shared;
-import :sky;
-import :renderstates;
-import :shadowmap;
-import :ssao;
-import :sharedvertices;
+import Shared;
+import :Sky;
+import :RenderStates;
+import :ShadowMap;
+import :Ssao;
+import :SharedVertices;
 
 enum RenderOptions
 {

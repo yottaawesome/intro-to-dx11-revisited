@@ -1,9 +1,9 @@
-export module shadowsdemo:app;
+export module ShadowsDemo:App;
 import std;
-import shared;
-import :sky;
-import :renderstates;
-import :shadowmap;
+import Shared;
+import :Sky;
+import :RenderStates;
+import :ShadowMap;
 
 enum RenderOptions
 {

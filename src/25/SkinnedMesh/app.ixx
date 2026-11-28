@@ -1,12 +1,12 @@
-export module skinnedmeshdemo:app;
+export module SkinnedMeshDemo:App;
 import std;
-import shared;
-import :sky;
-import :renderstates;
-import :shadowmap;
-import :ssao;
-import :sharedvertices;
-import :skinnedmodel;
+import Shared;
+import :Sky;
+import :RenderStates;
+import :ShadowMap;
+import :Ssao;
+import :SharedVertices;
+import :SkinnedModel;
 
 struct BoundingSphere
 {

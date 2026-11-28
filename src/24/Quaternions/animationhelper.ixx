@@ -1,6 +1,6 @@
-export module quaternionsdemo:animationhelper;
+export module QuaternionsDemo:AnimationHelper;
 import std;
-import shared;
+import Shared;
 
 ///<summary>
 /// A Keyframe defines the bone transformation at an instant in time.

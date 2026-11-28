@@ -1,6 +1,6 @@
-export module texturedhillsandwaves:waves;
+export module TexturedHillsAndWaves:Waves;
 import std;
-import shared;
+import Shared;
 
 class Waves
 {

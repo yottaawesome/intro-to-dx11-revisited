@@ -1,10 +1,10 @@
-export module skinnedmeshdemo:loadm3d;
+export module SkinnedMeshDemo:LoadM3D;
 import std;
-import shared;
-import :animationhelper;
-import :sharedvertices;
-import :meshgeometry;
-import :skinneddata;
+import Shared;
+import :AnimationHelper;
+import :SharedVertices;
+import :MeshGeometry;
+import :SkinnedData;
 
 struct M3dMaterial
 {

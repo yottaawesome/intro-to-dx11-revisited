@@ -1,6 +1,6 @@
-export module treebillboard:waves;
+export module TreeBillboard:Waves;
 import std;
-import shared;
+import Shared;
 
 class Waves
 {

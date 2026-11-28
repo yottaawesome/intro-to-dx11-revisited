@@ -1,5 +1,5 @@
-export module terraindemo;
-export import :app;
-export import :terrain;
-export import :sky;
-export import :renderstates;
+export module TerrainDemo;
+export import :App;
+export import :Terrain;
+export import :Sky;
+export import :RenderStates;

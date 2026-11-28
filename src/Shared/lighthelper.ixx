@@ -1,6 +1,6 @@
-export module shared:lighthelper;
+export module Shared:LightHelper;
 import std;
-import :win32;
+import :Win32;
 
 export
 {

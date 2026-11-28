@@ -1,3 +1,3 @@
-export module wavesdemo;
-export import :waves;
-export import :wavesapp;
+export module WavesDemo;
+export import :Waves;
+export import :WavesApp;

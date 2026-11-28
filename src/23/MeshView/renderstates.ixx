@@ -1,6 +1,6 @@
-export module meshviewdemo:renderstates;
+export module MeshViewDemo:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

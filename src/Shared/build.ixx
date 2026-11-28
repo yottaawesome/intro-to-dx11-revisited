@@ -1,4 +1,4 @@
-export module shared:build;
+export module Shared:Build;
 
 export
 {

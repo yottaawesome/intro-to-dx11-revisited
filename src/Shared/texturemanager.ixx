@@ -1,8 +1,8 @@
-export module shared:texturemanager;
+export module Shared:TextureManager;
 import std;
-import :win32;
-import :comptr;
-import :d3dutil;
+import :Win32;
+import :ComPtr;
+import :D3DUtil;
 
 ///<summary>
 /// Simple texture manager to avoid loading duplicate textures from file.  That can

@@ -1,7 +1,7 @@
-export module mirrordemo:app;
+export module MirrorDemo:App;
 import std;
-import shared;
-import :renderstates;
+import Shared;
+import :RenderStates;
 
 // Basic 32-byte vertex structure.
 struct Basic32

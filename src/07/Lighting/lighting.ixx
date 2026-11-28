@@ -1,7 +1,7 @@
-export module lighting;
+export module Lighting;
 import std;
-import shared;
-import :waves;
+import Shared;
+import :Waves;
 
 struct Vertex
 {

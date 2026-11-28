@@ -18,19 +18,19 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="terraindemo.ixx">
+    <ClCompile Include="TerrainDemo.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="app.ixx">
+    <ClCompile Include="App.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="terrain.ixx">
+    <ClCompile Include="Terrain.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="sky.ixx">
+    <ClCompile Include="Sky.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="renderstates.ixx">
+    <ClCompile Include="RenderStates.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

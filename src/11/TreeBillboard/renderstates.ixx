@@ -1,6 +1,6 @@
-export module treebillboard:renderstates;
+export module TreeBillboard:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

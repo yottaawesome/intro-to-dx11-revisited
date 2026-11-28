@@ -156,10 +156,10 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="app.ixx" />
-    <ClCompile Include="cubemap.ixx" />
+    <ClCompile Include="App.ixx" />
+    <ClCompile Include="CubeMap.ixx" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="sky.ixx" />
+    <ClCompile Include="Sky.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.vcxproj">

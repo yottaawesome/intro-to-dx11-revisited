@@ -1,6 +1,6 @@
-export module skinnedmeshdemo:meshgeometry;
+export module SkinnedMeshDemo:MeshGeometry;
 import std;
-import shared;
+import Shared;
 
 class MeshGeometry
 {

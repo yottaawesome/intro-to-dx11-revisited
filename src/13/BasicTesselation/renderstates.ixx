@@ -1,6 +1,6 @@
-export module basictesselation:renderstates;
+export module BasicTessellation:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

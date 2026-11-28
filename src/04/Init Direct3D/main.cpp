@@ -1,6 +1,6 @@
 import std;
-import shared;
-import initdirect3d;
+import Shared;
+import InitDirect3D;
 
 #pragma comment(lib, "d3d11.lib")
 

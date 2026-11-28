@@ -1,7 +1,7 @@
-export module picking:app;
+export module Picking:App;
 import std;
-import shared;
-import :renderstates;
+import Shared;
+import :RenderStates;
 
 struct BasicVertex
 {

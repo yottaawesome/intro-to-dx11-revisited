@@ -1,6 +1,6 @@
-export module meshviewdemo:meshgeometry;
+export module MeshViewDemo:MeshGeometry;
 import std;
-import shared;
+import Shared;
 
 class MeshGeometry
 {

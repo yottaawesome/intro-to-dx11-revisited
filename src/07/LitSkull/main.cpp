@@ -1,6 +1,6 @@
 import std;
-import shared;
-import litskull;
+import Shared;
+import LitSkull;
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")

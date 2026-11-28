@@ -156,10 +156,10 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="app.ixx" />
-    <ClCompile Include="basictesselation.ixx" />
+    <ClCompile Include="App.ixx" />
+    <ClCompile Include="BasicTesselation.ixx" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="renderstates.ixx" />
+    <ClCompile Include="RenderStates.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.vcxproj">

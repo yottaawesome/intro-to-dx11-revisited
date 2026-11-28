@@ -8,9 +8,9 @@
 //      Hold the right mouse button down to zoom in and out.
 //
 //***************************************************************************************
-export module shapes;
+export module Shapes;
 import std;
-import shared;
+import Shared;
 
 struct Vertex
 {

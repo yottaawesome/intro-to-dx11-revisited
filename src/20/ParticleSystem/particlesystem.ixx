@@ -1,6 +1,6 @@
-export module particlesystemdemo:particlesystem;
+export module ParticleSystemDemo:ParticleSystem;
 import std;
-import shared;
+import Shared;
 
 class ParticleSystem
 {

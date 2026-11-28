@@ -9,9 +9,9 @@
 //
 //***************************************************************************************
 
-export module skull;
+export module Skull;
 import std;
-import shared;
+import Shared;
 
 struct Vertex
 {

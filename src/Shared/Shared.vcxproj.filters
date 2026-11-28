@@ -15,46 +15,46 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="shared.ixx">
+    <ClCompile Include="Shared.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="win32.ixx">
+    <ClCompile Include="Win32.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gametimer.ixx">
+    <ClCompile Include="GameTimer.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="d3dutil.ixx">
+    <ClCompile Include="D3DUtil.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mathhelper.ixx">
+    <ClCompile Include="MathHelper.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="d3dapp.ixx">
+    <ClCompile Include="D3DApp.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="build.ixx">
+    <ClCompile Include="Build.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="comptr.ixx">
+    <ClCompile Include="ComPtr.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="geometrygenerator.ixx">
+    <ClCompile Include="GeometryGenerator.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lighthelper.ixx">
+    <ClCompile Include="LightHelper.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="camera.ixx">
+    <ClCompile Include="Camera.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="texturemanager.ixx">
+    <ClCompile Include="TextureManager.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="strings.ixx">
+    <ClCompile Include="Strings.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="error.ixx">
+    <ClCompile Include="Error.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,3 +1,3 @@
-export module basictesselation;
-export import :renderstates;
-export import :app;
+export module BasicTessellation;
+export import :RenderStates;
+export import :App;

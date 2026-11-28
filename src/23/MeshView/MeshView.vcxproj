@@ -156,17 +156,17 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="app.ixx" />
-    <ClCompile Include="basicmodel.ixx" />
-    <ClCompile Include="loadm3d.ixx" />
+    <ClCompile Include="App.ixx" />
+    <ClCompile Include="BasicModel.ixx" />
+    <ClCompile Include="LoadM3D.ixx" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="meshgeometry.ixx" />
-    <ClCompile Include="meshviewdemo.ixx" />
-    <ClCompile Include="renderstates.ixx" />
-    <ClCompile Include="shadowmap.ixx" />
-    <ClCompile Include="sharedvertices.ixx" />
-    <ClCompile Include="sky.ixx" />
-    <ClCompile Include="ssao.ixx" />
+    <ClCompile Include="MeshGeometry.ixx" />
+    <ClCompile Include="MeshViewDemo.ixx" />
+    <ClCompile Include="RenderStates.ixx" />
+    <ClCompile Include="ShadowMap.ixx" />
+    <ClCompile Include="SharedVertices.ixx" />
+    <ClCompile Include="Sky.ixx" />
+    <ClCompile Include="Ssao.ixx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\Shared.vcxproj">

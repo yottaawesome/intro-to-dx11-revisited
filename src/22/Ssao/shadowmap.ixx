@@ -1,6 +1,6 @@
-export module ssaodemo:shadowmap;
+export module SsaoDemo:ShadowMap;
 import std;
-import shared;
+import Shared;
 
 class ShadowMap
 {

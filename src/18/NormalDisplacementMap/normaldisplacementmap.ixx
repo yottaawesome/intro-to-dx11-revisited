@@ -1,4 +1,4 @@
-export module normaldisplacementmap;
-export import :renderstates;
-export import :app;
-export import :sky;
+export module NormalDisplacementMap;
+export import :RenderStates;
+export import :App;
+export import :Sky;

@@ -18,13 +18,13 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ambientocclusiondemo.ixx">
+    <ClCompile Include="AmbientOcclusionDemo.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="app.ixx">
+    <ClCompile Include="App.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="octree.ixx">
+    <ClCompile Include="Octree.ixx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

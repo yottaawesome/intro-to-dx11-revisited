@@ -1,4 +1,4 @@
-export module blenddemo;
-export import :app;
-export import :waves;
-export import :renderstates;
+export module BlendDemo;
+export import :App;
+export import :Waves;
+export import :RenderStates;

@@ -1,7 +1,7 @@
-export module ssaodemo;
-export import :sky;
-export import :shadowmap;
-export import :app;
-export import :renderstates;
-export import :ssao;
-export import :sharedvertices;
+export module SsaoDemo;
+export import :Sky;
+export import :ShadowMap;
+export import :App;
+export import :RenderStates;
+export import :Ssao;
+export import :SharedVertices;

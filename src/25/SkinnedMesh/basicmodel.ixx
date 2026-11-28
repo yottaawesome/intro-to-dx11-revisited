@@ -1,9 +1,9 @@
-export module skinnedmeshdemo:basicmodel;
+export module SkinnedMeshDemo:BasicModel;
 import std;
-import shared;
-import :sharedvertices;
-import :meshgeometry;
-import :loadm3d;
+import Shared;
+import :SharedVertices;
+import :MeshGeometry;
+import :LoadM3D;
 
 class BasicModel
 {

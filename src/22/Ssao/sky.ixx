@@ -1,6 +1,6 @@
-export module ssaodemo:sky;
+export module SsaoDemo:Sky;
 import std;
-import shared;
+import Shared;
 
 class Sky
 {

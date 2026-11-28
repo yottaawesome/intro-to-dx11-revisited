@@ -1,6 +1,6 @@
-export module blur:renderstates;
+export module Blur:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

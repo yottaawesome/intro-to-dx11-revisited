@@ -1,6 +1,6 @@
-export module instancingandculling;
+export module InstancingAndCulling;
 import std;
-import shared;
+import Shared;
 
 struct PerFrameConstants
 {

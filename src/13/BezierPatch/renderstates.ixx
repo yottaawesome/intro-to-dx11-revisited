@@ -1,6 +1,6 @@
-export module bezierpatch:renderstates;
+export module BezierPatch:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

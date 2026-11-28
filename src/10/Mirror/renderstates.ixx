@@ -1,6 +1,6 @@
-export module mirrordemo:renderstates;
+export module MirrorDemo:RenderStates;
 import std;
-import shared;
+import Shared;
 
 struct RenderStates
 {

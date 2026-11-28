@@ -1,7 +1,7 @@
-export module shared:error;
+export module Shared:Error;
 import std;
-import :win32;
-import :strings;
+import :Win32;
+import :Strings;
 
 export
 {

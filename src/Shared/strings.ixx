@@ -1,6 +1,6 @@
-export module shared:strings;
+export module Shared:Strings;
 import std;
-import :win32;
+import :Win32;
 
 export
 {

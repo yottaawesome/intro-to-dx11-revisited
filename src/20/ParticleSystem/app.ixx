@@ -1,10 +1,10 @@
-export module particlesystemdemo:app;
+export module ParticleSystemDemo:App;
 import std;
-import shared;
-import :sky;
-import :terrain;
-import :renderstates;
-import :particlesystem;
+import Shared;
+import :Sky;
+import :Terrain;
+import :RenderStates;
+import :ParticleSystem;
 
 export class ParticlesApp : public D3DApp
 {
